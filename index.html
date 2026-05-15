@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>¿Cuánto vale tu sueldo hoy? — Peso Real</title>
+<meta name="description" content="Calculadora gratuita: descubrí cuánto perdió tu sueldo contra la inflación. Datos reales del INDEC, sin vueltas.">
+<meta property="og:title" content="¿Cuánto vale tu sueldo hoy?">
+<meta property="og:description" content="Ingresá tu sueldo y descubrí cuánto poder adquisitivo perdiste. Datos oficiales del INDEC.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-JTF9Q7FY5K"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-JTF9Q7FY5K');
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0e0f11;
+    --bg2: #16181c;
+    --bg3: #1e2026;
+    --border: rgba(255,255,255,0.08);
+    --border-hover: rgba(255,255,255,0.15);
+    --text: #f0ede8;
+    --text2: #9b9791;
+    --text3: #5c5a56;
+    --accent: #e8f55a;
+    --accent2: #c8d93e;
+    --red: #ff5e5e;
+    --red-soft: rgba(255,94,94,0.12);
+    --green: #4ade80;
+    --green-soft: rgba(74,222,128,0.1);
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── noise texture overlay ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ─── header ─── */
+  header {
+    padding: 32px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    color: var(--accent);
+    letter-spacing: -0.3px;
+  }
+
+  .badge {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text3);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* ─── hero ─── */
+  .hero {
+    padding: 64px 0 40px;
+    text-align: center;
+  }
+
+  .hero-kicker {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .hero-kicker::before,
+  .hero-kicker::after {
+    content: '';
+    width: 24px;
+    height: 1px;
+    background: var(--accent);
+    opacity: 0.4;
+  }
+
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(36px, 8vw, 56px);
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 20px;
+    letter-spacing: -1px;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .hero-sub {
+    font-size: 17px;
+    color: var(--text2);
+    max-width: 460px;
+    margin: 0 auto;
+    line-height: 1.65;
+  }
+
+  /* ─── calculator card ─── */
+  .calc-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 36px;
+    margin: 40px 0;
+  }
+
+  .form-group {
+    margin-bottom: 24px;
+  }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    margin-bottom: 10px;
+    letter-spacing: 0.02em;
+  }
+
+  .input-wrap {
+    position: relative;
+  }
+
+  .currency-prefix {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text3);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  input[type="number"],
+  select {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 20px;
+    font-weight: 500;
+    padding: 16px 16px 16px 40px;
+    outline: none;
+    transition: border-color 0.2s;
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  select {
+    font-size: 16px;
+    padding-left: 16px;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235c5a56' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 40px;
+  }
+
+  select option { background: var(--bg3); }
+
+  input:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(232,245,90,0.08);
+  }
+
+  .row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .btn {
+    width: 100%;
+    background: var(--accent);
+    color: #0e0f11;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 18px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    margin-top: 8px;
+  }
+
+  .btn:hover { background: var(--accent2); }
+  .btn:active { transform: scale(0.99); }
+
+  /* ─── result ─── */
+  #resultado {
+    display: none;
+    margin-top: 32px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+    animation: fadeUp 0.4s ease forwards;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-headline {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 16px;
+  }
+
+  .result-main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .result-box {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+  }
+
+  .result-box .label {
+    font-size: 12px;
+    color: var(--text3);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .result-box .value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    line-height: 1.1;
+  }
+
+  .result-box .value.lost { color: var(--red); }
+  .result-box .value.gained { color: var(--green); }
+  .result-box .value.neutral { color: var(--text); }
+
+  .result-box .sub {
+    font-size: 12px;
+    color: var(--text3);
+    margin-top: 4px;
+  }
+
+  .verdict {
+    border-radius: var(--radius-sm);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+  }
+
+  .verdict.bad {
+    background: var(--red-soft);
+    border-color: rgba(255,94,94,0.2);
+  }
+
+  .verdict.good {
+    background: var(--green-soft);
+    border-color: rgba(74,222,128,0.15);
+  }
+
+  .verdict-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .verdict.bad .verdict-title { color: var(--red); }
+  .verdict.good .verdict-title { color: var(--green); }
+
+  .verdict-body {
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.6;
+  }
+
+  /* ─── mini bar chart ─── */
+  .chart-section {
+    margin-bottom: 20px;
+  }
+
+  .chart-label {
+    font-size: 12px;
+    color: var(--text3);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .bar-name {
+    font-size: 12px;
+    color: var(--text2);
+    width: 80px;
+    flex-shrink: 0;
+    text-align: right;
+  }
+
+  .bar-track {
+    flex: 1;
+    height: 6px;
+    background: var(--bg3);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    width: 0;
+  }
+
+  .bar-fill.inflacion { background: var(--red); }
+  .bar-fill.sueldo    { background: var(--accent); }
+
+  .bar-pct {
+    font-size: 12px;
+    color: var(--text2);
+    width: 52px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* ─── email section ─── */
+  .email-section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 36px;
+    margin: 0 0 48px;
+    text-align: center;
+  }
+
+  .email-section h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    margin-bottom: 10px;
+    letter-spacing: -0.3px;
+  }
+
+  .email-section p {
+    font-size: 15px;
+    color: var(--text2);
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+
+  .email-row {
+    display: flex;
+    gap: 10px;
+    max-width: 440px;
+    margin: 0 auto;
+  }
+
+  .email-row input[type="email"] {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    padding: 14px 16px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .email-row input[type="email"]:focus { border-color: var(--accent); }
+  .email-row input[type="email"]::placeholder { color: var(--text3); }
+
+  .btn-email {
+    background: var(--accent);
+    color: #0e0f11;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 14px 20px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+    flex-shrink: 0;
+  }
+
+  .btn-email:hover { background: var(--accent2); }
+
+  .email-fine {
+    font-size: 12px;
+    color: var(--text3);
+    margin-top: 12px;
+  }
+
+  #email-success {
+    display: none;
+    color: var(--green);
+    font-size: 15px;
+    font-weight: 500;
+    padding: 12px 0;
+  }
+
+  /* ─── footer ─── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 0 32px;
+    text-align: center;
+  }
+
+  footer p {
+    font-size: 13px;
+    color: var(--text3);
+    line-height: 1.7;
+  }
+
+  footer a {
+    color: var(--text2);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ─── responsive ─── */
+  @media (max-width: 520px) {
+    .calc-card { padding: 24px; }
+    .email-section { padding: 28px 20px; }
+    .row-2 { grid-template-columns: 1fr; }
+    .result-main { grid-template-columns: 1fr; }
+    .email-row { flex-direction: column; }
+    h1 { font-size: 36px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <header>
+    <span class="logo">Peso Real</span>
+    <span class="badge">Beta · Datos INDEC</span>
+  </header>
+
+  <section class="hero">
+    <div class="hero-kicker">Poder adquisitivo</div>
+    <h1>¿Cuánto vale<br>tu sueldo <em>hoy</em>?</h1>
+    <p class="hero-sub">Ingresá tu sueldo de antes y el de ahora. Te decimos cuánto ganaste o perdiste en términos reales, con datos oficiales del INDEC.</p>
+  </section>
+
+  <div class="calc-card">
+    <div class="form-group">
+      <label>¿Cuál era tu sueldo en ese momento?</label>
+      <div class="input-wrap">
+        <span class="currency-prefix">$</span>
+        <input type="number" id="sueldo-antes" placeholder="0" min="0" inputmode="numeric">
+      </div>
+    </div>
+
+    <div class="row-2">
+      <div class="form-group">
+        <label>Desde</label>
+        <select id="mes-desde"></select>
+      </div>
+      <div class="form-group">
+        <label>Hasta</label>
+        <select id="mes-hasta"></select>
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-bottom:8px">
+      <label>¿Cuál es tu sueldo actual? <span style="color:var(--text3);font-weight:400">(opcional)</span></label>
+      <div class="input-wrap">
+        <span class="currency-prefix">$</span>
+        <input type="number" id="sueldo-actual" placeholder="0" min="0" inputmode="numeric">
+      </div>
+    </div>
+
+    <button class="btn" onclick="calcular()">Calcular mi poder adquisitivo →</button>
+
+    <div id="resultado">
+      <div class="result-headline">Tu resultado</div>
+
+      <div class="result-main">
+        <div class="result-box">
+          <div class="label">Tu sueldo ajustado</div>
+          <div class="value neutral" id="r-ajustado">—</div>
+          <div class="sub" id="r-ajustado-sub">Para mantener el mismo poder adquisitivo</div>
+        </div>
+        <div class="result-box">
+          <div class="label">Variación real</div>
+          <div class="value" id="r-variacion">—</div>
+          <div class="sub" id="r-variacion-sub"></div>
+        </div>
+      </div>
+
+      <div class="verdict" id="r-verdict">
+        <div class="verdict-title" id="r-verdict-title"></div>
+        <div class="verdict-body" id="r-verdict-body"></div>
+      </div>
+
+      <div class="chart-section">
+        <div class="chart-label">Comparación del período</div>
+        <div class="bar-row">
+          <span class="bar-name">Inflación</span>
+          <div class="bar-track"><div class="bar-fill inflacion" id="bar-inflacion"></div></div>
+          <span class="bar-pct" id="pct-inflacion">—</span>
+        </div>
+        <div class="bar-row" id="bar-sueldo-row" style="display:none">
+          <span class="bar-name">Tu sueldo</span>
+          <div class="bar-track"><div class="bar-fill sueldo" id="bar-sueldo"></div></div>
+          <span class="bar-pct" id="pct-sueldo">—</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="email-section" id="email-section">
+    <h2>La app completa está en camino</h2>
+    <p>Peso Real va a mostrarte tu sueldo en USD, ajustar tu presupuesto mensual solo con el IPC, y darte un índice de bienestar financiero real. Sin culpa, sin tecnicismos.</p>
+    <div class="email-row">
+      <input type="email" id="email-input" placeholder="tu@email.com">
+      <button class="btn-email" onclick="suscribir()">Avisame cuando esté lista</button>
+    </div>
+    <div id="email-success">✓ ¡Anotado! Te avisamos cuando la app esté disponible.</div>
+    <p class="email-fine">Sin spam. Solo un mail cuando lancemos.</p>
+  </div>
+
+  <footer>
+    <p>
+      Datos de inflación: <a href="https://www.indec.gob.ar" target="_blank" rel="noopener">INDEC</a> — Índice de Precios al Consumidor (IPC) oficial.<br>
+      Peso Real · Argentina · 2025
+    </p>
+  </footer>
+
+</div>
+
+<script>
+// ─── IPC MENSUAL OFICIAL DEL INDEC ──────────────────────────────────────────
+// Variación mensual del IPC (nivel general, total nacional)
+// Fuente: INDEC - Dirección Nacional de Estadísticas de Precios
+const IPC = {
+  // 2022
+  "2022-01": 3.9,  "2022-02": 4.7,  "2022-03": 6.7,  "2022-04": 6.0,
+  "2022-05": 5.1,  "2022-06": 5.3,  "2022-07": 7.4,  "2022-08": 7.0,
+  "2022-09": 6.2,  "2022-10": 6.3,  "2022-11": 4.9,  "2022-12": 5.1,
+  // 2023
+  "2023-01": 6.0,  "2023-02": 6.6,  "2023-03": 7.7,  "2023-04": 8.4,
+  "2023-05": 7.8,  "2023-06": 6.0,  "2023-07": 6.3,  "2023-08": 12.4,
+  "2023-09": 12.7, "2023-10": 8.3,  "2023-11": 12.8, "2023-12": 25.5,
+  // 2024
+  "2024-01": 20.6, "2024-02": 13.2, "2024-03": 11.0, "2024-04": 8.8,
+  "2024-05": 4.2,  "2024-06": 4.6,  "2024-07": 4.0,  "2024-08": 4.2,
+  "2024-09": 3.5,  "2024-10": 2.9,  "2024-11": 2.4,  "2024-12": 2.7,
+  // 2025
+  "2025-01": 2.3,  "2025-02": 2.4,  "2025-03": 3.7,  "2025-04": 3.0,
+  "2025-05": 3.3,  "2025-06": 3.7,  "2025-07": 3.0,  "2025-08": 3.5,
+  "2025-09": 3.5,  "2025-10": 2.9,  "2025-11": 2.5,  "2025-12": 2.8,
+  // 2026
+  "2026-01": 2.3,  "2026-02": 2.4,  "2026-03": 3.4,
+};
+
+const MESES_ES = [
+  "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+  "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
+];
+
+function formatARS(n) {
+  return '$ ' + Math.round(n).toLocaleString('es-AR');
+}
+
+function formatPct(n) {
+  const sign = n >= 0 ? '+' : '';
+  return sign + n.toFixed(1) + '%';
+}
+
+// Llena los selects con los meses disponibles
+function poblarSelects() {
+  const keys = Object.keys(IPC).sort();
+  const desde = document.getElementById('mes-desde');
+  const hasta = document.getElementById('mes-hasta');
+
+  keys.forEach(k => {
+    const [y, m] = k.split('-');
+    const label = `${MESES_ES[parseInt(m)-1]} ${y}`;
+    desde.add(new Option(label, k));
+    hasta.add(new Option(label, k));
+  });
+
+  // Defaults: desde 12 meses atrás, hasta el último
+  desde.value = keys[keys.length - 14] || keys[0];
+  hasta.value = keys[keys.length - 1];
+}
+
+// Calcula inflación acumulada entre dos períodos (inclusive)
+function inflacionAcumulada(desde, hasta) {
+  const keys = Object.keys(IPC).sort();
+  const ini = keys.indexOf(desde);
+  const fin = keys.indexOf(hasta);
+  if (ini < 0 || fin < 0 || ini >= fin) return null;
+
+  let acum = 1;
+  for (let i = ini + 1; i <= fin; i++) {
+    acum *= (1 + IPC[keys[i]] / 100);
+  }
+  return (acum - 1) * 100;
+}
+
+function calcular() {
+  const sueldoAntes = parseFloat(document.getElementById('sueldo-antes').value);
+  const sueldoActual = parseFloat(document.getElementById('sueldo-actual').value) || null;
+  const desde = document.getElementById('mes-desde').value;
+  const hasta = document.getElementById('mes-hasta').value;
+
+  if (!sueldoAntes || sueldoAntes <= 0) {
+    document.getElementById('sueldo-antes').focus();
+    return;
+  }
+
+  const keys = Object.keys(IPC).sort();
+  if (keys.indexOf(desde) >= keys.indexOf(hasta)) {
+    alert('El período de inicio debe ser anterior al período final.');
+    return;
+  }
+
+  const inflPct = inflacionAcumulada(desde, hasta);
+  if (inflPct === null) return;
+
+  const sueldoAjustado = sueldoAntes * (1 + inflPct / 100);
+
+  // Mostrar ajustado
+  document.getElementById('r-ajustado').textContent = formatARS(sueldoAjustado);
+  document.getElementById('r-ajustado-sub').textContent =
+    `Para mantener el poder adquisitivo de ${document.getElementById('mes-desde').options[document.getElementById('mes-desde').selectedIndex].text}`;
+
+  // Variación real
+  const rVariEl = document.getElementById('r-variacion');
+  const rVarSubEl = document.getElementById('r-variacion-sub');
+
+  if (sueldoActual) {
+    const varReal = ((sueldoActual / sueldoAjustado) - 1) * 100;
+    rVariEl.textContent = formatPct(varReal);
+    rVariEl.className = 'value ' + (varReal >= 0 ? 'gained' : 'lost');
+    rVarSubEl.textContent = varReal >= 0
+      ? 'Ganaste poder adquisitivo real'
+      : 'Perdiste poder adquisitivo real';
+  } else {
+    rVariEl.textContent = '+' + inflPct.toFixed(1) + '%';
+    rVariEl.className = 'value lost';
+    rVarSubEl.textContent = 'Inflación acumulada del período';
+  }
+
+  // Veredicto
+  const verdictEl = document.getElementById('r-verdict');
+  const verdictTitle = document.getElementById('r-verdict-title');
+  const verdictBody = document.getElementById('r-verdict-body');
+  const [yD, mD] = desde.split('-');
+  const [yH, mH] = hasta.split('-');
+
+  if (sueldoActual) {
+    const perdidaARS = sueldoAjustado - sueldoActual;
+    if (perdidaARS > 0) {
+      verdictEl.className = 'verdict bad';
+      verdictTitle.textContent = `Perdiste ${formatARS(perdidaARS)} de poder adquisitivo`;
+      verdictBody.textContent =
+        `Para mantener el mismo nivel de vida que en ${MESES_ES[parseInt(mD)-1]} ${yD}, hoy necesitarías ${formatARS(sueldoAjustado)} por mes. La inflación acumulada del período fue del ${inflPct.toFixed(1)}%.`;
+    } else {
+      verdictEl.className = 'verdict good';
+      verdictTitle.textContent = `Ganaste ${formatARS(-perdidaARS)} de poder adquisitivo`;
+      verdictBody.textContent =
+        `Tu sueldo actual superó a la inflación del período (${inflPct.toFixed(1)}%). Estás ganando en términos reales — eso es difícil de lograr en Argentina.`;
+    }
+  } else {
+    const mesesCount = keys.indexOf(hasta) - keys.indexOf(desde);
+    verdictEl.className = 'verdict bad';
+    verdictTitle.textContent = `La inflación acumulada fue del ${inflPct.toFixed(1)}%`;
+    verdictBody.textContent =
+      `En ${mesesCount} meses (${MESES_ES[parseInt(mD)-1]} ${yD} → ${MESES_ES[parseInt(mH)-1]} ${yH}), los precios subieron ${inflPct.toFixed(1)}%. Tu sueldo de ${formatARS(sueldoAntes)} equivale hoy a ${formatARS(sueldoAntes / (1 + inflPct/100))} de ese momento. Ingresá tu sueldo actual arriba para ver si le ganaste o perdiste a la inflación.`;
+  }
+
+  // Barras
+  const maxPct = sueldoActual
+    ? Math.max(inflPct, Math.abs(((sueldoActual/sueldoAntes)-1)*100)) + 5
+    : inflPct + 5;
+
+  const barInflWidth = Math.min(100, (inflPct / maxPct) * 100);
+  document.getElementById('bar-inflacion').style.width = barInflWidth + '%';
+  document.getElementById('pct-inflacion').textContent = '+' + inflPct.toFixed(1) + '%';
+
+  if (sueldoActual) {
+    const sueldoPct = ((sueldoActual / sueldoAntes) - 1) * 100;
+    const barSueldoWidth = Math.min(100, (Math.abs(sueldoPct) / maxPct) * 100);
+    document.getElementById('bar-sueldo').style.width = barSueldoWidth + '%';
+    document.getElementById('pct-sueldo').textContent = formatPct(sueldoPct);
+    document.getElementById('bar-sueldo-row').style.display = 'flex';
+  } else {
+    document.getElementById('bar-sueldo-row').style.display = 'none';
+  }
+
+  // Mostrar resultado
+  const resultadoEl = document.getElementById('resultado');
+  resultadoEl.style.display = 'block';
+  // Fuerza reflow para animación
+  resultadoEl.getBoundingClientRect();
+  resultadoEl.style.animation = 'none';
+  resultadoEl.getBoundingClientRect();
+  resultadoEl.style.animation = '';
+
+  setTimeout(() => {
+    resultadoEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 100);
+}
+
+function suscribir() {
+  const email = document.getElementById('email-input').value.trim();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    document.getElementById('email-input').focus();
+    return;
+  }
+
+  // Acá se puede conectar a Mailchimp / Brevo / ConvertKit via API
+  // Por ahora guarda en localStorage como prueba
+  const lista = JSON.parse(localStorage.getItem('pr_emails') || '[]');
+  lista.push({ email, fecha: new Date().toISOString() });
+  localStorage.setItem('pr_emails', JSON.stringify(lista));
+
+  document.getElementById('email-input').style.display = 'none';
+  document.querySelector('.btn-email').style.display = 'none';
+  document.getElementById('email-success').style.display = 'block';
+}
+
+// Enter para calcular
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') calcular();
+});
+
+// Init
+poblarSelects();
+</script>
+</body>
+</html>
