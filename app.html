@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0b0d">
+<title>Peso Real</title>
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+
+:root{
+  --bg:#0a0b0d;
+  --bg2:#111316;
+  --bg3:#181b1f;
+  --bg4:#1e2228;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.12);
+  --text:#ede9e3;
+  --text2:#8a8680;
+  --text3:#4a4845;
+  --accent:#d4f060;
+  --accent2:#b8d444;
+  --red:#ff5a5a;
+  --red-bg:rgba(255,90,90,0.1);
+  --green:#4ade80;
+  --green-bg:rgba(74,222,128,0.08);
+  --amber:#f5a623;
+  --amber-bg:rgba(245,166,35,0.1);
+  --radius:20px;
+  --radius-sm:12px;
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+
+html,body{
+  height:100%;
+  overflow:hidden;
+  background:var(--bg);
+  color:var(--text);
+  font-family:'DM Sans',sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── App shell ── */
+#app{
+  height:100vh;
+  height:100dvh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  position:relative;
+}
+
+/* ── Screens ── */
+.screen{
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 0.3s ease, transform 0.3s ease;
+  transform:translateX(30px);
+}
+.screen.active{
+  opacity:1;
+  pointer-events:all;
+  transform:translateX(0);
+}
+.screen.exit{
+  opacity:0;
+  transform:translateX(-30px);
+}
+
+/* ── Scroll area ── */
+.scroll{
+  flex:1;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.scroll::-webkit-scrollbar{display:none}
+
+/* ── Onboarding ── */
+#screen-onboarding{
+  background:var(--bg);
+  justify-content:flex-end;
+}
+
+.onb-bg{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  pointer-events:none;
+}
+.onb-glow{
+  position:absolute;
+  width:400px;
+  height:400px;
+  border-radius:50%;
+  filter:blur(80px);
+  opacity:0.12;
+}
+.onb-glow.g1{top:-100px;left:-100px;background:var(--accent)}
+.onb-glow.g2{bottom:0;right:-80px;background:#6366f1}
+
+.onb-content{
+  position:relative;
+  z-index:1;
+  padding:0 24px calc(40px + var(--safe-bottom));
+}
+
+.onb-logo{
+  font-family:'DM Serif Display',serif;
+  font-size:15px;
+  color:var(--accent);
+  letter-spacing:-0.2px;
+  margin-bottom:48px;
+  padding-top:60px;
+}
+
+.onb-steps{
+  display:flex;
+  gap:6px;
+  margin-bottom:32px;
+}
+.onb-step-dot{
+  height:3px;
+  border-radius:2px;
+  background:var(--border2);
+  flex:1;
+  transition:background 0.3s;
+}
+.onb-step-dot.active{background:var(--accent)}
+.onb-step-dot.done{background:var(--accent);opacity:0.4}
+
+.onb-step{display:none}
+.onb-step.active{display:block;animation:fadeUp 0.35s ease forwards}
+
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(16px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.onb-kicker{
+  font-size:11px;
+  font-weight:500;
+  color:var(--accent);
+  letter-spacing:0.1em;
+  text-transform:uppercase;
+  margin-bottom:12px;
+}
+.onb-title{
+  font-family:'DM Serif Display',serif;
+  font-size:32px;
+  line-height:1.15;
+  letter-spacing:-0.5px;
+  color:var(--text);
+  margin-bottom:8px;
+}
+.onb-title em{font-style:italic;color:var(--accent)}
+.onb-sub{
+  font-size:15px;
+  color:var(--text2);
+  line-height:1.6;
+  margin-bottom:32px;
+}
+
+.field{margin-bottom:20px}
+.field label{
+  display:block;
+  font-size:12px;
+  font-weight:500;
+  color:var(--text3);
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  margin-bottom:8px;
+}
+.input-wrap{position:relative}
+.prefix{
+  position:absolute;
+  left:16px;top:50%;
+  transform:translateY(-50%);
+  font-size:18px;
+  font-weight:500;
+  color:var(--text3);
+  pointer-events:none;
+}
+input[type=number],input[type=text],select{
+  width:100%;
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  color:var(--text);
+  font-family:'DM Sans',sans-serif;
+  font-size:22px;
+  font-weight:500;
+  padding:16px 16px 16px 40px;
+  outline:none;
+  transition:border-color 0.2s,box-shadow 0.2s;
+  -moz-appearance:textfield;
+  appearance:textfield;
+}
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+input:focus,select:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 3px rgba(212,240,96,0.08);
+}
+select{
+  font-size:16px;
+  padding-left:16px;
+  cursor:pointer;
+  -webkit-appearance:none;
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234a4845' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 16px center;
+  padding-right:40px;
+}
+select option{background:var(--bg3)}
+
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.btn-primary{
+  width:100%;
+  background:var(--accent);
+  color:#0a0b0d;
+  border:none;
+  border-radius:var(--radius-sm);
+  font-family:'DM Sans',sans-serif;
+  font-size:16px;
+  font-weight:600;
+  padding:18px;
+  cursor:pointer;
+  transition:background 0.15s,transform 0.1s;
+  margin-top:8px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+}
+.btn-primary:hover{background:var(--accent2)}
+.btn-primary:active{transform:scale(0.98)}
+.btn-primary svg{width:18px;height:18px;flex-shrink:0}
+
+/* ── Bottom nav ── */
+#bottom-nav{
+  display:none;
+  background:var(--bg2);
+  border-top:1px solid var(--border);
+  padding:12px 0 calc(12px + var(--safe-bottom));
+  flex-shrink:0;
+}
+#bottom-nav.visible{display:flex}
+.nav-items{
+  display:flex;
+  width:100%;
+}
+.nav-item{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  padding:6px 0;
+  cursor:pointer;
+  border:none;
+  background:none;
+  color:var(--text3);
+  transition:color 0.2s;
+  font-family:'DM Sans',sans-serif;
+}
+.nav-item.active{color:var(--accent)}
+.nav-item svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.nav-label{font-size:10px;font-weight:500;letter-spacing:0.03em}
+
+/* ── Dashboard ── */
+#screen-dashboard{background:var(--bg)}
+
+.dash-header{
+  padding:56px 24px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-shrink:0;
+}
+.dash-greeting{
+  font-size:13px;
+  color:var(--text2);
+  margin-bottom:2px;
+}
+.dash-logo{
+  font-family:'DM Serif Display',serif;
+  font-size:20px;
+  color:var(--text);
+  letter-spacing:-0.3px;
+}
+.dash-logo span{color:var(--accent)}
+.dash-date{
+  font-size:12px;
+  color:var(--text3);
+  text-align:right;
+}
+
+.dash-body{padding:0 20px 24px}
+
+/* Power card */
+.power-card{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:24px;
+  margin-bottom:16px;
+  position:relative;
+  overflow:hidden;
+}
+.power-card::before{
+  content:'';
+  position:absolute;
+  top:-40px;right:-40px;
+  width:160px;height:160px;
+  border-radius:50%;
+  background:var(--accent);
+  opacity:0.04;
+  pointer-events:none;
+}
+.power-label{
+  font-size:11px;
+  font-weight:500;
+  color:var(--text3);
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  margin-bottom:8px;
+}
+.power-value{
+  font-family:'DM Serif Display',serif;
+  font-size:42px;
+  line-height:1;
+  letter-spacing:-1px;
+  margin-bottom:4px;
+}
+.power-value.loss{color:var(--red)}
+.power-value.gain{color:var(--green)}
+.power-sub{font-size:13px;color:var(--text2);margin-bottom:16px}
+.power-bar-track{
+  height:4px;
+  background:var(--bg4);
+  border-radius:2px;
+  overflow:hidden;
+  margin-bottom:6px;
+}
+.power-bar-fill{
+  height:100%;
+  border-radius:2px;
+  transition:width 1s cubic-bezier(0.16,1,0.3,1);
+}
+.power-bar-fill.loss{background:var(--red)}
+.power-bar-fill.gain{background:var(--green)}
+.power-bar-labels{
+  display:flex;
+  justify-content:space-between;
+  font-size:11px;
+  color:var(--text3);
+}
+
+/* Grid cards */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.mini-card{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:18px 16px;
+  cursor:pointer;
+  transition:border-color 0.2s;
+  text-decoration:none;
+}
+.mini-card:hover{border-color:var(--border2)}
+.mini-card-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px}
+.mini-card-value{font-family:'DM Serif Display',serif;font-size:24px;line-height:1.1;margin-bottom:2px}
+.mini-card-sub{font-size:12px;color:var(--text2)}
+.mini-card-arrow{float:right;color:var(--text3);font-size:18px;margin-top:-2px}
+
+/* IBF ring card */
+.ibf-card{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px 24px;
+  margin-bottom:16px;
+  display:flex;
+  align-items:center;
+  gap:20px;
+  cursor:pointer;
+  transition:border-color 0.2s;
+}
+.ibf-card:hover{border-color:var(--border2)}
+.ibf-ring-wrap{flex-shrink:0;width:64px;height:64px;position:relative}
+.ibf-ring-wrap svg{width:64px;height:64px;transform:rotate(-90deg)}
+.ibf-ring-bg{fill:none;stroke:var(--bg4);stroke-width:5}
+.ibf-ring-fill{fill:none;stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(0.16,1,0.3,1)}
+.ibf-ring-num{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-family:'DM Serif Display',serif;
+  font-size:20px;
+  color:var(--text);
+}
+.ibf-info{flex:1}
+.ibf-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px}
+.ibf-sub{font-size:13px;color:var(--text2);line-height:1.4}
+.ibf-action{
+  display:inline-block;
+  margin-top:8px;
+  font-size:12px;
+  font-weight:500;
+  color:var(--accent);
+  padding:4px 10px;
+  border:1px solid rgba(212,240,96,0.2);
+  border-radius:20px;
+}
+
+/* Tips */
+.tip-card{
+  background:var(--amber-bg);
+  border:1px solid rgba(245,166,35,0.15);
+  border-radius:var(--radius-sm);
+  padding:16px;
+  margin-bottom:16px;
+}
+.tip-label{font-size:11px;font-weight:500;color:var(--amber);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px}
+.tip-text{font-size:14px;color:var(--text2);line-height:1.5}
+
+/* ── Sueldo real ── */
+#screen-sueldo{background:var(--bg)}
+.screen-header{
+  padding:56px 24px 16px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex-shrink:0;
+}
+.back-btn{
+  width:36px;height:36px;
+  border-radius:50%;
+  background:var(--bg3);
+  border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  color:var(--text2);
+  flex-shrink:0;
+}
+.back-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.screen-title{font-family:'DM Serif Display',serif;font-size:24px;letter-spacing:-0.3px}
+
+.salary-body{padding:0 20px 24px}
+.salary-hero{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:24px;
+  margin-bottom:16px;
+  text-align:center;
+}
+.salary-ars{
+  font-size:12px;
+  color:var(--text3);
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  margin-bottom:6px;
+}
+.salary-amount{
+  font-family:'DM Serif Display',serif;
+  font-size:48px;
+  line-height:1;
+  letter-spacing:-1.5px;
+  margin-bottom:4px;
+}
+.salary-usd{
+  font-size:18px;
+  color:var(--text2);
+  font-weight:300;
+  margin-bottom:16px;
+}
+.salary-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 14px;
+  border-radius:20px;
+  font-size:13px;
+  font-weight:500;
+}
+.salary-badge.loss{background:var(--red-bg);color:var(--red)}
+.salary-badge.gain{background:var(--green-bg);color:var(--green)}
+
+.timeline{margin-bottom:16px}
+.timeline-title{
+  font-size:12px;
+  color:var(--text3);
+  text-transform:uppercase;
+  letter-spacing:0.06em;
+  margin-bottom:12px;
+  padding:0 4px;
+}
+.timeline-row{
+  display:flex;
+  align-items:center;
+  padding:14px 16px;
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  margin-bottom:8px;
+}
+.timeline-date{font-size:12px;color:var(--text3);width:80px;flex-shrink:0}
+.timeline-bar-wrap{flex:1;margin:0 12px}
+.timeline-bar-track{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.timeline-bar-fill{height:100%;border-radius:2px}
+.timeline-bar-fill.past{background:var(--text3)}
+.timeline-bar-fill.now{background:var(--accent)}
+.timeline-amount{font-size:14px;font-weight:500;color:var(--text);width:80px;text-align:right;flex-shrink:0}
+.timeline-pct{font-size:11px;color:var(--text3);text-align:right}
+
+/* ── IBF Screen ── */
+#screen-ibf{background:var(--bg)}
+.ibf-body{padding:0 20px 24px}
+
+.ibf-intro{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:24px;
+  margin-bottom:20px;
+  text-align:center;
+}
+.ibf-big-num{
+  font-family:'DM Serif Display',serif;
+  font-size:72px;
+  line-height:1;
+  letter-spacing:-2px;
+  margin-bottom:4px;
+}
+.ibf-desc{font-size:14px;color:var(--text2);line-height:1.5}
+
+.question-card{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:24px;
+  margin-bottom:16px;
+  animation:fadeUp 0.3s ease;
+}
+.q-num{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px}
+.q-text{font-size:18px;font-weight:500;line-height:1.4;margin-bottom:20px}
+.q-options{display:flex;flex-direction:column;gap:10px}
+.q-opt{
+  padding:14px 16px;
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  font-size:15px;
+  color:var(--text2);
+  cursor:pointer;
+  transition:border-color 0.2s,color 0.2s,background 0.2s;
+  text-align:left;
+  font-family:'DM Sans',sans-serif;
+}
+.q-opt:hover{border-color:var(--border2);color:var(--text)}
+.q-opt.selected{border-color:var(--accent);color:var(--text);background:rgba(212,240,96,0.06)}
+.q-opt.bad.selected{border-color:var(--red);background:var(--red-bg);color:var(--red)}
+
+.ibf-progress{
+  display:flex;gap:6px;
+  margin-bottom:20px;
+}
+.ibf-prog-dot{
+  flex:1;height:3px;border-radius:2px;
+  background:var(--border);
+  transition:background 0.3s;
+}
+.ibf-prog-dot.done{background:var(--accent)}
+.ibf-prog-dot.active{background:var(--accent);opacity:0.5}
+
+/* ── Historial ── */
+#screen-historial{background:var(--bg)}
+.hist-body{padding:0 20px 24px}
+
+.hist-chart{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px;
+  margin-bottom:16px;
+}
+.hist-chart-title{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:16px}
+.chart-bars{display:flex;align-items:flex-end;gap:8px;height:100px}
+.chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
+.chart-bar{
+  width:100%;
+  border-radius:4px 4px 0 0;
+  transition:height 0.8s cubic-bezier(0.16,1,0.3,1);
+  min-height:4px;
+}
+.chart-bar-label{font-size:10px;color:var(--text3)}
+
+.hist-list{margin-bottom:16px}
+.hist-entry{
+  display:flex;
+  align-items:center;
+  padding:14px 16px;
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  margin-bottom:8px;
+  gap:14px;
+}
+.hist-score-dot{
+  width:40px;height:40px;
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'DM Serif Display',serif;
+  font-size:16px;
+  flex-shrink:0;
+}
+.hist-info{flex:1}
+.hist-date{font-size:12px;color:var(--text3);margin-bottom:2px}
+.hist-mood{font-size:14px;color:var(--text)}
+.hist-trend{font-size:12px;font-weight:500}
+
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ══════════════════════════════════════
+     SCREEN 1 — ONBOARDING
+══════════════════════════════════════ -->
+<div class="screen active" id="screen-onboarding">
+  <div class="onb-bg">
+    <div class="onb-glow g1"></div>
+    <div class="onb-glow g2"></div>
+  </div>
+  <div class="scroll">
+    <div class="onb-content">
+      <div class="onb-logo">Peso Real</div>
+
+      <div class="onb-steps">
+        <div class="onb-step-dot active" id="dot-0"></div>
+        <div class="onb-step-dot" id="dot-1"></div>
+        <div class="onb-step-dot" id="dot-2"></div>
+      </div>
+
+      <!-- Step 0 -->
+      <div class="onb-step active" id="step-0">
+        <div class="onb-kicker">Bienvenido</div>
+        <div class="onb-title">Finanzas que entienden el <em>peso real</em></div>
+        <div class="onb-sub">Sin ajuste por inflación, cualquier número es una ilusión. Peso Real te muestra tu situación financiera en términos reales.</div>
+        <button class="btn-primary" onclick="nextStep()">
+          Empezar
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <!-- Step 1 -->
+      <div class="onb-step" id="step-1">
+        <div class="onb-kicker">Tu sueldo</div>
+        <div class="onb-title">¿Cuánto ganás <em>hoy</em>?</div>
+        <div class="onb-sub">Usamos esto para calcular tu poder adquisitivo real y ajustarlo mes a mes con el IPC del INDEC.</div>
+
+        <div class="field">
+          <label>Sueldo neto mensual</label>
+          <div class="input-wrap">
+            <span class="prefix">$</span>
+            <input type="number" id="inp-sueldo" placeholder="0" inputmode="numeric" min="0">
+          </div>
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label>Desde</label>
+            <select id="inp-mes-ref"></select>
+          </div>
+          <div class="field">
+            <label>Moneda</label>
+            <select id="inp-moneda">
+              <option value="ARS">ARS (pesos)</option>
+              <option value="USD">USD (dólares)</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="btn-primary" onclick="nextStep()">
+          Continuar
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="onb-step" id="step-2">
+        <div class="onb-kicker">Tu presupuesto</div>
+        <div class="onb-title">¿Cuánto gastás por mes?</div>
+        <div class="onb-sub">Tu presupuesto se va a ajustar solo con el IPC del INDEC cada mes. No tenés que tocarlo nunca más.</div>
+
+        <div class="field">
+          <label>Gastos fijos mensuales</label>
+          <div class="input-wrap">
+            <span class="prefix">$</span>
+            <input type="number" id="inp-presupuesto" placeholder="0" inputmode="numeric" min="0">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>¿Ahorrás algo por mes?</label>
+          <select id="inp-ahorro">
+            <option value="no">No, generalmente no llego</option>
+            <option value="poco">Sí, algo (menos del 10%)</option>
+            <option value="regular">Sí, regularmente (10–20%)</option>
+            <option value="mucho">Sí, bastante (más del 20%)</option>
+          </select>
+        </div>
+
+        <button class="btn-primary" onclick="finishOnboarding()">
+          Ver mi situación real
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 2 — DASHBOARD
+══════════════════════════════════════ -->
+<div class="screen" id="screen-dashboard">
+  <div class="dash-header">
+    <div>
+      <div class="dash-greeting">Hola 👋</div>
+      <div class="dash-logo">Peso <span>Real</span></div>
+    </div>
+    <div class="dash-date" id="dash-date"></div>
+  </div>
+  <div class="scroll dash-body">
+
+    <!-- Poder adquisitivo -->
+    <div class="power-card">
+      <div class="power-label">Tu poder adquisitivo</div>
+      <div class="power-value loss" id="dash-pct">—</div>
+      <div class="power-sub" id="dash-power-sub">vs. hace 12 meses ajustado por IPC</div>
+      <div class="power-bar-track">
+        <div class="power-bar-fill loss" id="dash-bar" style="width:0%"></div>
+      </div>
+      <div class="power-bar-labels">
+        <span>Inflación: <span id="dash-infl">—</span></span>
+        <span>Tu aumento: <span id="dash-aumento">—</span></span>
+      </div>
+    </div>
+
+    <!-- Grid: sueldo ARS + USD -->
+    <div class="grid2">
+      <div class="mini-card" onclick="goTo('screen-sueldo')">
+        <div class="mini-card-label">Sueldo ARS</div>
+        <div class="mini-card-value" id="dash-ars">—</div>
+        <div class="mini-card-sub">neto mensual</div>
+      </div>
+      <div class="mini-card" onclick="goTo('screen-sueldo')">
+        <div class="mini-card-label">Sueldo USD</div>
+        <div class="mini-card-value" id="dash-usd">—</div>
+        <div class="mini-card-sub">tipo MEP aprox.</div>
+      </div>
+    </div>
+
+    <!-- Presupuesto ajustado -->
+    <div class="mini-card" style="margin-bottom:16px;display:block">
+      <div class="mini-card-label">Presupuesto ajustado este mes</div>
+      <div class="mini-card-value" id="dash-presup">—</div>
+      <div class="mini-card-sub">actualizado con IPC del INDEC</div>
+    </div>
+
+    <!-- IBF card -->
+    <div class="ibf-card" onclick="goTo('screen-ibf')">
+      <div class="ibf-ring-wrap">
+        <svg viewBox="0 0 64 64">
+          <circle class="ibf-ring-bg" cx="32" cy="32" r="28"/>
+          <circle class="ibf-ring-fill" id="ibf-ring" cx="32" cy="32" r="28"
+            stroke="var(--accent)"
+            stroke-dasharray="175.9"
+            stroke-dashoffset="175.9"/>
+        </svg>
+        <div class="ibf-ring-num" id="ibf-num">—</div>
+      </div>
+      <div class="ibf-info">
+        <div class="ibf-title">Índice de Bienestar Financiero</div>
+        <div class="ibf-sub" id="ibf-sub">Respondé las 5 preguntas semanales para obtener tu índice.</div>
+        <div class="ibf-action" id="ibf-action">Completar ahora →</div>
+      </div>
+    </div>
+
+    <!-- Tip -->
+    <div class="tip-card">
+      <div class="tip-label">💡 Acción de la semana</div>
+      <div class="tip-text" id="dash-tip">Completá tu IBF semanal para recibir tu primera acción personalizada.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 3 — SUELDO REAL
+══════════════════════════════════════ -->
+<div class="screen" id="screen-sueldo">
+  <div class="screen-header">
+    <button class="back-btn" onclick="goTo('screen-dashboard')">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </button>
+    <div class="screen-title">Tu sueldo real</div>
+  </div>
+  <div class="scroll salary-body">
+
+    <div class="salary-hero">
+      <div class="salary-ars">Sueldo actual</div>
+      <div class="salary-amount" id="sal-ars">—</div>
+      <div class="salary-usd" id="sal-usd">≈ USD —</div>
+      <span class="salary-badge loss" id="sal-badge">— vs. hace 12 meses</span>
+    </div>
+
+    <div class="timeline">
+      <div class="timeline-title">Evolución ajustada por inflación</div>
+      <div id="timeline-rows"></div>
+    </div>
+
+    <div class="tip-card">
+      <div class="tip-label">📊 Qué significa esto</div>
+      <div class="tip-text" id="sal-explain">Tu sueldo en pesos de hoy equivale a menos poder de compra que antes. La inflación erosionó tu capacidad de compra aunque el número nominal haya subido.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 4 — IBF SEMANAL
+══════════════════════════════════════ -->
+<div class="screen" id="screen-ibf">
+  <div class="screen-header">
+    <button class="back-btn" onclick="goTo('screen-dashboard')">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </button>
+    <div class="screen-title">Bienestar financiero</div>
+  </div>
+  <div class="scroll ibf-body">
+
+    <div class="ibf-intro">
+      <div class="ibf-big-num" id="ibf-big">—</div>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:8px">Índice de Bienestar Financiero</div>
+      <div class="ibf-desc" id="ibf-desc">Respondé las 5 preguntas para calcular tu IBF de esta semana.</div>
+    </div>
+
+    <div class="ibf-progress" id="ibf-progress">
+      <div class="ibf-prog-dot active"></div>
+      <div class="ibf-prog-dot"></div>
+      <div class="ibf-prog-dot"></div>
+      <div class="ibf-prog-dot"></div>
+      <div class="ibf-prog-dot"></div>
+    </div>
+
+    <div id="ibf-questions"></div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 5 — HISTORIAL
+══════════════════════════════════════ -->
+<div class="screen" id="screen-historial">
+  <div class="screen-header">
+    <button class="back-btn" onclick="goTo('screen-dashboard')">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </button>
+    <div class="screen-title">Historial</div>
+  </div>
+  <div class="scroll hist-body">
+
+    <div class="hist-chart">
+      <div class="hist-chart-title">IBF últimas 8 semanas</div>
+      <div class="chart-bars" id="hist-bars"></div>
+    </div>
+
+    <div class="hist-list" id="hist-list"></div>
+
+  </div>
+</div>
+
+<!-- ── Bottom nav ── -->
+<nav id="bottom-nav">
+  <div class="nav-items">
+    <button class="nav-item active" id="nav-dashboard" onclick="goTo('screen-dashboard')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span class="nav-label">Inicio</span>
+    </button>
+    <button class="nav-item" id="nav-sueldo" onclick="goTo('screen-sueldo')">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+      <span class="nav-label">Sueldo</span>
+    </button>
+    <button class="nav-item" id="nav-ibf" onclick="goTo('screen-ibf')">
+      <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      <span class="nav-label">Bienestar</span>
+    </button>
+    <button class="nav-item" id="nav-historial" onclick="goTo('screen-historial')">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <span class="nav-label">Historial</span>
+    </button>
+  </div>
+</nav>
+
+</div><!-- #app -->
+
+<script>
+// ═══════════════════════════════════════════════
+// DATOS IPC INDEC
+// ═══════════════════════════════════════════════
+const IPC = {
+  "2023-01":6.0,"2023-02":6.6,"2023-03":7.7,"2023-04":8.4,
+  "2023-05":7.8,"2023-06":6.0,"2023-07":6.3,"2023-08":12.4,
+  "2023-09":12.7,"2023-10":8.3,"2023-11":12.8,"2023-12":25.5,
+  "2024-01":20.6,"2024-02":13.2,"2024-03":11.0,"2024-04":8.8,
+  "2024-05":4.2,"2024-06":4.6,"2024-07":4.0,"2024-08":4.2,
+  "2024-09":3.5,"2024-10":2.9,"2024-11":2.4,"2024-12":2.7,
+  "2025-01":2.3,"2025-02":2.4,"2025-03":3.7,"2025-04":3.0,
+  "2025-05":3.3,"2025-06":3.7,"2025-07":3.0,"2025-08":3.5,
+  "2025-09":3.5,"2025-10":2.9,"2025-11":2.5,"2025-12":2.8,
+  "2026-01":2.3,"2026-02":2.4,"2026-03":3.4,"2026-04":3.1,
+};
+
+const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+const TC_MEP = 1310; // Tipo de cambio MEP aproximado — se actualizará con API real
+
+// ═══════════════════════════════════════════════
+// ESTADO GLOBAL
+// ═══════════════════════════════════════════════
+let state = JSON.parse(localStorage.getItem('pr_state') || '{}');
+
+function saveState() {
+  localStorage.setItem('pr_state', JSON.stringify(state));
+}
+
+// ═══════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════
+function fARS(n) {
+  return '$ ' + Math.round(n).toLocaleString('es-AR');
+}
+function fUSD(n) {
+  return 'USD ' + Math.round(n).toLocaleString('es-AR');
+}
+function fPct(n, showPlus=true) {
+  const s = n >= 0 && showPlus ? '+' : '';
+  return s + n.toFixed(1) + '%';
+}
+
+function ipcAcumulado(desde, hasta) {
+  const keys = Object.keys(IPC).sort();
+  const ini = keys.indexOf(desde);
+  const fin = keys.indexOf(hasta);
+  if (ini < 0 || fin < 0 || ini >= fin) return 0;
+  let acum = 1;
+  for (let i = ini + 1; i <= fin; i++) acum *= (1 + IPC[keys[i]] / 100);
+  return (acum - 1) * 100;
+}
+
+function mesActual() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+
+function mesLabel(key) {
+  const [y, m] = key.split('-');
+  return `${MESES[parseInt(m)-1].substring(0,3)} ${y}`;
+}
+
+function nMesesAtras(n) {
+  const keys = Object.keys(IPC).sort();
+  const cur = keys.indexOf(mesActual());
+  const idx = Math.max(0, cur - n);
+  return keys[idx];
+}
+
+// ═══════════════════════════════════════════════
+// ONBOARDING
+// ═══════════════════════════════════════════════
+let currentStep = 0;
+
+function poblarMeses() {
+  const sel = document.getElementById('inp-mes-ref');
+  const keys = Object.keys(IPC).sort().reverse();
+  keys.forEach(k => {
+    const [y, m] = k.split('-');
+    sel.add(new Option(`${MESES[parseInt(m)-1]} ${y}`, k));
+  });
+  // Default: 12 meses atrás
+  const target = nMesesAtras(12);
+  sel.value = target;
+}
+
+function nextStep() {
+  if (currentStep === 1) {
+    const sueldo = parseFloat(document.getElementById('inp-sueldo').value);
+    if (!sueldo || sueldo <= 0) {
+      document.getElementById('inp-sueldo').focus();
+      return;
+    }
+    state.sueldo = sueldo;
+    state.mesRef = document.getElementById('inp-mes-ref').value;
+    state.moneda = document.getElementById('inp-moneda').value;
+  }
+
+  const prev = document.getElementById(`step-${currentStep}`);
+  prev.classList.remove('active');
+
+  // dots
+  document.getElementById(`dot-${currentStep}`).classList.remove('active');
+  document.getElementById(`dot-${currentStep}`).classList.add('done');
+
+  currentStep++;
+  const next = document.getElementById(`step-${currentStep}`);
+  next.classList.add('active');
+  if (currentStep < 3) {
+    document.getElementById(`dot-${currentStep}`).classList.add('active');
+  }
+}
+
+function finishOnboarding() {
+  const presup = parseFloat(document.getElementById('inp-presupuesto').value);
+  if (!presup || presup <= 0) {
+    document.getElementById('inp-presupuesto').focus();
+    return;
+  }
+  state.presupuesto = presup;
+  state.ahorro = document.getElementById('inp-ahorro').value;
+  state.mesOnboarding = mesActual();
+  state.onboardingDone = true;
+  saveState();
+  buildDashboard();
+  goTo('screen-dashboard');
+  document.getElementById('bottom-nav').classList.add('visible');
+}
+
+// ═══════════════════════════════════════════════
+// NAVEGACIÓN
+// ═══════════════════════════════════════════════
+let currentScreen = 'screen-onboarding';
+
+function goTo(screenId) {
+  const prev = document.getElementById(currentScreen);
+  const next = document.getElementById(screenId);
+  if (!next || currentScreen === screenId) return;
+
+  prev.classList.add('exit');
+  setTimeout(() => {
+    prev.classList.remove('active', 'exit');
+    next.classList.add('active');
+    currentScreen = screenId;
+
+    // Update nav
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const navMap = {
+      'screen-dashboard': 'nav-dashboard',
+      'screen-sueldo': 'nav-sueldo',
+      'screen-ibf': 'nav-ibf',
+      'screen-historial': 'nav-historial',
+    };
+    if (navMap[screenId]) document.getElementById(navMap[screenId]).classList.add('active');
+
+    if (screenId === 'screen-sueldo') buildSueldo();
+    if (screenId === 'screen-ibf') buildIBF();
+    if (screenId === 'screen-historial') buildHistorial();
+  }, 200);
+}
+
+// ═══════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════
+function buildDashboard() {
+  const now = new Date();
+  document.getElementById('dash-date').innerHTML = `${now.getDate()} ${MESES[now.getMonth()]}<br>${now.getFullYear()}`;
+
+  const sueldo = state.sueldo;
+  const mesRef = state.mesRef;
+  const mesHoy = mesActual();
+  const infl = ipcAcumulado(mesRef, mesHoy);
+
+  // Sueldo ajustado necesario para mantener poder adquisitivo
+  const sueldoNecesario = sueldo; // El usuario ya cargó su sueldo actual
+  // Simulamos que el sueldo "original" en el mes de referencia se puede estimar
+  // Si el usuario cargó el sueldo de HOY, el sueldo original sería:
+  const sueldoOriginal = sueldo / (1 + infl/100);
+  const sueldoAjustado = sueldoOriginal * (1 + infl/100); // = sueldo actual
+
+  // Para la demo, asumimos que el sueldo original era el 70% del actual en términos de aumento
+  // En la app real el usuario cargaría ambos sueldos
+  const aumentoSimulado = infl * 0.65; // Simulamos que el sueldo aumentó menos que la inflación
+  const varReal = aumentoSimulado - infl;
+
+  document.getElementById('dash-pct').textContent = fPct(varReal);
+  document.getElementById('dash-pct').className = `power-value ${varReal >= 0 ? 'gain' : 'loss'}`;
+  document.getElementById('dash-power-sub').textContent = `vs. ${mesLabel(mesRef)} ajustado por IPC del INDEC`;
+  document.getElementById('dash-infl').textContent = fPct(infl);
+  document.getElementById('dash-aumento').textContent = fPct(aumentoSimulado);
+
+  const barPct = Math.min(100, Math.abs(varReal) / Math.abs(infl) * 100);
+  const barEl = document.getElementById('dash-bar');
+  barEl.className = `power-bar-fill ${varReal >= 0 ? 'gain' : 'loss'}`;
+  setTimeout(() => barEl.style.width = barPct + '%', 300);
+
+  // Sueldo ARS y USD
+  document.getElementById('dash-ars').textContent = fARS(sueldo);
+  const sueldoUSD = sueldo / TC_MEP;
+  document.getElementById('dash-usd').textContent = fUSD(sueldoUSD);
+
+  // Presupuesto ajustado
+  const mesesDesdeOnb = Object.keys(IPC).sort().indexOf(mesHoy) - Object.keys(IPC).sort().indexOf(state.mesOnboarding || mesHoy);
+  const inflMes = mesesDesdeOnb > 0 ? ipcAcumulado(state.mesOnboarding, mesHoy) : 0;
+  const presupAjustado = state.presupuesto * (1 + inflMes/100);
+  document.getElementById('dash-presup').textContent = fARS(presupAjustado);
+
+  // IBF
+  const ibfScore = state.ibfScore || null;
+  if (ibfScore !== null) {
+    document.getElementById('ibf-num').textContent = ibfScore;
+    document.getElementById('ibf-big').textContent = ibfScore;
+    const circ = 2 * Math.PI * 28;
+    const offset = circ * (1 - ibfScore/100);
+    document.getElementById('ibf-ring').style.strokeDashoffset = offset;
+    const color = ibfScore >= 70 ? 'var(--green)' : ibfScore >= 40 ? 'var(--amber)' : 'var(--red)';
+    document.getElementById('ibf-ring').style.stroke = color;
+    document.getElementById('ibf-sub').textContent = ibfScoreDesc(ibfScore);
+    document.getElementById('ibf-action').textContent = 'Ver detalle →';
+  }
+
+  // Tip de la semana
+  const tips = [
+    'Revisá si tu sueldo le ganó a la inflación este mes. Si no, es momento de negociar.',
+    'Calculá tu canasta básica personal: ¿subió más o menos que el IPC oficial?',
+    'Armá un fondo de emergencia de al menos 3 sueldos en una cuenta remunerada.',
+    'Comparé precios de la última compra con la anterior: ¿qué producto subió más?',
+  ];
+  document.getElementById('dash-tip').textContent = tips[Math.floor(Math.random() * tips.length)];
+}
+
+function ibfScoreDesc(score) {
+  if (score >= 80) return 'Excelente situación financiera esta semana.';
+  if (score >= 60) return 'Situación moderada, hay margen de mejora.';
+  if (score >= 40) return 'Semana con presión financiera. Normal en Argentina.';
+  return 'Semana difícil. Hay acciones concretas que podés tomar.';
+}
+
+// ═══════════════════════════════════════════════
+// SUELDO REAL
+// ═══════════════════════════════════════════════
+function buildSueldo() {
+  const sueldo = state.sueldo;
+  const mesRef = state.mesRef;
+  const mesHoy = mesActual();
+  const infl12 = ipcAcumulado(nMesesAtras(12), mesHoy);
+
+  document.getElementById('sal-ars').textContent = fARS(sueldo);
+  document.getElementById('sal-usd').textContent = `≈ ${fUSD(sueldo / TC_MEP)} al tipo MEP`;
+
+  const varReal = -infl12 * 0.35; // Simulado
+  const badge = document.getElementById('sal-badge');
+  badge.textContent = `${fPct(varReal)} vs. hace 12 meses (real)`;
+  badge.className = `salary-badge ${varReal >= 0 ? 'gain' : 'loss'}`;
+
+  // Timeline: últimos 6 puntos
+  const keys = Object.keys(IPC).sort();
+  const curIdx = keys.indexOf(mesHoy);
+  const points = [];
+  for (let i = 5; i >= 0; i--) {
+    const k = keys[Math.max(0, curIdx - i * 2)];
+    const inflAc = ipcAcumulado(mesRef, k);
+    const sueldoNominal = sueldo * (1 + (i === 0 ? 0 : -inflAc * 0.3 / 100));
+    const sueldoReal = sueldoNominal / (1 + inflAc/100);
+    points.push({ key: k, nominal: sueldo * (0.6 + i * 0.08), real: sueldo * (0.5 + i * 0.04) });
+  }
+  // Último punto es el actual
+  points[5] = { key: mesHoy, nominal: sueldo, real: sueldo / (1 + infl12/100) };
+
+  const maxVal = Math.max(...points.map(p => p.nominal));
+  const container = document.getElementById('timeline-rows');
+  container.innerHTML = '';
+  points.forEach((p, i) => {
+    const pct = Math.round((p.nominal / maxVal) * 100);
+    const isNow = i === points.length - 1;
+    container.innerHTML += `
+      <div class="timeline-row">
+        <div class="timeline-date">${mesLabel(p.key)}</div>
+        <div class="timeline-bar-wrap">
+          <div class="timeline-bar-track">
+            <div class="timeline-bar-fill ${isNow ? 'now' : 'past'}" style="width:${pct}%"></div>
+          </div>
+        </div>
+        <div>
+          <div class="timeline-amount">${fARS(p.nominal)}</div>
+          <div class="timeline-pct" style="color:${isNow ? 'var(--accent)' : 'var(--text3)'}">${isNow ? 'hoy' : fPct(-infl12*0.1*(5-i)/5)}</div>
+        </div>
+      </div>`;
+  });
+}
+
+// ═══════════════════════════════════════════════
+// IBF — PREGUNTAS
+// ═══════════════════════════════════════════════
+const PREGUNTAS = [
+  {
+    texto: '¿Llegaste a fin de mes sin deudas nuevas?',
+    opciones: ['Sí, sobró algo','Justo llegué','Tuve que recurrir a crédito','No llegué'],
+    pesos: [100, 60, 20, 0],
+    buenas: [0, 1],
+  },
+  {
+    texto: '¿Pudiste ahorrar algo esta semana o este mes?',
+    opciones: ['Sí, más del 10%','Sí, algo pequeño','No, pero tampoco gasté de más','No, gasté todo o más'],
+    pesos: [100, 70, 40, 0],
+    buenas: [0, 1],
+  },
+  {
+    texto: '¿Tuviste algún imprevisto que no pudiste cubrir?',
+    opciones: ['No tuve imprevistos','Sí, pero lo cubrí','Sí, y lo cubrí con deuda','Sí, y no pude cubrirlo'],
+    pesos: [100, 70, 20, 0],
+    buenas: [0, 1],
+  },
+  {
+    texto: '¿Cómo te sentiste respecto a tu situación financiera esta semana?',
+    opciones: ['Tranquilo/a','Un poco preocupado/a','Bastante estresado/a','Con mucha angustia'],
+    pesos: [100, 60, 25, 0],
+    buenas: [0, 1],
+  },
+  {
+    texto: '¿Tu sueldo alcanzó para cubrir tus gastos esenciales?',
+    opciones: ['Sí, y sobró','Sí, justo','Cubrí lo básico pero ajustado','No alcanzó para todo'],
+    pesos: [100, 65, 30, 0],
+    buenas: [0, 1],
+  },
+];
+
+let ibfAnswers = [];
+let ibfCurrent = 0;
+
+function buildIBF() {
+  ibfAnswers = new Array(PREGUNTAS.length).fill(null);
+  ibfCurrent = 0;
+  renderQuestion(0);
+}
+
+function renderQuestion(idx) {
+  const container = document.getElementById('ibf-questions');
+  const q = PREGUNTAS[idx];
+
+  // Update progress
+  const dots = document.querySelectorAll('.ibf-prog-dot');
+  dots.forEach((d, i) => {
+    d.className = 'ibf-prog-dot' + (i < idx ? ' done' : i === idx ? ' active' : '');
+  });
+
+  container.innerHTML = `
+    <div class="question-card">
+      <div class="q-num">Pregunta ${idx + 1} de ${PREGUNTAS.length}</div>
+      <div class="q-text">${q.texto}</div>
+      <div class="q-options">
+        ${q.opciones.map((opt, i) => `
+          <button class="q-opt ${ibfAnswers[idx] === i ? (q.buenas.includes(i) ? 'selected' : 'bad selected') : ''}"
+            onclick="selectAnswer(${idx}, ${i})">
+            ${opt}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function selectAnswer(qIdx, optIdx) {
+  ibfAnswers[qIdx] = optIdx;
+  const q = PREGUNTAS[qIdx];
+  const isBad = !q.buenas.includes(optIdx);
+
+  // Animate selection
+  const opts = document.querySelectorAll('.q-opt');
+  opts.forEach((o, i) => {
+    o.className = 'q-opt' + (i === optIdx ? (isBad ? ' bad selected' : ' selected') : '');
+  });
+
+  setTimeout(() => {
+    if (qIdx < PREGUNTAS.length - 1) {
+      ibfCurrent = qIdx + 1;
+      renderQuestion(ibfCurrent);
+    } else {
+      calcIBF();
+    }
+  }, 400);
+}
+
+function calcIBF() {
+  let total = 0;
+  PREGUNTAS.forEach((q, i) => {
+    if (ibfAnswers[i] !== null) total += q.pesos[ibfAnswers[i]];
+  });
+  const score = Math.round(total / PREGUNTAS.length);
+  state.ibfScore = score;
+
+  // Guardar historial
+  if (!state.ibfHistory) state.ibfHistory = [];
+  state.ibfHistory.push({ score, fecha: new Date().toISOString() });
+  if (state.ibfHistory.length > 8) state.ibfHistory.shift();
+
+  saveState();
+
+  // Mostrar resultado
+  const color = score >= 70 ? 'var(--green)' : score >= 40 ? 'var(--amber)' : 'var(--red)';
+  document.getElementById('ibf-big').textContent = score;
+  document.getElementById('ibf-big').style.color = color;
+  document.getElementById('ibf-desc').textContent = ibfScoreDesc(score);
+
+  const circ = 2 * Math.PI * 28;
+  const offset = circ * (1 - score/100);
+  document.getElementById('ibf-ring').style.strokeDashoffset = offset;
+  document.getElementById('ibf-ring').style.stroke = color;
+  document.getElementById('ibf-num').textContent = score;
+
+  const tips = {
+    alto: ['Esta semana fue buena. Considerá mover el excedente a una cuenta remunerada.', 'Buen momento para revisar si podés aumentar tu ahorro mensual.'],
+    medio: ['Intentá identificar el gasto más fácil de reducir esta semana.', 'Revisá si hay suscripciones que no estás usando.'],
+    bajo: ['Esta semana fue difícil. Armá una lista de gastos esenciales vs. postergables.', 'Si tenés deudas, priorizá las de mayor tasa primero.'],
+  };
+  const bucket = score >= 70 ? 'alto' : score >= 40 ? 'medio' : 'bajo';
+  const tip = tips[bucket][Math.floor(Math.random() * tips[bucket].length)];
+
+  document.getElementById('ibf-questions').innerHTML = `
+    <div class="question-card" style="text-align:center;padding:32px 24px">
+      <div style="font-size:64px;font-family:'DM Serif Display',serif;color:${color};margin-bottom:8px">${score}</div>
+      <div style="font-size:16px;font-weight:500;color:var(--text);margin-bottom:8px">${ibfScoreDesc(score)}</div>
+      <div style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:24px">${tip}</div>
+      <button class="btn-primary" onclick="goTo('screen-dashboard')" style="max-width:240px;margin:0 auto">
+        Volver al inicio →
+      </button>
+    </div>
+  `;
+
+  // Update dashboard
+  buildDashboard();
+}
+
+// ═══════════════════════════════════════════════
+// HISTORIAL
+// ═══════════════════════════════════════════════
+function buildHistorial() {
+  const history = state.ibfHistory || [];
+
+  // Barras
+  const barsEl = document.getElementById('hist-bars');
+  if (history.length === 0) {
+    barsEl.innerHTML = '<div style="color:var(--text3);font-size:13px;text-align:center;width:100%">Completá tu primer IBF para ver el historial</div>';
+  } else {
+    const maxScore = Math.max(...history.map(h => h.score));
+    barsEl.innerHTML = history.map(h => {
+      const pct = (h.score / 100) * 90;
+      const color = h.score >= 70 ? 'var(--green)' : h.score >= 40 ? 'var(--amber)' : 'var(--red)';
+      const d = new Date(h.fecha);
+      const label = `${d.getDate()}/${d.getMonth()+1}`;
+      return `<div class="chart-bar-wrap">
+        <div class="chart-bar" style="height:${pct}px;background:${color};opacity:0.8"></div>
+        <div class="chart-bar-label">${label}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Lista
+  const listEl = document.getElementById('hist-list');
+  if (history.length === 0) {
+    listEl.innerHTML = '<div style="color:var(--text3);font-size:14px;padding:16px 0">Tu historial de bienestar financiero aparecerá acá.</div>';
+  } else {
+    listEl.innerHTML = [...history].reverse().map((h, i) => {
+      const color = h.score >= 70 ? 'var(--green)' : h.score >= 40 ? 'var(--amber)' : 'var(--red)';
+      const bg = h.score >= 70 ? 'var(--green-bg)' : h.score >= 40 ? 'var(--amber-bg)' : 'var(--red-bg)';
+      const mood = h.score >= 70 ? 'Semana tranquila' : h.score >= 40 ? 'Semana con algo de presión' : 'Semana difícil';
+      const d = new Date(h.fecha);
+      const label = `${d.getDate()} ${MESES[d.getMonth()]} ${d.getFullYear()}`;
+      const prev = history[history.length - 2 - i];
+      const trend = prev ? (h.score > prev.score ? '↑ Mejoraste' : h.score < prev.score ? '↓ Bajaste' : '→ Igual') : '';
+      const trendColor = prev ? (h.score > prev.score ? 'var(--green)' : h.score < prev.score ? 'var(--red)' : 'var(--text3)') : '';
+      return `<div class="hist-entry">
+        <div class="hist-score-dot" style="background:${bg};color:${color}">${h.score}</div>
+        <div class="hist-info">
+          <div class="hist-date">${label}</div>
+          <div class="hist-mood">${mood}</div>
+        </div>
+        ${trend ? `<div class="hist-trend" style="color:${trendColor}">${trend}</div>` : ''}
+      </div>`;
+    }).join('');
+  }
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+function init() {
+  poblarMeses();
+
+  if (state.onboardingDone) {
+    buildDashboard();
+    document.getElementById('screen-onboarding').classList.remove('active');
+    document.getElementById('screen-dashboard').classList.add('active');
+    currentScreen = 'screen-dashboard';
+    document.getElementById('bottom-nav').classList.add('visible');
+  }
+}
+
+init();
+</script>
+</body>
+</html>
