@@ -55,6 +55,13 @@ html,body{
   overflow:hidden;
   position:relative;
 }
+/* Screens container fills remaining space above nav */
+.screens-wrap{
+  position:relative;
+  flex:1;
+  overflow:hidden;
+  min-height:0;
+}
 
 /* ── Screens ── */
 .screen{
@@ -66,6 +73,7 @@ html,body{
   pointer-events:none;
   transition:opacity 0.3s ease, transform 0.3s ease;
   transform:translateX(30px);
+  overflow:hidden;
 }
 .screen.active{
   opacity:1;
@@ -76,6 +84,7 @@ html,body{
   opacity:0;
   transform:translateX(-30px);
 }
+
 
 /* ── Scroll area ── */
 .scroll{
@@ -250,13 +259,21 @@ select option{background:var(--bg3)}
 
 /* ── Bottom nav ── */
 #bottom-nav{
-  display:none;
+  display:flex;
   background:var(--bg2);
   border-top:1px solid var(--border);
   padding:12px 0 calc(12px + var(--safe-bottom));
   flex-shrink:0;
+  visibility:hidden;
+  height:0;
+  overflow:hidden;
+  transition:height 0.2s ease;
 }
-#bottom-nav.visible{display:flex}
+#bottom-nav.visible{
+  visibility:visible;
+  height:auto;
+  overflow:visible;
+}
 .nav-items{
   display:flex;
   width:100%;
@@ -638,6 +655,7 @@ select option{background:var(--bg3)}
 </head>
 <body>
 <div id="app">
+<div class="screens-wrap">
 
 <!-- ══════════════════════════════════════
      SCREEN 1 — ONBOARDING
@@ -915,6 +933,8 @@ select option{background:var(--bg3)}
 
   </div>
 </div>
+
+</div><!-- .screens-wrap -->
 
 <!-- ── Bottom nav ── -->
 <nav id="bottom-nav">
