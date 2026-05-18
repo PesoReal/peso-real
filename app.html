@@ -692,9 +692,20 @@ select option{background:var(--bg3)}
 
         <div class="field">
           <label>¿Desde qué mes querés medir tu poder adquisitivo?</label>
-          <select id="inp-mes-ref"></select>
+          <select id="inp-mes-ref" onchange="updateSueldoRefLabel()"></select>
           <div style="font-size:12px;color:var(--text3);margin-top:8px;line-height:1.5">
-            Vamos a comparar cuánto valía tu sueldo en ese mes vs. hoy, ajustando por la inflación del INDEC. Elegí el mes en que empezaste tu trabajo actual o el que más te interese comparar.
+            Elegí el mes en que empezaste tu trabajo actual o el que más te interese comparar.
+          </div>
+        </div>
+
+        <div class="field">
+          <label id="label-sueldo-ref">¿Cuánto ganabas en ese mes?</label>
+          <div class="input-wrap">
+            <span class="prefix">$</span>
+            <input type="text" id="inp-sueldo-ref" placeholder="0" inputmode="decimal" autocomplete="off">
+          </div>
+          <div style="font-size:12px;color:var(--text3);margin-top:8px;line-height:1.5">
+            Con esto calculamos exactamente cuánto perdiste o ganaste contra la inflación real.
           </div>
         </div>
 
@@ -1017,7 +1028,13 @@ function nextStep() {
       document.getElementById('inp-sueldo').focus();
       return;
     }
+    const sueldoRef = parseMonto(document.getElementById('inp-sueldo-ref').value);
+    if (!sueldoRef || sueldoRef <= 0) {
+      document.getElementById('inp-sueldo-ref').focus();
+      return;
+    }
     state.sueldo = sueldo;
+    state.sueldoRef = sueldoRef;
     state.mesRef = document.getElementById('inp-mes-ref').value;
     state.moneda = document.getElementById('inp-moneda').value;
   }
@@ -1093,27 +1110,22 @@ function buildDashboard() {
   document.getElementById('dash-date').innerHTML = `${now.getDate()} ${MESES[now.getMonth()]}<br>${now.getFullYear()}`;
 
   const sueldo = state.sueldo;
+  const sueldoRef = state.sueldoRef || sueldo;
   const mesRef = state.mesRef;
   const mesHoy = mesActual();
   const infl = ipcAcumulado(mesRef, mesHoy);
 
-  // Sueldo ajustado necesario para mantener poder adquisitivo
-  const sueldoNecesario = sueldo; // El usuario ya cargó su sueldo actual
-  // Simulamos que el sueldo "original" en el mes de referencia se puede estimar
-  // Si el usuario cargó el sueldo de HOY, el sueldo original sería:
-  const sueldoOriginal = sueldo / (1 + infl/100);
-  const sueldoAjustado = sueldoOriginal * (1 + infl/100); // = sueldo actual
-
-  // Para la demo, asumimos que el sueldo original era el 70% del actual en términos de aumento
-  // En la app real el usuario cargaría ambos sueldos
-  const aumentoSimulado = infl * 0.65; // Simulamos que el sueldo aumentó menos que la inflación
-  const varReal = aumentoSimulado - infl;
+  // Sueldo necesario hoy para mantener el poder adquisitivo de mesRef
+  const sueldoNecesario = sueldoRef * (1 + infl / 100);
+  // Variación real: cuánto subió el sueldo vs cuánto subió la inflación
+  const aumentoNominal = sueldoRef > 0 ? ((sueldo - sueldoRef) / sueldoRef) * 100 : 0;
+  const varReal = aumentoNominal - infl;
 
   document.getElementById('dash-pct').textContent = fPct(varReal);
   document.getElementById('dash-pct').className = `power-value ${varReal >= 0 ? 'gain' : 'loss'}`;
   document.getElementById('dash-power-sub').textContent = `vs. ${mesLabel(mesRef)} ajustado por IPC del INDEC`;
   document.getElementById('dash-infl').textContent = fPct(infl);
-  document.getElementById('dash-aumento').textContent = fPct(aumentoSimulado);
+  document.getElementById('dash-aumento').textContent = fPct(aumentoNominal);
 
   const barPct = Math.min(100, Math.abs(varReal) / Math.abs(infl) * 100);
   const barEl = document.getElementById('dash-bar');
@@ -1167,16 +1179,19 @@ function ibfScoreDesc(score) {
 // ═══════════════════════════════════════════════
 function buildSueldo() {
   const sueldo = state.sueldo;
+  const sueldoRef = state.sueldoRef || sueldo;
   const mesRef = state.mesRef;
   const mesHoy = mesActual();
-  const infl12 = ipcAcumulado(nMesesAtras(12), mesHoy);
+  const inflTotal = ipcAcumulado(mesRef, mesHoy);
+  const aumentoNominal = sueldoRef > 0 ? ((sueldo - sueldoRef) / sueldoRef) * 100 : 0;
+  const varReal = aumentoNominal - inflTotal;
 
   document.getElementById('sal-ars').textContent = fARS(sueldo);
   document.getElementById('sal-usd').textContent = `≈ ${fUSD(sueldo / TC_MEP)} al tipo MEP`;
-
-  const varReal = -infl12 * 0.35; // Simulado
   const badge = document.getElementById('sal-badge');
-  badge.textContent = `${fPct(varReal)} vs. hace 12 meses (real)`;
+  const [y, m] = mesRef.split('-');
+  const mesLabel2 = `${MESES[parseInt(m)-1]} ${y}`;
+  badge.textContent = `${fPct(varReal)} vs. ${mesLabel2} (real)`;
   badge.className = `salary-badge ${varReal >= 0 ? 'gain' : 'loss'}`;
 
   // Timeline: últimos 6 puntos
@@ -1409,6 +1424,17 @@ function buildHistorial() {
 
 
 // ═══════════════════════════════════════════════
+// HELPERS DE ONBOARDING
+// ═══════════════════════════════════════════════
+function updateSueldoRefLabel() {
+  const sel = document.getElementById('inp-mes-ref');
+  const label = document.getElementById('label-sueldo-ref');
+  if (!sel || !label) return;
+  const opt = sel.options[sel.selectedIndex];
+  if (opt) label.textContent = `¿Cuánto ganabas en ${opt.text}?`;
+}
+
+// ═══════════════════════════════════════════════
 // FORMATO DE INPUTS EN ARS
 // ═══════════════════════════════════════════════
 function parseMonto(str) {
@@ -1455,6 +1481,7 @@ function bindMontoInput(id) {
 function init() {
   poblarMeses();
   bindMontoInput('inp-sueldo');
+  bindMontoInput('inp-sueldo-ref');
   bindMontoInput('inp-presupuesto');
 
   if (state.onboardingDone) {
