@@ -192,7 +192,7 @@ html,body{
   color:var(--text3);
   pointer-events:none;
 }
-input[type=number],input[type=text],select{
+input[type=text],select{
   width:100%;
   background:var(--bg3);
   border:1px solid var(--border);
@@ -204,9 +204,7 @@ input[type=number],input[type=text],select{
   padding:16px 16px 16px 40px;
   outline:none;
   transition:border-color 0.2s,box-shadow 0.2s;
-  -moz-appearance:textfield;
-  appearance:textfield;
-}
+  }
 input[type=number]::-webkit-outer-spin-button,
 input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 input:focus,select:focus{
@@ -673,28 +671,30 @@ select option{background:var(--bg3)}
       <!-- Step 1 -->
       <div class="onb-step" id="step-1">
         <div class="onb-kicker">Tu sueldo</div>
-        <div class="onb-title">¿Cuánto ganás <em>hoy</em>?</div>
-        <div class="onb-sub">Usamos esto para calcular tu poder adquisitivo real y ajustarlo mes a mes con el IPC del INDEC.</div>
+        <div class="onb-title">¿Cuánto cobrás <em>hoy</em>?</div>
+        <div class="onb-sub">Ingresá tu sueldo neto actual — lo que te depositan en mano cada mes.</div>
 
         <div class="field">
-          <label>Sueldo neto mensual</label>
+          <label>Sueldo neto mensual actual</label>
           <div class="input-wrap">
             <span class="prefix">$</span>
-            <input type="number" id="inp-sueldo" placeholder="0" inputmode="numeric" min="0">
+            <input type="text" id="inp-sueldo" placeholder="0" inputmode="decimal" autocomplete="off">
           </div>
         </div>
 
-        <div class="row2">
-          <div class="field">
-            <label>Desde</label>
-            <select id="inp-mes-ref"></select>
-          </div>
-          <div class="field">
-            <label>Moneda</label>
-            <select id="inp-moneda">
-              <option value="ARS">ARS (pesos)</option>
-              <option value="USD">USD (dólares)</option>
-            </select>
+        <div class="field">
+          <label>Moneda</label>
+          <select id="inp-moneda">
+            <option value="ARS">Pesos argentinos (ARS)</option>
+            <option value="USD">Dólares (USD)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>¿Desde qué mes querés medir tu poder adquisitivo?</label>
+          <select id="inp-mes-ref"></select>
+          <div style="font-size:12px;color:var(--text3);margin-top:8px;line-height:1.5">
+            Vamos a comparar cuánto valía tu sueldo en ese mes vs. hoy, ajustando por la inflación del INDEC. Elegí el mes en que empezaste tu trabajo actual o el que más te interese comparar.
           </div>
         </div>
 
@@ -714,7 +714,7 @@ select option{background:var(--bg3)}
           <label>Gastos fijos mensuales</label>
           <div class="input-wrap">
             <span class="prefix">$</span>
-            <input type="number" id="inp-presupuesto" placeholder="0" inputmode="numeric" min="0">
+            <input type="text" id="inp-presupuesto" placeholder="0" inputmode="decimal" autocomplete="off">
           </div>
         </div>
 
@@ -1012,7 +1012,7 @@ function poblarMeses() {
 
 function nextStep() {
   if (currentStep === 1) {
-    const sueldo = parseFloat(document.getElementById('inp-sueldo').value);
+    const sueldo = parseMonto(document.getElementById('inp-sueldo').value);
     if (!sueldo || sueldo <= 0) {
       document.getElementById('inp-sueldo').focus();
       return;
@@ -1038,7 +1038,7 @@ function nextStep() {
 }
 
 function finishOnboarding() {
-  const presup = parseFloat(document.getElementById('inp-presupuesto').value);
+  const presup = parseMonto(document.getElementById('inp-presupuesto').value);
   if (!presup || presup <= 0) {
     document.getElementById('inp-presupuesto').focus();
     return;
@@ -1407,11 +1407,55 @@ function buildHistorial() {
   }
 }
 
+
+// ═══════════════════════════════════════════════
+// FORMATO DE INPUTS EN ARS
+// ═══════════════════════════════════════════════
+function parseMonto(str) {
+  // Elimina puntos de miles y reemplaza coma decimal por punto
+  return parseFloat(str.replace(/\./g, '').replace(',', '.')) || 0;
+}
+
+function formatInput(input) {
+  const raw = input.value;
+  // Solo dígitos, comas y puntos
+  const clean = raw.replace(/[^0-9,.]/g, '');
+  // Separar parte entera y decimal
+  const parts = clean.replace(/\./g, '').split(',');
+  const entero = parts[0] || '';
+  const decimal = parts[1] !== undefined ? parts[1].substring(0, 2) : null;
+  // Agregar separador de miles con punto
+  const enteroFmt = entero.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  // Resultado
+  const cursor = input.selectionStart;
+  const prevLen = input.value.length;
+  input.value = decimal !== null ? `${enteroFmt},${decimal}` : enteroFmt;
+  // Mantener cursor en posición correcta
+  const diff = input.value.length - prevLen;
+  input.setSelectionRange(cursor + diff, cursor + diff);
+}
+
+function bindMontoInput(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('input', () => formatInput(el));
+  el.addEventListener('keypress', (e) => {
+    const allowed = /[0-9,]/;
+    if (!allowed.test(e.key) && e.key !== 'Backspace' && e.key !== 'Delete' && e.key !== 'Tab') {
+      e.preventDefault();
+    }
+    // Solo una coma
+    if (e.key === ',' && el.value.includes(',')) e.preventDefault();
+  });
+}
+
 // ═══════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════
 function init() {
   poblarMeses();
+  bindMontoInput('inp-sueldo');
+  bindMontoInput('inp-presupuesto');
 
   if (state.onboardingDone) {
     buildDashboard();
