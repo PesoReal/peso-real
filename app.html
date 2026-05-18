@@ -719,13 +719,16 @@ select option{background:var(--bg3)}
       <div class="onb-step" id="step-2">
         <div class="onb-kicker">Tu presupuesto</div>
         <div class="onb-title">¿Cuánto gastás por mes?</div>
-        <div class="onb-sub">Tu presupuesto se va a ajustar solo con el IPC del INDEC cada mes. No tenés que tocarlo nunca más.</div>
+        <div class="onb-sub">Ingresá tu gasto mensual actual — lo que gastás en total entre alquiler, comida, servicios y todo lo demás.</div>
 
         <div class="field">
-          <label>Gastos fijos mensuales</label>
+          <label>Gasto mensual total (aproximado)</label>
           <div class="input-wrap">
             <span class="prefix">$</span>
             <input type="text" id="inp-presupuesto" placeholder="0" inputmode="decimal" autocomplete="off">
+          </div>
+          <div style="font-size:12px;color:var(--text3);margin-top:8px;line-height:1.5">
+            Este número es tu punto de partida. Peso Real lo va a ajustar automáticamente cada mes con el IPC del INDEC — así siempre sabés cuánto deberías estar gastando para mantener el mismo nivel de vida. Más adelante también vas a poder compararlo contra tus gastos reales.
           </div>
         </div>
 
@@ -797,7 +800,7 @@ select option{background:var(--bg3)}
     <div class="mini-card" style="margin-bottom:16px;display:block">
       <div class="mini-card-label">Presupuesto ajustado este mes</div>
       <div class="mini-card-value" id="dash-presup">—</div>
-      <div class="mini-card-sub">actualizado con IPC del INDEC</div>
+      <div class="mini-card-sub">tu gasto de referencia actualizado por inflación</div>
     </div>
 
     <!-- IBF card -->
