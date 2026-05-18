@@ -1120,9 +1120,9 @@ function buildDashboard() {
 
   // Sueldo necesario hoy para mantener el poder adquisitivo de mesRef
   const sueldoNecesario = sueldoRef * (1 + infl / 100);
-  // Variación real: cuánto subió el sueldo vs cuánto subió la inflación
+  // Variación real: si el sueldo actual supera o no al sueldo ajustado por inflación
   const aumentoNominal = sueldoRef > 0 ? ((sueldo - sueldoRef) / sueldoRef) * 100 : 0;
-  const varReal = aumentoNominal - infl;
+  const varReal = sueldoNecesario > 0 ? ((sueldo / sueldoNecesario) - 1) * 100 : 0;
 
   document.getElementById('dash-pct').textContent = fPct(varReal);
   document.getElementById('dash-pct').className = `power-value ${varReal >= 0 ? 'gain' : 'loss'}`;
@@ -1186,8 +1186,9 @@ function buildSueldo() {
   const mesRef = state.mesRef;
   const mesHoy = mesActual();
   const inflTotal = ipcAcumulado(mesRef, mesHoy);
+  const sueldoNecesario = sueldoRef * (1 + inflTotal / 100);
   const aumentoNominal = sueldoRef > 0 ? ((sueldo - sueldoRef) / sueldoRef) * 100 : 0;
-  const varReal = aumentoNominal - inflTotal;
+  const varReal = sueldoNecesario > 0 ? ((sueldo / sueldoNecesario) - 1) * 100 : 0;
 
   document.getElementById('sal-ars').textContent = fARS(sueldo);
   document.getElementById('sal-usd').textContent = `≈ ${fUSD(sueldo / TC_MEP)} al tipo MEP`;
