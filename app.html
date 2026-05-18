@@ -758,7 +758,10 @@ select option{background:var(--bg3)}
       <div class="dash-greeting">Hola 👋</div>
       <div class="dash-logo">Peso <span>Real</span></div>
     </div>
-    <div class="dash-date" id="dash-date"></div>
+    <div style="text-align:right">
+      <div class="dash-date" id="dash-date"></div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;cursor:pointer" onclick="resetApp()">Reiniciar</div>
+    </div>
   </div>
   <div class="scroll dash-body">
 
@@ -1477,6 +1480,16 @@ function bindMontoInput(id) {
     // Solo una coma
     if (e.key === ',' && el.value.includes(',')) e.preventDefault();
   });
+}
+
+// ═══════════════════════════════════════════════
+// RESET
+// ═══════════════════════════════════════════════
+function resetApp() {
+  if (confirm('¿Reiniciar la app y cargar tus datos de nuevo?')) {
+    localStorage.removeItem('pr_state');
+    location.reload();
+  }
 }
 
 // ═══════════════════════════════════════════════
