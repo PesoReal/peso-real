@@ -989,7 +989,10 @@ function ipcAcumulado(desde, hasta) {
 
 function mesActual() {
   const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  const keys = Object.keys(IPC).sort();
+  // Si el mes actual no tiene dato IPC, usamos el último disponible
+  return keys.includes(key) ? key : keys[keys.length - 1];
 }
 
 function mesLabel(key) {
