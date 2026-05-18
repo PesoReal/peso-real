@@ -943,8 +943,9 @@ select option{background:var(--bg3)}
 <script>
 // ═══════════════════════════════════════════════
 // DATOS IPC INDEC
+// Base hardcodeada — se actualiza automáticamente con la API
 // ═══════════════════════════════════════════════
-const IPC = {
+let IPC = {
   "2023-01":6.0,"2023-02":6.6,"2023-03":7.7,"2023-04":8.4,
   "2023-05":7.8,"2023-06":6.0,"2023-07":6.3,"2023-08":12.4,
   "2023-09":12.7,"2023-10":8.3,"2023-11":12.8,"2023-12":25.5,
@@ -956,6 +957,56 @@ const IPC = {
   "2025-09":3.5,"2025-10":2.9,"2025-11":2.5,"2025-12":2.8,
   "2026-01":2.3,"2026-02":2.4,"2026-03":3.4,"2026-04":3.1,
 };
+
+// ═══════════════════════════════════════════════
+// ACTUALIZACIÓN AUTOMÁTICA DEL IPC
+// API pública de datos.gob.ar (INDEC oficial)
+// ═══════════════════════════════════════════════
+async function actualizarIPC() {
+  const CACHE_KEY = 'pr_ipc_cache';
+  const CACHE_EXPIRY_KEY = 'pr_ipc_expiry';
+  const UN_DIA = 24 * 60 * 60 * 1000;
+
+  // Usar caché si es del día de hoy
+  const expiry = localStorage.getItem(CACHE_EXPIRY_KEY);
+  if (expiry && Date.now() < parseInt(expiry)) {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        IPC = { ...IPC, ...parsed };
+        return;
+      } catch(e) {}
+    }
+  }
+
+  try {
+    // Serie 148.3_INIVELGENERAL_DICI_M_26 = IPC nivel general mensual INDEC
+    const url = 'https://apis.datos.gob.ar/series/api/series/?ids=148.3_INIVELGENERAL_DICI_M_26&limit=60&sort=asc&format=json&representation_mode=percent_change';
+    const res = await fetch(url);
+    if (!res.ok) return;
+    const data = await res.json();
+
+    if (!data.data || !Array.isArray(data.data)) return;
+
+    const nuevos = {};
+    data.data.forEach(([fecha, valor]) => {
+      if (valor === null) return;
+      // fecha viene como "2024-01-01", tomamos YYYY-MM
+      const key = fecha.substring(0, 7);
+      nuevos[key] = parseFloat((valor * 100).toFixed(1));
+    });
+
+    if (Object.keys(nuevos).length > 0) {
+      IPC = { ...IPC, ...nuevos };
+      localStorage.setItem(CACHE_KEY, JSON.stringify(nuevos));
+      localStorage.setItem(CACHE_EXPIRY_KEY, (Date.now() + UN_DIA).toString());
+    }
+  } catch(e) {
+    // Si falla la API, seguimos con los datos hardcodeados — no pasa nada
+    console.log('IPC API no disponible, usando datos locales');
+  }
+}
 
 const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const TC_MEP = 1310; // Tipo de cambio MEP aproximado — se actualizará con API real
@@ -1498,7 +1549,10 @@ function resetApp() {
 // ═══════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════
-function init() {
+async function init() {
+  // Actualizar IPC desde la API del INDEC antes de arrancar
+  await actualizarIPC();
+
   poblarMeses();
   bindMontoInput('inp-sueldo');
   bindMontoInput('inp-sueldo-ref');
