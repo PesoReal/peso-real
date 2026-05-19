@@ -818,7 +818,10 @@ select option{background:var(--bg3)}
     <div class="mini-card" style="margin-bottom:16px;display:block">
       <div class="mini-card-label">Presupuesto ajustado este mes</div>
       <div class="mini-card-value" id="dash-presup">—</div>
-      <div class="mini-card-sub">tu gasto de referencia actualizado por inflación</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+        <div class="mini-card-sub">tu gasto de referencia actualizado por inflación</div>
+        <div id="dash-presup-delta" style="font-size:12px;font-weight:500"></div>
+      </div>
     </div>
 
     <!-- IBF card -->
@@ -1251,10 +1254,28 @@ function buildDashboard() {
   document.getElementById('dash-tc-mep').textContent = '$ ' + Math.round(TC_MEP).toLocaleString('es-AR');
 
   // Presupuesto ajustado
-  const mesesDesdeOnb = Object.keys(IPC).sort().indexOf(mesHoy) - Object.keys(IPC).sort().indexOf(state.mesOnboarding || mesHoy);
-  const inflMes = mesesDesdeOnb > 0 ? ipcAcumulado(state.mesOnboarding, mesHoy) : 0;
-  const presupAjustado = state.presupuesto * (1 + inflMes/100);
+  const mesOnboarding = state.mesOnboarding || mesHoy;
+  const keys = Object.keys(IPC).sort();
+  const idxOnb = keys.indexOf(mesOnboarding);
+  const idxHoy = keys.indexOf(mesHoy);
+  const inflTotal = idxOnb >= 0 && idxHoy > idxOnb ? ipcAcumulado(mesOnboarding, mesHoy) : 0;
+  const presupAjustado = state.presupuesto * (1 + inflTotal / 100);
   document.getElementById('dash-presup').textContent = fARS(presupAjustado);
+
+  // Delta del último mes — cuánto subió respecto al mes anterior
+  const mesAnterior = keys[Math.max(0, idxHoy - 1)];
+  const inflMesAnterior = mesAnterior && idxOnb >= 0 && keys.indexOf(mesAnterior) > idxOnb
+    ? ipcAcumulado(mesOnboarding, mesAnterior) : 0;
+  const presupMesAnterior = state.presupuesto * (1 + inflMesAnterior / 100);
+  const deltaPresup = presupAjustado - presupMesAnterior;
+  const deltaEl = document.getElementById('dash-presup-delta');
+  if (deltaPresup > 0 && inflTotal > 0) {
+    const ipcMes = IPC[mesHoy] || 0;
+    deltaEl.textContent = `+${fARS(deltaPresup)} este mes (IPC ${ipcMes}%)`;
+    deltaEl.style.color = 'var(--red)';
+  } else {
+    deltaEl.textContent = '';
+  }
 
   // IBF
   const ibfScore = state.ibfScore || null;
