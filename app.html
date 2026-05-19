@@ -1291,14 +1291,15 @@ function buildDashboard() {
     document.getElementById('ibf-action').textContent = 'Ver detalle →';
   }
 
-  // Tip de la semana
+  // Acción semanal — usa la generada por IA si existe, sino tip genérico
   const tips = [
     'Revisá si tu sueldo le ganó a la inflación este mes. Si no, es momento de negociar.',
     'Calculá tu canasta básica personal: ¿subió más o menos que el IPC oficial?',
     'Armá un fondo de emergencia de al menos 3 sueldos en una cuenta remunerada.',
     'Comparé precios de la última compra con la anterior: ¿qué producto subió más?',
   ];
-  document.getElementById('dash-tip').textContent = tips[Math.floor(Math.random() * tips.length)];
+  const accionGuardada = state.accionSemanal;
+  document.getElementById('dash-tip').textContent = accionGuardada || tips[Math.floor(Math.random() * tips.length)];
 }
 
 function ibfScoreDesc(score) {
@@ -1457,7 +1458,7 @@ function selectAnswer(qIdx, optIdx) {
   }, 400);
 }
 
-function calcIBF() {
+async function calcIBF() {
   let total = 0;
   PREGUNTAS.forEach((q, i) => {
     if (ibfAnswers[i] !== null) total += q.pesos[ibfAnswers[i]];
@@ -1472,7 +1473,7 @@ function calcIBF() {
 
   saveState();
 
-  // Mostrar resultado
+  // Mostrar resultado inmediato mientras se genera la acción
   const color = score >= 70 ? 'var(--green)' : score >= 40 ? 'var(--amber)' : 'var(--red)';
   document.getElementById('ibf-big').textContent = score;
   document.getElementById('ibf-big').style.color = color;
@@ -1484,27 +1485,107 @@ function calcIBF() {
   document.getElementById('ibf-ring').style.stroke = color;
   document.getElementById('ibf-num').textContent = score;
 
-  const tips = {
-    alto: ['Esta semana fue buena. Considerá mover el excedente a una cuenta remunerada.', 'Buen momento para revisar si podés aumentar tu ahorro mensual.'],
-    medio: ['Intentá identificar el gasto más fácil de reducir esta semana.', 'Revisá si hay suscripciones que no estás usando.'],
-    bajo: ['Esta semana fue difícil. Armá una lista de gastos esenciales vs. postergables.', 'Si tenés deudas, priorizá las de mayor tasa primero.'],
-  };
-  const bucket = score >= 70 ? 'alto' : score >= 40 ? 'medio' : 'bajo';
-  const tip = tips[bucket][Math.floor(Math.random() * tips[bucket].length)];
-
+  // Mostrar pantalla de resultado con loader mientras genera la acción
   document.getElementById('ibf-questions').innerHTML = `
-    <div class="question-card" style="text-align:center;padding:32px 24px">
+    <div class="question-card" style="text-align:center;padding:32px 24px" id="ibf-result-card">
       <div style="font-size:64px;font-family:'DM Serif Display',serif;color:${color};margin-bottom:8px">${score}</div>
       <div style="font-size:16px;font-weight:500;color:var(--text);margin-bottom:8px">${ibfScoreDesc(score)}</div>
-      <div style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:24px">${tip}</div>
+      <div id="ibf-accion-wrap" style="margin-bottom:24px">
+        <div style="font-size:13px;color:var(--text3);margin-bottom:8px">Generando tu acción personalizada...</div>
+        <div style="display:flex;justify-content:center;gap:6px">
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 1s infinite"></div>
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 1s infinite 0.2s"></div>
+          <div style="width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 1s infinite 0.4s"></div>
+        </div>
+      </div>
       <button class="btn-primary" onclick="goTo('screen-dashboard')" style="max-width:240px;margin:0 auto">
         Volver al inicio →
       </button>
     </div>
   `;
 
-  // Update dashboard
+  // Agregar animación pulse si no existe
+  if (!document.getElementById('pulse-style')) {
+    const s = document.createElement('style');
+    s.id = 'pulse-style';
+    s.textContent = '@keyframes pulse{0%,100%{opacity:0.3;transform:scale(0.8)}50%{opacity:1;transform:scale(1)}}';
+    document.head.appendChild(s);
+  }
+
+  // Generar acción con IA
+  const accion = await generarAccionIBF(score, ibfAnswers);
+
+  // Actualizar el wrap con la acción generada
+  const wrap = document.getElementById('ibf-accion-wrap');
+  if (wrap) {
+    wrap.innerHTML = `
+      <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;text-align:left">
+        <div style="font-size:11px;font-weight:500;color:var(--accent);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">💡 Tu acción de esta semana</div>
+        <div style="font-size:14px;color:var(--text);line-height:1.6">${accion}</div>
+      </div>
+    `;
+  }
+
+  // Guardar acción en state para el dashboard
+  state.accionSemanal = accion;
+  saveState();
   buildDashboard();
+}
+
+async function generarAccionIBF(score, respuestas) {
+  // Fallback por si falla la API
+  const fallbacks = {
+    alto: 'Esta semana fue buena. Considerá mover el excedente a una cuenta remunerada o fondo money market para que no pierda contra la inflación.',
+    medio: 'Identificá el gasto más fácil de reducir esta semana. Con liberar aunque sea el 5% de tu presupuesto ya generás margen de maniobra.',
+    bajo: 'Esta semana fue difícil. Armá una lista de gastos esenciales vs. postergables. Priorizá cubrir los básicos y dejá el resto para cuando mejore el flujo.',
+  };
+  const bucket = score >= 70 ? 'alto' : score >= 40 ? 'medio' : 'bajo';
+
+  try {
+    // Construir contexto con las respuestas del usuario
+    const resumenRespuestas = PREGUNTAS.map((q, i) => {
+      const resp = respuestas[i] !== null ? q.opciones[respuestas[i]] : 'Sin respuesta';
+      return `- ${q.texto}: "${resp}"`;
+    }).join('
+');
+
+    const prompt = `Sos un asesor de finanzas personales para Argentina, empático y directo. 
+El usuario acaba de completar su Índice de Bienestar Financiero (IBF) y obtuvo un score de ${score}/100.
+
+Sus respuestas fueron:
+${resumenRespuestas}
+
+Contexto: Argentina tiene inflación mensual del 3-4%. El usuario usa la app Peso Real para trackear su poder adquisitivo real.
+
+Generá UNA sola acción concreta y específica para esta semana. 
+- Máximo 2 oraciones
+- Sin tecnicismos
+- Sin mencionar el score ni el IBF
+- Que sea algo que pueda hacer HOY o esta semana
+- Adaptada exactamente a sus respuestas, no genérica
+- En español rioplatense (vos, che, etc.)
+- Sin emojis
+
+Solo la acción, sin introducción ni cierre.`;
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) return fallbacks[bucket];
+    const data = await res.json();
+    const texto = data.content?.find(b => b.type === 'text')?.text?.trim();
+    return texto || fallbacks[bucket];
+
+  } catch(e) {
+    return fallbacks[bucket];
+  }
 }
 
 // ═══════════════════════════════════════════════
