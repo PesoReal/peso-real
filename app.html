@@ -1704,10 +1704,8 @@ function resetApp() {
 // ═══════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════
-async function init() {
-  // Actualizar IPC y TC MEP antes de arrancar
-  await Promise.all([actualizarIPC(), actualizarTCMEP()]);
-
+function init() {
+  // Arrancar la app inmediatamente sin esperar las APIs
   poblarMeses();
   bindMontoInput('inp-sueldo');
   bindMontoInput('inp-sueldo-ref');
@@ -1720,6 +1718,20 @@ async function init() {
     currentScreen = 'screen-dashboard';
     document.getElementById('bottom-nav').classList.add('visible');
   }
+
+  // Actualizar IPC y TC MEP en segundo plano — no bloquean la app
+  Promise.all([actualizarIPC(), actualizarTCMEP()]).then(() => {
+    // Cuando llegan los datos, refrescar el dashboard si está visible
+    if (state.onboardingDone && currentScreen === 'screen-dashboard') {
+      buildDashboard();
+    }
+    // Repoblar meses con IPC actualizado
+    const sel = document.getElementById('inp-mes-ref');
+    if (sel && sel.options.length < Object.keys(IPC).length) {
+      sel.innerHTML = '';
+      poblarMeses();
+    }
+  }).catch(() => {});
 }
 
 init();
