@@ -603,6 +603,7 @@ select option{background:var(--bg3)}
 
 /* ── Historial ── */
 #screen-historial{background:var(--bg)}
+#screen-compras{background:var(--bg)}
 .hist-body{padding:0 20px 24px}
 
 .hist-chart{
@@ -912,7 +913,58 @@ select option{background:var(--bg3)}
 </div>
 
 <!-- ══════════════════════════════════════
-     SCREEN 5 - HISTORIAL
+     SCREEN 5 - COMPRAS
+══════════════════════════════════════ -->
+<div class="screen" id="screen-compras">
+  <div class="screen-header">
+    <button class="back-btn" onclick="goTo('screen-dashboard')">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </button>
+    <div class="screen-title">Memoria de compras</div>
+    <button onclick="abrirFormCompra()" style="background:var(--accent);color:#0a0b0d;border:none;border-radius:20px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:600;padding:8px 16px;cursor:pointer;margin-left:auto">+ Agregar</button>
+  </div>
+  <div class="scroll" id="compras-body" style="padding:0 20px 24px"></div>
+</div>
+
+<!-- Modal agregar compra -->
+<div id="modal-compra" style="display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);align-items:flex-end">
+  <div style="background:var(--bg2);border-radius:20px 20px 0 0;padding:28px 24px calc(28px + var(--safe-bottom));width:100%;border-top:1px solid var(--border)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+      <div style="font-family:DM Serif Display,serif;font-size:20px">Agregar producto</div>
+      <button onclick="cerrarFormCompra()" style="background:var(--bg3);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;color:var(--text2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">&times;</button>
+    </div>
+    <div class="field">
+      <label>Nombre del producto</label>
+      <input type="text" id="inp-prod-nombre" placeholder="Ej: Aceite girasol 1.5L" autocomplete="off" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:DM Sans,sans-serif;font-size:16px;padding:14px 16px;outline:none;margin-bottom:16px">
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Precio actual</label>
+        <div class="input-wrap">
+          <span class="prefix">$</span>
+          <input type="text" id="inp-prod-precio" placeholder="0" inputmode="decimal" autocomplete="off">
+        </div>
+      </div>
+      <div class="field">
+        <label>Categoria</label>
+        <select id="inp-prod-cat">
+          <option value="alimentos">Alimentos</option>
+          <option value="bebidas">Bebidas</option>
+          <option value="limpieza">Limpieza</option>
+          <option value="higiene">Higiene</option>
+          <option value="lacteos">Lacteos</option>
+          <option value="carnes">Carnes</option>
+          <option value="verduras">Verduras</option>
+          <option value="otros">Otros</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="guardarCompra()">Guardar producto</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 6 - HISTORIAL
 ══════════════════════════════════════ -->
 <div class="screen" id="screen-historial">
   <div class="screen-header">
@@ -949,6 +1001,10 @@ select option{background:var(--bg3)}
     <button class="nav-item" id="nav-ibf" onclick="goTo('screen-ibf')">
       <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
       <span class="nav-label">Bienestar</span>
+    </button>
+    <button class="nav-item" id="nav-compras" onclick="goTo('screen-compras')">
+      <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      <span class="nav-label">Compras</span>
     </button>
     <button class="nav-item" id="nav-historial" onclick="goTo('screen-historial')">
       <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
@@ -1201,12 +1257,14 @@ function goTo(screenId) {
     'screen-dashboard': 'nav-dashboard',
     'screen-sueldo': 'nav-sueldo',
     'screen-ibf': 'nav-ibf',
+    'screen-compras': 'nav-compras',
     'screen-historial': 'nav-historial',
   };
   if (navMap[screenId]) document.getElementById(navMap[screenId]).classList.add('active');
 
   if (screenId === 'screen-sueldo') buildSueldo();
   if (screenId === 'screen-ibf') buildIBF();
+  if (screenId === 'screen-compras') buildCompras();
   if (screenId === 'screen-historial') buildHistorial();
 }
 
@@ -1671,6 +1729,190 @@ function bindMontoInput(id) {
     // Solo una coma
     if (e.key === ',' && el.value.includes(',')) e.preventDefault();
   });
+}
+
+
+// ═══════════════════════════════════════════════
+// PILAR 3 - MEMORIA DE COMPRAS
+// ═══════════════════════════════════════════════
+
+// IPC por categoria (variacion mensual aproximada por rubro)
+const IPC_RUBROS = {
+  alimentos: 1.15,  // alimentos y bebidas suelen subir mas que el general
+  bebidas: 1.1,
+  lacteos: 1.15,
+  carnes: 1.2,
+  verduras: 1.3,
+  limpieza: 1.05,
+  higiene: 1.05,
+  otros: 1.0,
+};
+
+function getCompras() {
+  return JSON.parse(localStorage.getItem('pr_compras') || '{}');
+}
+
+function saveCompras(compras) {
+  localStorage.setItem('pr_compras', JSON.stringify(compras));
+}
+
+function abrirFormCompra() {
+  document.getElementById('modal-compra').style.display = 'flex';
+  document.getElementById('inp-prod-nombre').focus();
+  bindMontoInput('inp-prod-precio');
+}
+
+function cerrarFormCompra() {
+  document.getElementById('modal-compra').style.display = 'none';
+  document.getElementById('inp-prod-nombre').value = '';
+  document.getElementById('inp-prod-precio').value = '';
+}
+
+function guardarCompra() {
+  const nombre = document.getElementById('inp-prod-nombre').value.trim();
+  const precio = parseMonto(document.getElementById('inp-prod-precio').value);
+  const cat = document.getElementById('inp-prod-cat').value;
+
+  if (!nombre) { document.getElementById('inp-prod-nombre').focus(); return; }
+  if (!precio || precio <= 0) { document.getElementById('inp-prod-precio').focus(); return; }
+
+  const compras = getCompras();
+  const key = nombre.toLowerCase().replace(/\s+/g, '_');
+
+  if (!compras[key]) {
+    compras[key] = { nombre, categoria: cat, historial: [] };
+  }
+
+  compras[key].historial.push({
+    precio,
+    fecha: new Date().toISOString(),
+    mes: mesActual(),
+  });
+
+  // Mantener maximo 24 registros por producto
+  if (compras[key].historial.length > 24) {
+    compras[key].historial = compras[key].historial.slice(-24);
+  }
+
+  saveCompras(compras);
+  cerrarFormCompra();
+  buildCompras();
+}
+
+function buildCompras() {
+  const compras = getCompras();
+  const body = document.getElementById('compras-body');
+  const productos = Object.values(compras);
+
+  if (productos.length === 0) {
+    body.innerHTML = `
+      <div style="text-align:center;padding:48px 24px">
+        <div style="font-size:48px;margin-bottom:16px">🛒</div>
+        <div style="font-family:DM Serif Display,serif;font-size:22px;margin-bottom:8px">Tu lista esta vacia</div>
+        <div style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:24px">Carga los productos que compras regularmente y la app va a recordar como evolucionaron sus precios.</div>
+      </div>`;
+    return;
+  }
+
+  // Separar productos con alertas de los normales
+  const conAlerta = [];
+  const normales = [];
+
+  productos.forEach(p => {
+    const h = p.historial;
+    if (h.length < 2) { normales.push(p); return; }
+    const ultimo = h[h.length - 1].precio;
+    const anterior = h[h.length - 2].precio;
+    const varProd = ((ultimo - anterior) / anterior) * 100;
+    const ipcRubro = IPC[mesActual()] * (IPC_RUBROS[p.categoria] || 1.0);
+    if (varProd > ipcRubro * 1.5) {
+      conAlerta.push({ ...p, varProd, ipcRubro, ultimo, anterior });
+    } else {
+      normales.push({ ...p, varProd, ultimo, anterior });
+    }
+  });
+
+  let html = '';
+
+  // Alertas primero
+  if (conAlerta.length > 0) {
+    html += `<div style="font-size:11px;font-weight:500;color:var(--red);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;margin-top:4px">⚠ Subieron mas que la inflacion</div>`;
+    conAlerta.forEach(p => {
+      html += renderProducto(p, true);
+    });
+  }
+
+  // Productos normales
+  if (normales.length > 0) {
+    if (conAlerta.length > 0) {
+      html += `<div style="font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;margin-top:16px">Todos los productos</div>`;
+    }
+    normales.forEach(p => {
+      html += renderProducto(p, false);
+    });
+  }
+
+  body.innerHTML = html;
+}
+
+function renderProducto(p, alerta) {
+  const h = p.historial;
+  const ultimo = h[h.length - 1];
+  const anterior = h.length >= 2 ? h[h.length - 2] : null;
+  const varPct = anterior ? ((ultimo.precio - anterior.precio) / anterior.precio) * 100 : null;
+
+  const minPrecio = Math.min(...h.map(x => x.precio));
+  const esMinimo = ultimo.precio === minPrecio && h.length > 1;
+
+  const borderColor = alerta ? 'rgba(255,90,90,0.3)' : esMinimo ? 'rgba(74,222,128,0.2)' : 'var(--border)';
+  const bgColor = alerta ? 'var(--red-bg)' : esMinimo ? 'var(--green-bg)' : 'var(--bg2)';
+
+  let varHtml = '';
+  if (varPct !== null) {
+    const color = varPct > 0 ? 'var(--red)' : 'var(--green)';
+    const sign = varPct > 0 ? '+' : '';
+    varHtml = `<span style="font-size:12px;font-weight:500;color:${color}">${sign}${varPct.toFixed(1)}%</span>`;
+  }
+
+  let badgeHtml = '';
+  if (esMinimo && h.length > 1) {
+    badgeHtml = `<div style="font-size:11px;color:var(--green);font-weight:500;margin-top:4px">Precio minimo historico - buen momento para stockearte</div>`;
+  }
+  if (alerta) {
+    badgeHtml = `<div style="font-size:11px;color:var(--red);font-weight:500;margin-top:4px">Subio mas que la inflacion del rubro</div>`;
+  }
+
+  // Mini sparkline
+  let sparkHtml = '';
+  if (h.length >= 2) {
+    const max = Math.max(...h.map(x => x.precio));
+    const min2 = Math.min(...h.map(x => x.precio));
+    const range = max - min2 || 1;
+    const pts = h.slice(-6).map((x, i, arr) => {
+      const xPos = (i / (arr.length - 1)) * 60;
+      const yPos = 16 - ((x.precio - min2) / range) * 14;
+      return `${xPos},${yPos}`;
+    }).join(' ');
+    sparkHtml = `<svg width="60" height="18" style="flex-shrink:0"><polyline points="${pts}" fill="none" stroke="${alerta ? 'var(--red)' : 'var(--accent)'}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  }
+
+  const catLabel = { alimentos:'Alimentos', bebidas:'Bebidas', limpieza:'Limpieza', higiene:'Higiene', lacteos:'Lacteos', carnes:'Carnes', verduras:'Verduras', otros:'Otros' };
+
+  return `
+    <div style="background:${bgColor};border:1px solid ${borderColor};border-radius:var(--radius-sm);padding:16px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.nombre}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">${catLabel[p.categoria] || p.categoria} - ${h.length} registro${h.length > 1 ? 's' : ''}</div>
+          ${badgeHtml}
+        </div>
+        ${sparkHtml}
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-family:DM Serif Display,serif;font-size:20px">${fARS(ultimo.precio)}</div>
+          ${varHtml}
+        </div>
+      </div>
+    </div>`;
 }
 
 // ═══════════════════════════════════════════════
