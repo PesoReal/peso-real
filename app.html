@@ -604,6 +604,7 @@ select option{background:var(--bg3)}
 /* ── Historial ── */
 #screen-historial{background:var(--bg)}
 #screen-compras{background:var(--bg)}
+#screen-producto{background:var(--bg)}
 .hist-body{padding:0 20px 24px}
 
 .hist-chart{
@@ -966,7 +967,20 @@ select option{background:var(--bg3)}
 </div>
 
 <!-- ══════════════════════════════════════
-     SCREEN 6 - HISTORIAL
+     SCREEN 6 - DETALLE PRODUCTO
+══════════════════════════════════════ -->
+<div class="screen" id="screen-producto">
+  <div class="screen-header">
+    <button class="back-btn" onclick="goTo('screen-compras')">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </button>
+    <div class="screen-title" id="prod-detail-title">Producto</div>
+  </div>
+  <div class="scroll" id="prod-detail-body" style="padding:0 20px 24px"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 7 - HISTORIAL
 ══════════════════════════════════════ -->
 <div class="screen" id="screen-historial">
   <div class="screen-header">
@@ -1260,6 +1274,7 @@ function goTo(screenId) {
     'screen-sueldo': 'nav-sueldo',
     'screen-ibf': 'nav-ibf',
     'screen-compras': 'nav-compras',
+      'screen-producto': 'nav-compras',
     'screen-historial': 'nav-historial',
   };
   if (navMap[screenId]) document.getElementById(navMap[screenId]).classList.add('active');
@@ -1267,6 +1282,7 @@ function goTo(screenId) {
   if (screenId === 'screen-sueldo') buildSueldo();
   if (screenId === 'screen-ibf') buildIBF();
   if (screenId === 'screen-compras') buildCompras();
+  if (screenId === 'screen-producto') {}
   if (screenId === 'screen-historial') buildHistorial();
 }
 
@@ -2295,8 +2311,9 @@ function renderProducto(p, alerta) {
 
   const catLabel = { alimentos:'Alimentos', bebidas:'Bebidas', limpieza:'Limpieza', higiene:'Higiene', lacteos:'Lacteos', carnes:'Carnes', verduras:'Verduras', otros:'Otros' };
 
+  const prodKey = p.nombre.toLowerCase().replace(/\s+/g, '_');
   return `
-    <div style="background:${bgColor};border:1px solid ${borderColor};border-radius:var(--radius-sm);padding:16px;margin-bottom:10px">
+    <div onclick="verProducto('${prodKey.replace(/'/g, "\'")}')" style="background:${bgColor};border:1px solid ${borderColor};border-radius:var(--radius-sm);padding:16px;margin-bottom:10px;cursor:pointer">
       <div style="display:flex;align-items:center;gap:12px">
         <div style="flex:1;min-width:0">
           <div style="font-size:14px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${p.nombre}</div>
@@ -2310,6 +2327,136 @@ function renderProducto(p, alerta) {
         </div>
       </div>
     </div>`;
+}
+
+
+function verProducto(key) {
+  const compras = getCompras();
+  const p = compras[key];
+  if (!p) return;
+
+  goTo('screen-producto');
+  document.getElementById('prod-detail-title').textContent = p.nombre;
+
+  const h = p.historial;
+  const ultimo = h[h.length - 1].precio;
+  const primero = h[0].precio;
+  const minPrecio = Math.min(...h.map(x => x.precio));
+  const maxPrecio = Math.max(...h.map(x => x.precio));
+  const varTotal = ((ultimo - primero) / primero) * 100;
+
+  // Calcular inflacion acumulada desde primer registro
+  const mesInicio = h[0].mes;
+  const mesHoy = mesActual();
+  const inflRubro = ipcAcumulado(mesInicio, mesHoy) * (IPC_RUBROS[p.categoria] || 1.0);
+  const ganoOPerdio = varTotal - inflRubro;
+
+  const colorVar = varTotal > inflRubro ? 'var(--red)' : 'var(--green)';
+  const colorGano = ganoOPerdio <= 0 ? 'var(--green)' : 'var(--red)';
+  const textoGano = ganoOPerdio <= 0
+    ? 'Este producto subio menos que la inflacion del rubro'
+    : 'Este producto subio mas que la inflacion del rubro';
+
+  // SVG sparkline grande
+  let sparkSVG = '';
+  if (h.length >= 2) {
+    const W = 280, H = 80;
+    const maxP = Math.max(...h.map(x => x.precio));
+    const minP = Math.min(...h.map(x => x.precio));
+    const range = maxP - minP || 1;
+    const pts = h.map((x, i) => {
+      const xPos = (i / (h.length - 1)) * (W - 20) + 10;
+      const yPos = H - 16 - ((x.precio - minP) / range) * (H - 32);
+      return `${xPos},${yPos}`;
+    }).join(' ');
+    const lastX = (((h.length-1) / (h.length - 1)) * (W - 20) + 10);
+    const lastY = H - 16 - ((h[h.length-1].precio - minP) / range) * (H - 32);
+    sparkSVG = `
+      <svg width="100%" viewBox="0 0 ${W} ${H}" style="margin:16px 0">
+        <polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="${lastX}" cy="${lastY}" r="4" fill="var(--accent)"/>
+      </svg>`;
+  }
+
+  // Tabla historial
+  const tablaRows = [...h].reverse().map((entry, i) => {
+    const prev = h[h.length - 2 - i];
+    const varPct = prev ? ((entry.precio - prev.precio) / prev.precio) * 100 : null;
+    const d = new Date(entry.fecha);
+    const fecha = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+    const varHtml = varPct !== null
+      ? `<span style="color:${varPct > 0 ? 'var(--red)' : 'var(--green)'};font-size:12px">${varPct > 0 ? '+' : ''}${varPct.toFixed(1)}%</span>`
+      : '<span style="font-size:12px;color:var(--text3)">-</span>';
+    return `
+      <div style="display:flex;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="font-size:12px;color:var(--text3);width:90px;flex-shrink:0">${fecha}</div>
+        <div style="flex:1;font-size:15px;font-weight:500">${fARS(entry.precio)}</div>
+        <div>${varHtml}</div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('prod-detail-body').innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+        <div>
+          <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Precio actual</div>
+          <div style="font-family:DM Serif Display,serif;font-size:36px;letter-spacing:-1px">${fARS(ultimo)}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px">Desde el inicio</div>
+          <div style="font-size:20px;font-weight:500;color:${colorVar}">${varTotal >= 0 ? '+' : ''}${varTotal.toFixed(1)}%</div>
+        </div>
+      </div>
+      ${sparkSVG}
+      <div style="display:flex;gap:12px">
+        <div style="flex:1;background:var(--bg3);border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Minimo</div>
+          <div style="font-size:14px;font-weight:500;color:var(--green)">${fARS(minPrecio)}</div>
+        </div>
+        <div style="flex:1;background:var(--bg3);border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Maximo</div>
+          <div style="font-size:14px;font-weight:500;color:var(--red)">${fARS(maxPrecio)}</div>
+        </div>
+        <div style="flex:1;background:var(--bg3);border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Registros</div>
+          <div style="font-size:14px;font-weight:500">${h.length}</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:${ganoOPerdio <= 0 ? 'var(--green-bg)' : 'var(--red-bg)'};border:1px solid ${ganoOPerdio <= 0 ? 'rgba(74,222,128,0.2)' : 'rgba(255,90,90,0.2)'};border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:16px">
+      <div style="font-size:13px;color:${colorGano};font-weight:500;margin-bottom:2px">${textoGano}</div>
+      <div style="font-size:12px;color:var(--text2)">Subio ${varTotal.toFixed(1)}% vs. inflacion del rubro ${inflRubro.toFixed(1)}%</div>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px">Historial de precios</div>
+      ${tablaRows}
+    </div>
+
+    <button class="btn-primary" onclick="registrarNuevoPrecio('${key}')" style="margin-bottom:8px">
+      + Registrar precio de hoy
+    </button>
+  `;
+}
+
+function registrarNuevoPrecio(key) {
+  const compras = getCompras();
+  const p = compras[key];
+  if (!p) return;
+  // Abre modal preseleccionando el producto
+  catActual = Object.keys(CAT_IPC_MAP).find(c => CAT_IPC_MAP[c] === p.categoria) || Object.keys(CATALOGO_PRODUCTOS)[0];
+  document.getElementById('modal-compra').style.display = 'flex';
+  document.getElementById('modal-paso-cat').style.display = 'none';
+  document.getElementById('modal-paso-prod').style.display = 'block';
+  document.getElementById('cat-selected-label').textContent = catActual;
+  document.getElementById('inp-prod-cat').value = p.categoria;
+  document.getElementById('inp-prod-nombre').value = p.nombre;
+  document.getElementById('inp-prod-precio').value = '';
+  document.getElementById('inp-buscar-prod').value = '';
+  filtrarProductos();
+  bindMontoInput('inp-prod-precio');
+  setTimeout(() => document.getElementById('inp-prod-precio').focus(), 100);
 }
 
 // ═══════════════════════════════════════════════
