@@ -2121,9 +2121,12 @@ function filtrarProductos() {
   // Productos del catalogo para esta categoria
   const delCatalogo = CATALOGO_PRODUCTOS[catActual] || [];
 
-  // Productos que el usuario ya cargo en cualquier categoria
+  // Productos que el usuario ya cargo en esta misma categoria
   const compras = getCompras();
-  const propios = Object.values(compras).map(p => p.nombre);
+  const catIpc = CAT_IPC_MAP[catActual] || 'otros';
+  const propios = Object.values(compras)
+    .filter(p => p.categoria === catIpc)
+    .map(p => p.nombre);
 
   // Combinar sin duplicados, propios primero
   const todos = [...new Set([...propios, ...delCatalogo])];
