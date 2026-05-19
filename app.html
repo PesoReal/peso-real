@@ -810,7 +810,7 @@ select option{background:var(--bg3)}
       <div class="mini-card" onclick="goTo('screen-sueldo')">
         <div class="mini-card-label">Sueldo USD</div>
         <div class="mini-card-value" id="dash-usd">—</div>
-        <div class="mini-card-sub">tipo MEP aprox.</div>
+        <div class="mini-card-sub">TC MEP: <span id="dash-tc-mep">—</span></div>
       </div>
     </div>
 
@@ -1029,7 +1029,39 @@ async function actualizarIPC() {
 }
 
 const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-const TC_MEP = 1310; // Tipo de cambio MEP aproximado — se actualizará con API real
+let TC_MEP = 1310; // Fallback — se reemplaza con dato real de DolarApi.com
+
+// ═══════════════════════════════════════════════
+// TC MEP AUTOMÁTICO — DolarApi.com
+// ═══════════════════════════════════════════════
+async function actualizarTCMEP() {
+  const CACHE_KEY = 'pr_mep_cache';
+  const CACHE_EXPIRY_KEY = 'pr_mep_expiry';
+  const UNA_HORA = 60 * 60 * 1000;
+
+  // Usar caché si es de la última hora
+  const expiry = localStorage.getItem(CACHE_EXPIRY_KEY);
+  if (expiry && Date.now() < parseInt(expiry)) {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      TC_MEP = parseFloat(cached);
+      return;
+    }
+  }
+
+  try {
+    const res = await fetch('https://dolarapi.com/v1/dolares/bolsa');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.compra && data.venta) {
+      TC_MEP = (data.compra + data.venta) / 2;
+      localStorage.setItem(CACHE_KEY, TC_MEP.toString());
+      localStorage.setItem(CACHE_EXPIRY_KEY, (Date.now() + UNA_HORA).toString());
+    }
+  } catch(e) {
+    console.log('TC MEP API no disponible, usando valor de referencia');
+  }
+}
 
 // ═══════════════════════════════════════════════
 // ESTADO GLOBAL
@@ -1216,6 +1248,7 @@ function buildDashboard() {
   document.getElementById('dash-ars').textContent = fARS(sueldo);
   const sueldoUSD = sueldo / TC_MEP;
   document.getElementById('dash-usd').textContent = fUSD(sueldoUSD);
+  document.getElementById('dash-tc-mep').textContent = '$ ' + Math.round(TC_MEP).toLocaleString('es-AR');
 
   // Presupuesto ajustado
   const mesesDesdeOnb = Object.keys(IPC).sort().indexOf(mesHoy) - Object.keys(IPC).sort().indexOf(state.mesOnboarding || mesHoy);
@@ -1268,7 +1301,7 @@ function buildSueldo() {
   const varReal = sueldoNecesario > 0 ? ((sueldo / sueldoNecesario) - 1) * 100 : 0;
 
   document.getElementById('sal-ars').textContent = fARS(sueldo);
-  document.getElementById('sal-usd').textContent = `≈ ${fUSD(sueldo / TC_MEP)} al tipo MEP`;
+  document.getElementById('sal-usd').textContent = `≈ ${fUSD(sueldo / TC_MEP)} · TC MEP $ ${Math.round(TC_MEP).toLocaleString('es-AR')}`;
   const badge = document.getElementById('sal-badge');
   const [y, m] = mesRef.split('-');
   const mesLabel2 = `${MESES[parseInt(m)-1]} ${y}`;
@@ -1570,8 +1603,8 @@ function resetApp() {
 // INIT
 // ═══════════════════════════════════════════════
 async function init() {
-  // Actualizar IPC desde la API del INDEC antes de arrancar
-  await actualizarIPC();
+  // Actualizar IPC y TC MEP antes de arrancar
+  await Promise.all([actualizarIPC(), actualizarTCMEP()]);
 
   poblarMeses();
   bindMontoInput('inp-sueldo');
