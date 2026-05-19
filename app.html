@@ -654,7 +654,7 @@ select option{background:var(--bg3)}
 <div class="screens-wrap">
 
 <!-- ══════════════════════════════════════
-     SCREEN 1 — ONBOARDING
+     SCREEN 1 - ONBOARDING
 ══════════════════════════════════════ -->
 <div class="screen active" id="screen-onboarding">
   <div class="onb-bg">
@@ -686,7 +686,7 @@ select option{background:var(--bg3)}
       <div class="onb-step" id="step-1">
         <div class="onb-kicker">Tu sueldo</div>
         <div class="onb-title">¿Cuánto cobrás <em>hoy</em>?</div>
-        <div class="onb-sub">Ingresá tu sueldo neto actual — lo que te depositan en mano cada mes.</div>
+        <div class="onb-sub">Ingresá tu sueldo neto actual - lo que te depositan en mano cada mes.</div>
 
         <div class="field">
           <label>Sueldo neto mensual actual</label>
@@ -733,7 +733,7 @@ select option{background:var(--bg3)}
       <div class="onb-step" id="step-2">
         <div class="onb-kicker">Tu presupuesto</div>
         <div class="onb-title">¿Cuánto gastás por mes?</div>
-        <div class="onb-sub">Ingresá tu gasto mensual actual — lo que gastás en total entre alquiler, comida, servicios y todo lo demás.</div>
+        <div class="onb-sub">Ingresá tu gasto mensual actual - lo que gastás en total entre alquiler, comida, servicios y todo lo demás.</div>
 
         <div class="field">
           <label>Gasto mensual total (aproximado)</label>
@@ -742,7 +742,7 @@ select option{background:var(--bg3)}
             <input type="text" id="inp-presupuesto" placeholder="0" inputmode="decimal" autocomplete="off">
           </div>
           <div style="font-size:12px;color:var(--text3);margin-top:8px;line-height:1.5">
-            Este número es tu punto de partida. Peso Real lo va a ajustar automáticamente cada mes con el IPC del INDEC — así siempre sabés cuánto deberías estar gastando para mantener el mismo nivel de vida. Más adelante también vas a poder compararlo contra tus gastos reales.
+            Este número es tu punto de partida. Peso Real lo va a ajustar automáticamente cada mes con el IPC del INDEC - así siempre sabés cuánto deberías estar gastando para mantener el mismo nivel de vida. Más adelante también vas a poder compararlo contra tus gastos reales.
           </div>
         </div>
 
@@ -751,7 +751,7 @@ select option{background:var(--bg3)}
           <select id="inp-ahorro">
             <option value="no">No, generalmente no llego</option>
             <option value="poco">Sí, algo (menos del 10%)</option>
-            <option value="regular">Sí, regularmente (10–20%)</option>
+            <option value="regular">Sí, regularmente (10-20%)</option>
             <option value="mucho">Sí, bastante (más del 20%)</option>
           </select>
         </div>
@@ -767,7 +767,7 @@ select option{background:var(--bg3)}
 </div>
 
 <!-- ══════════════════════════════════════
-     SCREEN 2 — DASHBOARD
+     SCREEN 2 - DASHBOARD
 ══════════════════════════════════════ -->
 <div class="screen" id="screen-dashboard">
   <div class="dash-header">
@@ -785,14 +785,14 @@ select option{background:var(--bg3)}
     <!-- Poder adquisitivo -->
     <div class="power-card">
       <div class="power-label">Tu poder adquisitivo</div>
-      <div class="power-value loss" id="dash-pct">—</div>
+      <div class="power-value loss" id="dash-pct">-</div>
       <div class="power-sub" id="dash-power-sub">vs. hace 12 meses ajustado por IPC</div>
       <div class="power-bar-track">
         <div class="power-bar-fill loss" id="dash-bar" style="width:0%"></div>
       </div>
       <div class="power-bar-labels">
-        <span>Inflación: <span id="dash-infl">—</span></span>
-        <span>Tu aumento: <span id="dash-aumento">—</span></span>
+        <span>Inflación: <span id="dash-infl">-</span></span>
+        <span>Tu aumento: <span id="dash-aumento">-</span></span>
       </div>
     </div>
 
@@ -800,20 +800,20 @@ select option{background:var(--bg3)}
     <div class="grid2">
       <div class="mini-card" onclick="goTo('screen-sueldo')">
         <div class="mini-card-label">Sueldo ARS</div>
-        <div class="mini-card-value" id="dash-ars">—</div>
+        <div class="mini-card-value" id="dash-ars">-</div>
         <div class="mini-card-sub">neto mensual</div>
       </div>
       <div class="mini-card" onclick="goTo('screen-sueldo')">
         <div class="mini-card-label">Sueldo USD</div>
-        <div class="mini-card-value" id="dash-usd">—</div>
-        <div class="mini-card-sub">TC MEP: <span id="dash-tc-mep">—</span></div>
+        <div class="mini-card-value" id="dash-usd">-</div>
+        <div class="mini-card-sub">TC MEP: <span id="dash-tc-mep">-</span></div>
       </div>
     </div>
 
     <!-- Presupuesto ajustado -->
     <div class="mini-card" style="margin-bottom:16px;display:block">
       <div class="mini-card-label">Presupuesto ajustado este mes</div>
-      <div class="mini-card-value" id="dash-presup">—</div>
+      <div class="mini-card-value" id="dash-presup">-</div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
         <div class="mini-card-sub">tu gasto de referencia actualizado por inflación</div>
         <div id="dash-presup-delta" style="font-size:12px;font-weight:500"></div>
@@ -830,7 +830,7 @@ select option{background:var(--bg3)}
             stroke-dasharray="175.9"
             stroke-dashoffset="175.9"/>
         </svg>
-        <div class="ibf-ring-num" id="ibf-num">—</div>
+        <div class="ibf-ring-num" id="ibf-num">-</div>
       </div>
       <div class="ibf-info">
         <div class="ibf-title">Índice de Bienestar Financiero</div>
@@ -849,7 +849,7 @@ select option{background:var(--bg3)}
 </div>
 
 <!-- ══════════════════════════════════════
-     SCREEN 3 — SUELDO REAL
+     SCREEN 3 - SUELDO REAL
 ══════════════════════════════════════ -->
 <div class="screen" id="screen-sueldo">
   <div class="screen-header">
@@ -862,9 +862,9 @@ select option{background:var(--bg3)}
 
     <div class="salary-hero">
       <div class="salary-ars">Sueldo actual</div>
-      <div class="salary-amount" id="sal-ars">—</div>
-      <div class="salary-usd" id="sal-usd">≈ USD —</div>
-      <span class="salary-badge loss" id="sal-badge">— vs. hace 12 meses</span>
+      <div class="salary-amount" id="sal-ars">-</div>
+      <div class="salary-usd" id="sal-usd">≈ USD -</div>
+      <span class="salary-badge loss" id="sal-badge">- vs. hace 12 meses</span>
     </div>
 
     <div class="timeline">
@@ -881,7 +881,7 @@ select option{background:var(--bg3)}
 </div>
 
 <!-- ══════════════════════════════════════
-     SCREEN 4 — IBF SEMANAL
+     SCREEN 4 - IBF SEMANAL
 ══════════════════════════════════════ -->
 <div class="screen" id="screen-ibf">
   <div class="screen-header">
@@ -893,7 +893,7 @@ select option{background:var(--bg3)}
   <div class="scroll ibf-body">
 
     <div class="ibf-intro">
-      <div class="ibf-big-num" id="ibf-big">—</div>
+      <div class="ibf-big-num" id="ibf-big">-</div>
       <div style="font-size:13px;color:var(--text3);margin-bottom:8px">Índice de Bienestar Financiero</div>
       <div class="ibf-desc" id="ibf-desc">Respondé las 5 preguntas para calcular tu IBF de esta semana.</div>
     </div>
@@ -912,7 +912,7 @@ select option{background:var(--bg3)}
 </div>
 
 <!-- ══════════════════════════════════════
-     SCREEN 5 — HISTORIAL
+     SCREEN 5 - HISTORIAL
 ══════════════════════════════════════ -->
 <div class="screen" id="screen-historial">
   <div class="screen-header">
@@ -962,7 +962,7 @@ select option{background:var(--bg3)}
 <script>
 // ═══════════════════════════════════════════════
 // DATOS IPC INDEC
-// Base hardcodeada — se actualiza automáticamente con la API
+// Base hardcodeada - se actualiza automáticamente con la API
 // ═══════════════════════════════════════════════
 let IPC = {
   "2023-01":6.0,"2023-02":6.6,"2023-03":7.7,"2023-04":8.4,
@@ -1022,16 +1022,16 @@ async function actualizarIPC() {
       localStorage.setItem(CACHE_EXPIRY_KEY, (Date.now() + UN_DIA).toString());
     }
   } catch(e) {
-    // Si falla la API, seguimos con los datos hardcodeados — no pasa nada
+    // Si falla la API, seguimos con los datos hardcodeados - no pasa nada
     console.log('IPC API no disponible, usando datos locales');
   }
 }
 
 const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-let TC_MEP = 1310; // Fallback — se reemplaza con dato real de DolarApi.com
+let TC_MEP = 1310; // Fallback - se reemplaza con dato real de DolarApi.com
 
 // ═══════════════════════════════════════════════
-// TC MEP AUTOMÁTICO — DolarApi.com
+// TC MEP AUTOMÁTICO - DolarApi.com
 // ═══════════════════════════════════════════════
 async function actualizarTCMEP() {
   const CACHE_KEY = 'pr_mep_cache';
@@ -1255,7 +1255,7 @@ function buildDashboard() {
   const presupAjustado = state.presupuesto * (1 + inflTotal / 100);
   document.getElementById('dash-presup').textContent = fARS(presupAjustado);
 
-  // Delta del último mes — cuánto subió respecto al mes anterior
+  // Delta del último mes - cuánto subió respecto al mes anterior
   const mesAnterior = keys[Math.max(0, idxHoy - 1)];
   const inflMesAnterior = mesAnterior && idxOnb >= 0 && keys.indexOf(mesAnterior) > idxOnb
     ? ipcAcumulado(mesOnboarding, mesAnterior) : 0;
@@ -1284,7 +1284,7 @@ function buildDashboard() {
     document.getElementById('ibf-action').textContent = 'Ver detalle →';
   }
 
-  // Acción semanal — usa la generada por IA si existe, sino tip genérico
+  // Acción semanal - usa la generada por IA si existe, sino tip genérico
   const tips = [
     'Revisá si tu sueldo le ganó a la inflación este mes. Si no, es momento de negociar.',
     'Calculá tu canasta básica personal: ¿subió más o menos que el IPC oficial?',
@@ -1360,7 +1360,7 @@ function buildSueldo() {
 }
 
 // ═══════════════════════════════════════════════
-// IBF — PREGUNTAS
+// IBF - PREGUNTAS
 // ═══════════════════════════════════════════════
 const PREGUNTAS = [
   {
@@ -1538,28 +1538,17 @@ async function generarAccionIBF(score, respuestas) {
     // Construir contexto con las respuestas del usuario
     const resumenRespuestas = PREGUNTAS.map((q, i) => {
       const resp = respuestas[i] !== null ? q.opciones[respuestas[i]] : 'Sin respuesta';
-      return `- ${q.texto}: "${resp}"`;
-    }).join('
-');
+      return '- ' + q.texto + ': "' + resp + '"';
+    }).join('\n');
 
-    const prompt = `Sos un asesor de finanzas personales para Argentina, empático y directo. 
-El usuario acaba de completar su Índice de Bienestar Financiero (IBF) y obtuvo un score de ${score}/100.
-
-Sus respuestas fueron:
-${resumenRespuestas}
-
-Contexto: Argentina tiene inflación mensual del 3-4%. El usuario usa la app Peso Real para trackear su poder adquisitivo real.
-
-Generá UNA sola acción concreta y específica para esta semana. 
-- Máximo 2 oraciones
-- Sin tecnicismos
-- Sin mencionar el score ni el IBF
-- Que sea algo que pueda hacer HOY o esta semana
-- Adaptada exactamente a sus respuestas, no genérica
-- En español rioplatense (vos, che, etc.)
-- Sin emojis
-
-Solo la acción, sin introducción ni cierre.`;
+    const prompt = 'Sos un asesor de finanzas personales para Argentina, empatico y directo. ' +
+      'El usuario obtuvo un IBF de ' + score + '/100. ' +
+      'Sus respuestas fueron: ' + resumenRespuestas + '. ' +
+      'Generá UNA sola accion concreta para esta semana. ' +
+      'Maximo 2 oraciones. Sin tecnicismos. Sin mencionar el score ni el IBF. ' +
+      'Que sea algo que pueda hacer hoy o esta semana. ' +
+      'Adaptada a sus respuestas, no generica. En español rioplatense. Sin emojis. ' +
+      'Solo la accion, sin introduccion ni cierre.';
 
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -1712,7 +1701,7 @@ function init() {
     document.getElementById('bottom-nav').classList.add('visible');
   }
 
-  // Actualizar IPC y TC MEP en segundo plano — no bloquean la app
+  // Actualizar IPC y TC MEP en segundo plano - no bloquean la app
   Promise.all([actualizarIPC(), actualizarTCMEP()]).then(() => {
     // Cuando llegan los datos, refrescar el dashboard si está visible
     if (state.onboardingDone && currentScreen === 'screen-dashboard') {
