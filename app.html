@@ -2117,23 +2117,37 @@ function volverACat() {
 
 function filtrarProductos() {
   const busqueda = document.getElementById('inp-buscar-prod').value.toLowerCase();
-  const productos = CATALOGO_PRODUCTOS[catActual] || [];
+
+  // Productos del catalogo para esta categoria
+  const delCatalogo = CATALOGO_PRODUCTOS[catActual] || [];
+
+  // Productos que el usuario ya cargo en cualquier categoria
+  const compras = getCompras();
+  const propios = Object.values(compras).map(p => p.nombre);
+
+  // Combinar sin duplicados, propios primero
+  const todos = [...new Set([...propios, ...delCatalogo])];
+
   const filtrados = busqueda
-    ? productos.filter(p => p.toLowerCase().includes(busqueda))
-    : productos;
+    ? todos.filter(p => p.toLowerCase().includes(busqueda))
+    : todos;
 
   const lista = document.getElementById('prod-lista');
   if (filtrados.length === 0) {
     lista.innerHTML = '<div style="padding:12px 16px;font-size:13px;color:var(--text3)">No se encontraron productos. Escribilo abajo.</div>';
     return;
   }
-  lista.innerHTML = filtrados.map(p => `
+
+  lista.innerHTML = filtrados.map(p => {
+    const esMio = propios.includes(p);
+    return `
     <div onclick="seleccionarProducto('${p.replace(/'/g, "\'")}')"
-      style="padding:12px 16px;font-size:14px;color:var(--text2);cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.15s"
+      style="padding:12px 16px;font-size:14px;color:var(--text2);cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px"
       onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
-      ${p}
-    </div>
-  `).join('');
+      <span style="flex:1">${p}</span>
+      ${esMio ? '<span style="font-size:10px;color:var(--accent);font-weight:500;flex-shrink:0">MIO</span>' : ''}
+    </div>`;
+  }).join('');
 }
 
 function seleccionarProducto(nombre) {
