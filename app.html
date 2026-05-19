@@ -67,22 +67,20 @@ html,body{
 .screen{
   position:absolute;
   inset:0;
-  display:flex;
+  display:none;
   flex-direction:column;
-  opacity:0;
-  pointer-events:none;
-  transition:opacity 0.3s ease, transform 0.3s ease;
-  transform:translateX(30px);
   overflow:hidden;
 }
 .screen.active{
-  opacity:1;
-  pointer-events:all;
-  transform:translateX(0);
+  display:flex;
+  animation:fadeIn 0.25s ease forwards;
 }
 .screen.exit{
-  opacity:0;
-  transform:translateX(-30px);
+  display:none;
+}
+@keyframes fadeIn{
+  from{opacity:0}
+  to{opacity:1}
 }
 
 
@@ -1195,26 +1193,23 @@ function goTo(screenId) {
   const next = document.getElementById(screenId);
   if (!next || currentScreen === screenId) return;
 
-  prev.classList.add('exit');
-  setTimeout(() => {
-    prev.classList.remove('active', 'exit');
-    next.classList.add('active');
-    currentScreen = screenId;
+  prev.classList.remove('active');
+  next.classList.add('active');
+  currentScreen = screenId;
 
-    // Update nav
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    const navMap = {
-      'screen-dashboard': 'nav-dashboard',
-      'screen-sueldo': 'nav-sueldo',
-      'screen-ibf': 'nav-ibf',
-      'screen-historial': 'nav-historial',
-    };
-    if (navMap[screenId]) document.getElementById(navMap[screenId]).classList.add('active');
+  // Update nav
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const navMap = {
+    'screen-dashboard': 'nav-dashboard',
+    'screen-sueldo': 'nav-sueldo',
+    'screen-ibf': 'nav-ibf',
+    'screen-historial': 'nav-historial',
+  };
+  if (navMap[screenId]) document.getElementById(navMap[screenId]).classList.add('active');
 
-    if (screenId === 'screen-sueldo') buildSueldo();
-    if (screenId === 'screen-ibf') buildIBF();
-    if (screenId === 'screen-historial') buildHistorial();
-  }, 200);
+  if (screenId === 'screen-sueldo') buildSueldo();
+  if (screenId === 'screen-ibf') buildIBF();
+  if (screenId === 'screen-historial') buildHistorial();
 }
 
 // ═══════════════════════════════════════════════
