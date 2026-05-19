@@ -928,16 +928,31 @@ select option{background:var(--bg3)}
 
 <!-- Modal agregar compra -->
 <div id="modal-compra" style="display:none;position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);align-items:flex-end">
-  <div style="background:var(--bg2);border-radius:20px 20px 0 0;padding:28px 24px calc(28px + var(--safe-bottom));width:100%;border-top:1px solid var(--border)">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+  <div style="background:var(--bg2);border-radius:20px 20px 0 0;padding:28px 24px calc(28px + var(--safe-bottom));width:100%;border-top:1px solid var(--border);max-height:88vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
       <div style="font-family:DM Serif Display,serif;font-size:20px">Agregar producto</div>
       <button onclick="cerrarFormCompra()" style="background:var(--bg3);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;color:var(--text2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">&times;</button>
     </div>
-    <div class="field">
-      <label>Nombre del producto</label>
-      <input type="text" id="inp-prod-nombre" placeholder="Ej: Aceite girasol 1.5L" autocomplete="off" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:DM Sans,sans-serif;font-size:16px;padding:14px 16px;outline:none;margin-bottom:16px">
+
+    <!-- Paso 1: Categoria -->
+    <div id="modal-paso-cat">
+      <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px">Elegí una categoria</div>
+      <div id="cat-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>
     </div>
-    <div class="row2">
+
+    <!-- Paso 2: Producto -->
+    <div id="modal-paso-prod" style="display:none">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+        <button onclick="volverACat()" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:13px;padding:6px 12px;cursor:pointer;font-family:DM Sans,sans-serif">← Volver</button>
+        <div id="cat-selected-label" style="font-size:14px;font-weight:500;color:var(--accent)"></div>
+      </div>
+      <input type="text" id="inp-buscar-prod" placeholder="Buscar producto..." oninput="filtrarProductos()"
+        style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:DM Sans,sans-serif;font-size:15px;padding:12px 16px;outline:none;margin-bottom:10px">
+      <div id="prod-lista" style="max-height:180px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:16px"></div>
+      <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">O escribí uno nuevo</div>
+      <input type="text" id="inp-prod-nombre" placeholder="Nombre del producto" autocomplete="off"
+        style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:DM Sans,sans-serif;font-size:16px;padding:14px 16px;outline:none;margin-bottom:16px">
+      <input type="hidden" id="inp-prod-cat" value="">
       <div class="field">
         <label>Precio actual</label>
         <div class="input-wrap">
@@ -945,21 +960,8 @@ select option{background:var(--bg3)}
           <input type="text" id="inp-prod-precio" placeholder="0" inputmode="decimal" autocomplete="off">
         </div>
       </div>
-      <div class="field">
-        <label>Categoria</label>
-        <select id="inp-prod-cat">
-          <option value="alimentos">Alimentos</option>
-          <option value="bebidas">Bebidas</option>
-          <option value="limpieza">Limpieza</option>
-          <option value="higiene">Higiene</option>
-          <option value="lacteos">Lacteos</option>
-          <option value="carnes">Carnes</option>
-          <option value="verduras">Verduras</option>
-          <option value="otros">Otros</option>
-        </select>
-      </div>
+      <button class="btn-primary" onclick="guardarCompra()">Guardar producto</button>
     </div>
-    <button class="btn-primary" onclick="guardarCompra()">Guardar producto</button>
   </div>
 </div>
 
@@ -1732,6 +1734,297 @@ function bindMontoInput(id) {
 }
 
 
+const CATALOGO_PRODUCTOS = {
+  "Aceites y aderezos": [
+    "Aceite de girasol 1.5L",
+    "Aceite de girasol 900ml",
+    "Aceite de maíz 900ml",
+    "Aceite de oliva extra virgen 500ml",
+    "Aceite de oliva 250ml",
+    "Aceite mezcla 1.5L",
+    "Mayonesa 500g",
+    "Mayonesa 250g",
+    "Ketchup 500g",
+    "Mostaza 250g",
+    "Salsa golf 250ml",
+    "Vinagre de alcohol 500ml",
+    "Vinagre de manzana 500ml",
+    "Salsa de soja 150ml",
+    "Chimichurri seco 25g",
+    "Aceite de coco 500ml",
+  ],
+  "Arroz y legumbres": [
+    "Arroz largo fino 1kg",
+    "Arroz largo fino 500g",
+    "Arroz doble carolina 1kg",
+    "Arroz integral 500g",
+    "Lentejas 500g",
+    "Lentejas 1kg",
+    "Garbanzos 500g",
+    "Porotos negros 500g",
+    "Porotos alubia 500g",
+    "Arvejas secas 500g",
+    "Arvejas al natural lata 400g",
+    "Choclo en lata 340g",
+    "Lentejas en lata 400g",
+  ],
+  "Pastas y harinas": [
+    "Fideos spaghetti 500g",
+    "Fideos tallarines 500g",
+    "Fideos moñitos 500g",
+    "Fideos coditos 500g",
+    "Fideos fusilli 500g",
+    "Fideos planchitas 500g",
+    "Harina 000 1kg",
+    "Harina 0000 1kg",
+    "Harina integral 1kg",
+    "Harina leudante 1kg",
+    "Maicena 400g",
+    "Polenta instantánea 500g",
+    "Polenta 1kg",
+    "Semolín 500g",
+    "Premezcla para torta 500g",
+    "Mezcla para panqueques 500g",
+    "Levadura seca 10g",
+    "Levadura fresca 50g",
+  ],
+  "Lacteos": [
+    "Leche entera sachet 1L",
+    "Leche descremada sachet 1L",
+    "Leche larga vida entera 1L",
+    "Leche larga vida descremada 1L",
+    "Leche condensada 395g",
+    "Leche en polvo entera 800g",
+    "Leche en polvo descremada 800g",
+    "Leche en polvo 400g",
+    "Yogur entero natural 190g",
+    "Yogur con frutas 190g",
+    "Yogur bebible 200ml",
+    "Yogur griego 180g",
+    "Crema de leche 200ml",
+    "Crema de leche 100ml",
+    "Manteca 200g",
+    "Manteca 100g",
+    "Margarina 200g",
+    "Queso cremoso por kg",
+    "Queso cuartirolo por kg",
+    "Queso pategrás por kg",
+    "Queso mozzarella por kg",
+    "Queso reggianito rallado 100g",
+    "Queso parmesano rallado 100g",
+    "Queso tipo fresco 200g",
+    "Queso untable 200g",
+    "Queso untable 100g",
+    "Dulce de leche repostero 400g",
+    "Dulce de leche familiar 400g",
+    "Dulce de leche light 400g",
+  ],
+  "Carnes y fiambres": [
+    "Carne picada común por kg",
+    "Carne picada especial por kg",
+    "Asado por kg",
+    "Bife de chorizo por kg",
+    "Peceto por kg",
+    "Nalga por kg",
+    "Cuadrada por kg",
+    "Vacío por kg",
+    "Paleta por kg",
+    "Matambre por kg",
+    "Pollo entero por kg",
+    "Pechuga de pollo por kg",
+    "Muslo de pollo por kg",
+    "Alitas de pollo por kg",
+    "Milanesas de pollo por kg",
+    "Cerdo bondiola por kg",
+    "Cerdo costilla por kg",
+    "Jamón cocido por kg",
+    "Jamón crudo por kg",
+    "Paleta cocida por kg",
+    "Salame por kg",
+    "Chorizo para asado por kg",
+    "Salchicha por kg",
+    "Salchicha viena 500g",
+    "Mortadela por kg",
+    "Atún al natural lata 170g",
+    "Atún aceite lata 170g",
+    "Caballa al natural 170g",
+  ],
+  "Verduras y frutas": [
+    "Papa por kg",
+    "Cebolla por kg",
+    "Zanahoria por kg",
+    "Ajo por cabeza",
+    "Tomate por kg",
+    "Lechuga por unidad",
+    "Zapallo por kg",
+    "Batata por kg",
+    "Choclo por unidad",
+    "Pimiento morrón por kg",
+    "Berenjena por kg",
+    "Zucchini por kg",
+    "Acelga por atado",
+    "Espinaca por atado",
+    "Brócoli por unidad",
+    "Coliflor por unidad",
+    "Apio por atado",
+    "Manzana por kg",
+    "Banana por kg",
+    "Naranja por kg",
+    "Mandarina por kg",
+    "Pera por kg",
+    "Durazno por kg",
+    "Ciruela por kg",
+    "Uva por kg",
+    "Melón por unidad",
+    "Sandía por unidad",
+    "Limón por kg",
+  ],
+  "Pan y panificados": [
+    "Pan de mesa por kg",
+    "Pan lactal de molde 500g",
+    "Pan lactal integral 500g",
+    "Pan lactal de campo 500g",
+    "Pan de hamburguesa x6",
+    "Pan de hot dog x6",
+    "Pan de salvado por kg",
+    "Facturas por docena",
+    "Medialunas x6",
+    "Galletitas crackers 200g",
+    "Galletitas de agua 200g",
+    "Galletitas dulces 200g",
+    "Galletitas rellenas 200g",
+    "Vainillas 200g",
+    "Bizcochos de grasa por kg",
+    "Tostadas 200g",
+    "Copos de maíz 300g",
+    "Granola 300g",
+    "Avena 500g",
+  ],
+  "Bebidas": [
+    "Agua mineral sin gas 2L",
+    "Agua mineral sin gas 500ml",
+    "Agua mineral con gas 1.5L",
+    "Gaseosa cola 2.25L",
+    "Gaseosa cola 1.5L",
+    "Gaseosa cola 500ml",
+    "Gaseosa lima-limón 2.25L",
+    "Gaseosa naranja 2.25L",
+    "Gaseosa sin azúcar 2.25L",
+    "Jugo en polvo 18g",
+    "Jugo exprimido naranja 1L",
+    "Jugo de manzana 1L",
+    "Cerveza rubia lata 473ml",
+    "Cerveza rubia botella 1L",
+    "Cerveza rubia six pack",
+    "Vino tinto tetra 1L",
+    "Vino blanco tetra 1L",
+    "Vino tinto botella 750ml",
+    "Fernet 750ml",
+    "Whisky 750ml",
+    "Café molido 250g",
+    "Café en grano 250g",
+    "Café instantáneo 100g",
+  ],
+  "Yerba e infusiones": [
+    "Yerba mate 1kg",
+    "Yerba mate 500g",
+    "Yerba mate con palo 1kg",
+    "Yerba mate sin palo 1kg",
+    "Yerba mate suave 500g",
+    "Te negro x25 saquitos",
+    "Te verde x25 saquitos",
+    "Te manzanilla x25",
+    "Te boldo x25 saquitos",
+    "Mate cocido x25 saquitos",
+  ],
+  "Conservas y enlatados": [
+    "Tomate perita lata 400g",
+    "Tomate triturado tetra 500g",
+    "Tomate cubeteado 400g",
+    "Puré de tomate 520g",
+    "Salsa de tomate 350g",
+    "Passata 690g",
+    "Duraznos en almíbar lata 820g",
+    "Peras en almíbar lata 820g",
+    "Ensalada de frutas lata 820g",
+    "Mermelada frutilla 454g",
+    "Mermelada durazno 454g",
+    "Dulce de membrillo 454g",
+    "Miel 500g",
+  ],
+  "Azúcar y golosinas": [
+    "Azúcar blanca 1kg",
+    "Azúcar integral 500g",
+    "Azúcar impalpable 500g",
+    "Stevia sobres x50",
+    "Edulcorante líquido 100ml",
+    "Chocolate amargo tableta 100g",
+    "Chocolate con leche tableta 100g",
+    "Cacao en polvo 200g",
+    "Alfajor triple x1",
+    "Alfajor doble x1",
+    "Galletitas de chocolate 150g",
+  ],
+  "Limpieza hogar": [
+    "Detergente para vajilla 750ml",
+    "Detergente para vajilla 500ml",
+    "Lavandina 1L",
+    "Lavandina 2L",
+    "Lavandina concentrada 500ml",
+    "Limpiador multiusos 500ml",
+    "Desengrasante 500ml",
+    "Jabón en polvo 1kg",
+    "Jabón en polvo 500g",
+    "Suavizante ropa 1L",
+    "Suavizante ropa 500ml",
+    "Lava vajillas en pastillas x30",
+    "Esponja doble faz x2",
+    "Bolsas de residuos x30",
+    "Rollos de cocina x2",
+    "Papel aluminio",
+    "Film de cocina",
+    "Bolsas ziploc x10",
+  ],
+  "Higiene personal": [
+    "Shampoo 400ml",
+    "Shampoo 200ml",
+    "Acondicionador 400ml",
+    "Jabón de tocador x3",
+    "Jabón líquido 500ml",
+    "Pasta dental 90g",
+    "Cepillo de dientes x2",
+    "Hilo dental 50m",
+    "Desodorante roll-on 65ml",
+    "Desodorante aerosol 150ml",
+    "Afeitadora desechable x2",
+    "Crema de afeitar 200ml",
+    "Papel higiénico x4",
+    "Papel higiénico x8",
+    "Pañuelos descartables x100",
+    "Algodón 100g",
+    "Apósitos x8",
+  ],
+  "Bebe y cuidado": [
+    "Pañales RN x24",
+    "Pañales G x24",
+    "Pañales XG x24",
+    "Toallitas húmedas x80",
+    "Crema de pañal 100g",
+    "Leche maternizada 0-6 meses 400g",
+    "Leche maternizada 6-12 meses 400g",
+  ],
+  "Mascotas": [
+    "Alimento perro adulto 1kg",
+    "Alimento perro adulto 3kg",
+    "Alimento perro cachorro 1kg",
+    "Alimento gato adulto 1kg",
+    "Alimento gato adulto 500g",
+    "Arena sanitaria 4kg",
+    "Snack para perro 100g",
+    "Antipulgas para perro",
+  ],
+};
+
 // ═══════════════════════════════════════════════
 // PILAR 3 - MEMORIA DE COMPRAS
 // ═══════════════════════════════════════════════
@@ -1756,22 +2049,109 @@ function saveCompras(compras) {
   localStorage.setItem('pr_compras', JSON.stringify(compras));
 }
 
+// IPC rubro mapping for catalog categories
+const CAT_IPC_MAP = {
+  'Aceites y aderezos': 'alimentos',
+  'Arroz y legumbres': 'alimentos',
+  'Pastas y harinas': 'alimentos',
+  'Lacteos': 'lacteos',
+  'Carnes y fiambres': 'carnes',
+  'Verduras y frutas': 'verduras',
+  'Pan y panificados': 'alimentos',
+  'Bebidas': 'bebidas',
+  'Yerba e infusiones': 'alimentos',
+  'Conservas y enlatados': 'alimentos',
+  'Azucar y golosinas': 'alimentos',
+  'Limpieza hogar': 'limpieza',
+  'Higiene personal': 'higiene',
+  'Bebe y cuidado': 'higiene',
+  'Mascotas': 'otros',
+};
+
+let catActual = '';
+
 function abrirFormCompra() {
   document.getElementById('modal-compra').style.display = 'flex';
-  document.getElementById('inp-prod-nombre').focus();
+  document.getElementById('modal-paso-cat').style.display = 'block';
+  document.getElementById('modal-paso-prod').style.display = 'none';
   bindMontoInput('inp-prod-precio');
+  renderCatGrid();
+}
+
+function renderCatGrid() {
+  const grid = document.getElementById('cat-grid');
+  const emojis = {
+    'Aceites y aderezos': '🫙', 'Arroz y legumbres': '🌾', 'Pastas y harinas': '🍝',
+    'Lacteos': '🥛', 'Carnes y fiambres': '🥩', 'Verduras y frutas': '🥦',
+    'Pan y panificados': '🍞', 'Bebidas': '🧃', 'Yerba e infusiones': '🧉',
+    'Conservas y enlatados': '🥫', 'Azucar y golosinas': '🍬',
+    'Limpieza hogar': '🧹', 'Higiene personal': '🧴', 'Bebe y cuidado': '👶',
+    'Mascotas': '🐾',
+  };
+  grid.innerHTML = Object.keys(CATALOGO_PRODUCTOS).map(cat => `
+    <button onclick="elegirCategoria('${cat.replace(/'/g, "\'")}')"
+      style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 10px;text-align:left;cursor:pointer;font-family:DM Sans,sans-serif;color:var(--text);transition:border-color 0.2s">
+      <div style="font-size:20px;margin-bottom:4px">${emojis[cat] || '📦'}</div>
+      <div style="font-size:12px;font-weight:500;line-height:1.3">${cat}</div>
+    </button>
+  `).join('');
+}
+
+function elegirCategoria(cat) {
+  catActual = cat;
+  document.getElementById('modal-paso-cat').style.display = 'none';
+  document.getElementById('modal-paso-prod').style.display = 'block';
+  document.getElementById('cat-selected-label').textContent = cat;
+  document.getElementById('inp-prod-cat').value = CAT_IPC_MAP[cat] || 'otros';
+  document.getElementById('inp-prod-nombre').value = '';
+  document.getElementById('inp-prod-precio').value = '';
+  document.getElementById('inp-buscar-prod').value = '';
+  filtrarProductos();
+  document.getElementById('inp-buscar-prod').focus();
+}
+
+function volverACat() {
+  document.getElementById('modal-paso-cat').style.display = 'block';
+  document.getElementById('modal-paso-prod').style.display = 'none';
+}
+
+function filtrarProductos() {
+  const busqueda = document.getElementById('inp-buscar-prod').value.toLowerCase();
+  const productos = CATALOGO_PRODUCTOS[catActual] || [];
+  const filtrados = busqueda
+    ? productos.filter(p => p.toLowerCase().includes(busqueda))
+    : productos;
+
+  const lista = document.getElementById('prod-lista');
+  if (filtrados.length === 0) {
+    lista.innerHTML = '<div style="padding:12px 16px;font-size:13px;color:var(--text3)">No se encontraron productos. Escribilo abajo.</div>';
+    return;
+  }
+  lista.innerHTML = filtrados.map(p => `
+    <div onclick="seleccionarProducto('${p.replace(/'/g, "\'")}')"
+      style="padding:12px 16px;font-size:14px;color:var(--text2);cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.15s"
+      onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+      ${p}
+    </div>
+  `).join('');
+}
+
+function seleccionarProducto(nombre) {
+  document.getElementById('inp-prod-nombre').value = nombre;
+  document.getElementById('inp-prod-precio').focus();
 }
 
 function cerrarFormCompra() {
   document.getElementById('modal-compra').style.display = 'none';
   document.getElementById('inp-prod-nombre').value = '';
   document.getElementById('inp-prod-precio').value = '';
+  catActual = '';
 }
 
 function guardarCompra() {
   const nombre = document.getElementById('inp-prod-nombre').value.trim();
   const precio = parseMonto(document.getElementById('inp-prod-precio').value);
-  const cat = document.getElementById('inp-prod-cat').value;
+  const cat = document.getElementById('inp-prod-cat').value || 'otros';
 
   if (!nombre) { document.getElementById('inp-prod-nombre').focus(); return; }
   if (!precio || precio <= 0) { document.getElementById('inp-prod-precio').focus(); return; }
