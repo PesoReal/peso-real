@@ -1549,13 +1549,15 @@ function buildSueldo() {
   });
 
   // Mensaje emocional generado por IA
-  const msgEl = document.getElementById('sal-mensaje-ia');
-  if (msgEl) {
-    msgEl.textContent = '...';
-    generarMensajeSueldo(varReal).then(msg => {
-      if (msgEl) msgEl.textContent = msg;
-    });
-  }
+  setTimeout(() => {
+    const msgEl = document.getElementById('sal-mensaje-ia');
+    if (msgEl) {
+      generarMensajeSueldo(varReal).then(msg => {
+        const el = document.getElementById('sal-mensaje-ia');
+        if (el) el.textContent = msg;
+      });
+    }
+  }, 100);
 }
 
 // ═══════════════════════════════════════════════
@@ -1682,20 +1684,23 @@ async function calcIBF() {
 
   // Mostrar pantalla de resultado con loader mientras genera la acción
   document.getElementById('ibf-questions').innerHTML = `
-    <div class="question-card" style="text-align:center;padding:32px 24px" id="ibf-result-card">
-      <div style="font-size:64px;font-family:'DM Serif Display',serif;color:${color};margin-bottom:8px">${score}</div>
-      <div style="font-size:16px;font-weight:500;color:var(--text);margin-bottom:8px">${ibfScoreDesc(score)}</div>
-      <div id="ibf-accion-wrap" style="margin-bottom:24px">
-        <div style="font-size:13px;color:var(--text3);margin-bottom:8px">Generando tu acción personalizada...</div>
+    <div class="question-card" id="ibf-result-card" style="padding:20px 20px">
+      <div id="ibf-accion-wrap" style="margin-bottom:20px">
+        <div style="font-size:13px;color:var(--text3);margin-bottom:8px;text-align:center">Generando tu accion personalizada...</div>
         <div style="display:flex;justify-content:center;gap:6px">
           <div style="width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 1s infinite"></div>
           <div style="width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 1s infinite 0.2s"></div>
           <div style="width:6px;height:6px;border-radius:50%;background:var(--accent);animation:pulse 1s infinite 0.4s"></div>
         </div>
       </div>
-      <button class="btn-primary" onclick="goTo('screen-dashboard')" style="max-width:240px;margin:0 auto">
-        Volver al inicio →
-      </button>
+      <div style="display:flex;gap:10px;max-width:280px;margin:0 auto">
+        <button class="btn-primary" onclick="goTo('screen-dashboard')" style="flex:1">
+          Ir al inicio →
+        </button>
+        <button onclick="buildIBF()" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text2);font-family:DM Sans,sans-serif;font-size:14px;font-weight:500;padding:18px 14px;cursor:pointer;white-space:nowrap">
+          Rehacer
+        </button>
+      </div>
     </div>
   `;
 
@@ -2465,7 +2470,7 @@ function renderProducto(p, alerta) {
           <div style="font-size:11px;color:var(--text3);margin-top:2px">${catLabel[p.categoria] || p.categoria} - ${h.length} registro${h.length > 1 ? 's' : ''}</div>
           ${badgeHtml}
         </div>
-        <button onclick="event.stopPropagation();editarProducto('${prodKey.replace(/'/g,"\'")}','${p.nombre.replace(/'/g,"\'")}')" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text3);font-size:11px;padding:4px 8px;cursor:pointer;font-family:DM Sans,sans-serif;flex-shrink:0;margin-right:4px">Editar</button>
+        <button onclick="event.stopPropagation();editarProducto('${prodKey.replace(/'/g,"\'")}','${p.nombre.replace(/'/g,"\'")}')" style="background:rgba(212,240,96,0.12);border:1px solid rgba(212,240,96,0.3);border-radius:8px;color:var(--accent);font-size:11px;font-weight:600;padding:5px 10px;cursor:pointer;font-family:DM Sans,sans-serif;flex-shrink:0;margin-right:4px">Editar</button>
         ${sparkHtml}
         <div style="text-align:right;flex-shrink:0">
           <div style="font-family:DM Serif Display,serif;font-size:20px">${fARS(ultimo.precio)}</div>
@@ -2526,7 +2531,8 @@ function verProducto(key) {
 
   // Tabla historial
   const tablaRows = [...h].reverse().map((entry, i) => {
-    const prev = h[h.length - 2 - i];
+    const realIdx = h.length - 1 - i;
+    const prev = h[realIdx - 1];
     const varPct = prev ? ((entry.precio - prev.precio) / prev.precio) * 100 : null;
     const d = new Date(entry.fecha);
     const fecha = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
@@ -2534,10 +2540,11 @@ function verProducto(key) {
       ? `<span style="color:${varPct > 0 ? 'var(--red)' : 'var(--green)'};font-size:12px">${varPct > 0 ? '+' : ''}${varPct.toFixed(1)}%</span>`
       : '<span style="font-size:12px;color:var(--text3)">-</span>';
     return `
-      <div style="display:flex;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)">
-        <div style="font-size:12px;color:var(--text3);width:90px;flex-shrink:0">${fecha}</div>
+      <div style="display:flex;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);gap:8px">
+        <div style="font-size:12px;color:var(--text3);width:80px;flex-shrink:0">${fecha}</div>
         <div style="flex:1;font-size:15px;font-weight:500">${fARS(entry.precio)}</div>
         <div>${varHtml}</div>
+        <button onclick="editarPrecioHistorial('${key}',${realIdx})" style="background:rgba(212,240,96,0.12);border:1px solid rgba(212,240,96,0.3);border-radius:6px;color:var(--accent);font-size:10px;font-weight:600;padding:3px 8px;cursor:pointer;font-family:DM Sans,sans-serif;flex-shrink:0">Editar</button>
       </div>`;
   }).join('');
 
@@ -2837,6 +2844,18 @@ async function generarMensajeCompras() {
   return mensajes[Math.floor(Math.random() * mensajes.length)];
 }
 
+
+function editarPrecioHistorial(key, idx) {
+  const compras = getCompras();
+  const p = compras[key];
+  if (!p || !p.historial[idx]) return;
+  const precioActual = p.historial[idx].precio;
+  const nuevo = prompt(`Corregir precio (actual: ${fARS(precioActual)}):`, Math.round(precioActual));
+  if (!nuevo || isNaN(parseFloat(nuevo.replace(/\./g,'').replace(',','.')))) return;
+  p.historial[idx].precio = parseMonto(nuevo);
+  saveCompras(compras);
+  verProducto(key);
+}
 
 function editarProducto(key, nombre) {
   document.getElementById('edit-prod-key').value = key;
