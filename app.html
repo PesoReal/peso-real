@@ -941,9 +941,13 @@ select option{background:var(--bg3)}
       <div id="timeline-rows"></div>
     </div>
 
-    <div class="tip-card">
-      <div class="tip-label">📊 Que significa esto</div>
-      <div class="tip-text" id="sal-explain">Tu sueldo en pesos de hoy equivale a menos poder de compra que antes. La inflacion erosiono tu capacidad de compra aunque el numero nominal haya subido.</div>
+    <!-- Card métricas clave -->
+    <div id="sal-metricas" style="margin-bottom:16px"></div>
+
+    <!-- Análisis interpretativo -->
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;margin-bottom:16px">
+      <div style="font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Cómo leer esta línea de tiempo</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.65" id="sal-explain">Cargando análisis...</div>
     </div>
 
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;margin-bottom:16px">
@@ -1420,12 +1424,17 @@ function goTo(screenId) {
   if (screenId === 'screen-sueldo') {
       buildSueldo();
       setTimeout(() => {
+        // Mensaje emocional
         const el = document.getElementById('sal-mensaje-ia');
         if (el && state._varRealSueldo !== undefined) {
           generarMensajeSueldo(state._varRealSueldo).then(msg => {
             const el2 = document.getElementById('sal-mensaje-ia');
             if (el2) el2.textContent = msg;
           });
+        }
+        // Metricas y analisis
+        if (state._sueldoParaAnalisis) {
+          renderMetricasSueldo(state._sueldoParaAnalisis);
         }
       }, 50);
     }
@@ -1591,8 +1600,9 @@ function buildSueldo() {
       </div>`;
   });
 
-  // Guardar varReal para usar cuando la pantalla sea visible
+  // Guardar datos para usar cuando la pantalla sea visible
   state._varRealSueldo = varReal;
+  state._sueldoParaAnalisis = { sueldo, sueldoRef, mesRef, mesHoy, inflTotal, varReal };
 }
 
 // ═══════════════════════════════════════════════
@@ -3129,6 +3139,78 @@ function eliminarRegistroIBF(idx) {
   saveState();
   document.getElementById('modal-editar-ibf').style.display = 'none';
   buildHistorial();
+}
+
+
+function renderMetricasSueldo({ sueldo, sueldoRef, mesRef, mesHoy, inflTotal, varReal }) {
+  const ipcKeys = Object.keys(IPC).sort();
+  const curIdx = ipcKeys.indexOf(mesHoy);
+
+  // Calcular equivalentes para los últimos 10 puntos (cada 2 meses)
+  const puntos = [];
+  for (let i = 9; i >= 0; i--) {
+    const k = ipcKeys[Math.max(0, curIdx - i * 2)];
+    if (k === mesHoy) {
+      puntos.push({ key: k, equiv: sueldo });
+    } else {
+      const inflDesde = ipcAcumulado(k, mesHoy);
+      puntos.push({ key: k, equiv: sueldo / (1 + inflDesde / 100), inflDesde });
+    }
+  }
+
+  const minPunto = puntos.reduce((a, b) => a.equiv < b.equiv ? a : b);
+  const maxPunto = puntos[puntos.length - 1]; // hoy siempre es el máximo si creció
+  const inflPeriodo = ipcAcumulado(puntos[0].key, mesHoy);
+  const esMáximo = puntos.every(p => p.equiv <= sueldo);
+
+  // Texto interpretativo
+  const [yRef, mRef] = mesRef.split('-');
+  const mesRefLabel = `${MESES[parseInt(mRef)-1]} ${yRef}`;
+  const [yMin, mMin] = minPunto.key.split('-');
+  const mesMinLabel = `${MESES[parseInt(mMin)-1]} ${yMin}`;
+
+  let analisis = '';
+  if (varReal >= 0) {
+    analisis = `Tu sueldo actual de ${fARS(sueldo)} equivale en términos de compra a ${fARS(sueldoRef * (1 + inflTotal/100))} de ${mesRefLabel}. `;
+    analisis += `Ganaste un ${varReal.toFixed(1)}% de poder adquisitivo real desde entonces, lo que significa que hoy podés comprar más con tu sueldo que en ${mesRefLabel}. `;
+    analisis += `La inflación acumulada del período fue del ${inflTotal.toFixed(1)}%, pero tu sueldo la superó.`;
+  } else {
+    const perdida = fARS(sueldoRef * (1 + inflTotal/100) - sueldo);
+    analisis = `Para mantener el mismo poder adquisitivo que tenías en ${mesRefLabel}, hoy necesitarías ${fARS(sueldoRef * (1 + inflTotal/100))} por mes. `;
+    analisis += `La diferencia de ${perdida} es lo que la inflación (${inflTotal.toFixed(1)}% acumulado) te quitó en términos reales. `;
+    analisis += `El peor momento fue ${mesMinLabel}, cuando tu sueldo actual equivalía solo a ${fARS(minPunto.equiv)} de ese entonces.`;
+  }
+
+  // Actualizar texto explicativo
+  const explainEl = document.getElementById('sal-explain');
+  if (explainEl) explainEl.textContent = analisis;
+
+  // Renderizar métricas
+  const metEl = document.getElementById('sal-metricas');
+  if (!metEl) return;
+
+  const colorVar = varReal >= 0 ? 'var(--green)' : 'var(--red)';
+  const bgVar = varReal >= 0 ? 'var(--green-bg)' : 'var(--red-bg)';
+
+  metEl.innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:4px">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 12px;text-align:center">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">Inflación total</div>
+        <div style="font-family:DM Serif Display,serif;font-size:20px;color:var(--red)">+${inflTotal.toFixed(1)}%</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px">desde ${mesRefLabel}</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 12px;text-align:center">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">Tu variación real</div>
+        <div style="font-family:DM Serif Display,serif;font-size:20px;color:${colorVar}">${varReal >= 0 ? '+' : ''}${varReal.toFixed(1)}%</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px">poder adquisitivo</div>
+      </div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 12px;text-align:center">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">${esMáximo ? 'Máximo actual' : 'Peor momento'}</div>
+        <div style="font-family:DM Serif Display,serif;font-size:16px;color:${esMáximo ? 'var(--green)' : 'var(--amber)'}">${esMáximo ? '✓ Hoy' : mesMinLabel}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:3px">${esMáximo ? 'en máximo histórico' : fARS(minPunto.equiv)}</div>
+      </div>
+    </div>
+  `;
 }
 
 // ═══════════════════════════════════════════════
