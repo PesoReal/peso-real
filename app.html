@@ -253,6 +253,69 @@ select option{background:var(--bg3)}
 .btn-primary:active{transform:scale(0.98)}
 .btn-primary svg{width:18px;height:18px;flex-shrink:0}
 
+/* ── Boton ayuda ── */
+.help-btn{
+  width:32px;height:32px;
+  border-radius:50%;
+  background:var(--bg3);
+  border:1px solid var(--border);
+  color:var(--text3);
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+  font-family:DM Sans,sans-serif;
+  margin-left:auto;
+}
+.help-btn:hover{border-color:var(--border2);color:var(--text2)}
+
+/* ── Modal ayuda ── */
+#modal-ayuda{
+  display:none;
+  position:fixed;inset:0;
+  z-index:200;
+  background:rgba(0,0,0,0.75);
+  backdrop-filter:blur(4px);
+  align-items:flex-end;
+}
+.ayuda-inner{
+  background:var(--bg2);
+  border-radius:20px 20px 0 0;
+  border-top:1px solid var(--border);
+  padding:28px 24px calc(32px + var(--safe-bottom));
+  width:100%;
+  max-height:85vh;
+  overflow-y:auto;
+}
+.ayuda-item{
+  padding:14px 0;
+  border-bottom:1px solid var(--border);
+  cursor:pointer;
+}
+.ayuda-item:last-child{border-bottom:none}
+.ayuda-q{
+  font-size:14px;font-weight:500;color:var(--text);
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+}
+.ayuda-q-arrow{color:var(--text3);font-size:18px;flex-shrink:0;transition:transform 0.2s}
+.ayuda-q-arrow.open{transform:rotate(180deg)}
+.ayuda-a{
+  font-size:13px;color:var(--text2);line-height:1.65;
+  margin-top:10px;display:none;
+}
+.ayuda-a.open{display:block}
+.ayuda-step{
+  display:flex;gap:10px;margin-bottom:8px;
+}
+.ayuda-step-num{
+  width:22px;height:22px;border-radius:50%;
+  background:rgba(212,240,96,0.15);color:var(--accent);
+  font-size:11px;font-weight:600;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;margin-top:1px;
+}
+
 /* ── Bottom nav ── */
 #bottom-nav{
   display:flex;
@@ -777,9 +840,12 @@ select option{background:var(--bg3)}
       <div class="dash-greeting">Hola 👋</div>
       <div class="dash-logo">Peso <span>Real</span></div>
     </div>
-    <div style="text-align:right">
-      <div class="dash-date" id="dash-date"></div>
-      <div style="font-size:11px;color:var(--text3);margin-top:4px;cursor:pointer" onclick="resetApp()">Reiniciar</div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="text-align:right">
+        <div class="dash-date" id="dash-date"></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;cursor:pointer" onclick="resetApp()">Reiniciar</div>
+      </div>
+      <button class="help-btn" onclick="abrirAyuda('dashboard')">?</button>
     </div>
   </div>
   <div class="scroll dash-body">
@@ -859,6 +925,7 @@ select option{background:var(--bg3)}
       <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
     </button>
     <div class="screen-title">Tu sueldo real</div>
+    <button class="help-btn" onclick="abrirAyuda('sueldo')">?</button>
   </div>
   <div class="scroll salary-body">
 
@@ -875,8 +942,13 @@ select option{background:var(--bg3)}
     </div>
 
     <div class="tip-card">
-      <div class="tip-label">📊 Qué significa esto</div>
-      <div class="tip-text" id="sal-explain">Tu sueldo en pesos de hoy equivale a menos poder de compra que antes. La inflación erosionó tu capacidad de compra aunque el número nominal haya subido.</div>
+      <div class="tip-label">📊 Que significa esto</div>
+      <div class="tip-text" id="sal-explain">Tu sueldo en pesos de hoy equivale a menos poder de compra que antes. La inflacion erosiono tu capacidad de compra aunque el numero nominal haya subido.</div>
+    </div>
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;margin-bottom:16px">
+      <div style="font-size:11px;font-weight:500;color:var(--accent);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Peso Real dice</div>
+      <div style="font-size:14px;color:var(--text2);line-height:1.6;font-style:italic" id="sal-mensaje-ia">...</div>
     </div>
 
   </div>
@@ -891,6 +963,7 @@ select option{background:var(--bg3)}
       <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
     </button>
     <div class="screen-title">Bienestar financiero</div>
+    <button class="help-btn" onclick="abrirAyuda('ibf')">?</button>
   </div>
   <div class="scroll ibf-body">
 
@@ -922,7 +995,8 @@ select option{background:var(--bg3)}
       <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
     </button>
     <div class="screen-title">Memoria de compras</div>
-    <button onclick="abrirFormCompra()" style="background:var(--accent);color:#0a0b0d;border:none;border-radius:20px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:600;padding:8px 16px;cursor:pointer;margin-left:auto">+ Agregar</button>
+    <button class="help-btn" onclick="abrirAyuda('compras')" style="margin-left:0">?</button>
+    <button onclick="abrirFormCompra()" style="background:var(--accent);color:#0a0b0d;border:none;border-radius:20px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:600;padding:8px 16px;cursor:pointer">+ Agregar</button>
   </div>
   <div class="scroll" id="compras-body" style="padding:0 20px 24px"></div>
 </div>
@@ -988,6 +1062,7 @@ select option{background:var(--bg3)}
       <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
     </button>
     <div class="screen-title">Historial</div>
+    <button class="help-btn" onclick="abrirAyuda('historial')">?</button>
   </div>
   <div class="scroll hist-body">
 
@@ -1002,6 +1077,17 @@ select option{background:var(--bg3)}
 </div>
 
 </div><!-- .screens-wrap -->
+
+<!-- ── Modal ayuda global ── -->
+<div id="modal-ayuda">
+  <div class="ayuda-inner">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="font-family:DM Serif Display,serif;font-size:20px" id="ayuda-titulo">Ayuda</div>
+      <button onclick="cerrarAyuda()" style="background:var(--bg3);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;color:var(--text2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">&times;</button>
+    </div>
+    <div id="ayuda-contenido"></div>
+  </div>
+</div>
 
 <!-- ── Bottom nav ── -->
 <nav id="bottom-nav">
@@ -1434,6 +1520,15 @@ function buildSueldo() {
       </div>`;
   });
 }
+
+  // Mensaje emocional generado por IA
+  const msgEl = document.getElementById('sal-mensaje-ia');
+  if (msgEl) {
+    msgEl.textContent = '...';
+    generarMensajeSueldo(varReal).then(msg => {
+      if (msgEl) msgEl.textContent = msg;
+    });
+  }
 
 // ═══════════════════════════════════════════════
 // IBF - PREGUNTAS
@@ -2217,13 +2312,32 @@ function buildCompras() {
   const body = document.getElementById('compras-body');
   const productos = Object.values(compras);
 
+  // Mensaje motivacional si hay pocos productos
+  let motivHtml = '';
+  if (productos.length < 5) {
+    generarMensajeCompras().then(msg => {
+      const motiv = document.getElementById('motiv-compras');
+      if (motiv) motiv.textContent = msg;
+    });
+    motivHtml = `
+      <div style="background:var(--bg2);border:1px solid rgba(212,240,96,0.15);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start">
+        <div style="font-size:18px;flex-shrink:0">💡</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.5;font-style:italic" id="motiv-compras">...</div>
+      </div>`;
+  }
+
   if (productos.length === 0) {
-    body.innerHTML = `
-      <div style="text-align:center;padding:48px 24px">
+    body.innerHTML = motivHtml + `
+      <div style="text-align:center;padding:32px 24px">
         <div style="font-size:48px;margin-bottom:16px">🛒</div>
         <div style="font-family:DM Serif Display,serif;font-size:22px;margin-bottom:8px">Tu lista esta vacia</div>
         <div style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:24px">Carga los productos que compras regularmente y la app va a recordar como evolucionaron sus precios.</div>
       </div>`;
+    // Trigger async message
+    generarMensajeCompras().then(msg => {
+      const motiv = document.getElementById('motiv-compras');
+      if (motiv) motiv.textContent = msg;
+    });
     return;
   }
 
@@ -2245,7 +2359,7 @@ function buildCompras() {
     }
   });
 
-  let html = '';
+  let html = motivHtml;
 
   // Alertas primero
   if (conAlerta.length > 0) {
@@ -2457,6 +2571,246 @@ function registrarNuevoPrecio(key) {
   filtrarProductos();
   bindMontoInput('inp-prod-precio');
   setTimeout(() => document.getElementById('inp-prod-precio').focus(), 100);
+}
+
+
+// ═══════════════════════════════════════════════
+// SISTEMA DE AYUDA CONTEXTUAL
+// ═══════════════════════════════════════════════
+
+const AYUDA_CONTENIDO = {
+  dashboard: {
+    titulo: 'Entender el dashboard',
+    items: [
+      {
+        q: 'Que es el poder adquisitivo real?',
+        a: 'Es cuanto valen tus pesos en terminos de lo que podes comprar con ellos, descontando la inflacion. Si tu sueldo subio 50% pero la inflacion fue 60%, en realidad perdiste poder adquisitivo aunque cobres mas pesos.'
+      },
+      {
+        q: 'Por que aparece mi sueldo en USD?',
+        a: 'En Argentina el dolar MEP funciona como referencia de valor porque el peso pierde poder constantemente. Ver tu sueldo en USD te da una perspectiva de cuanto valen tus ingresos en terminos reales y comparables con el tiempo.'
+      },
+      {
+        q: 'Que significa ganar o perder contra la inflacion?',
+        a: 'Si la barra dice +12%, tu sueldo subio un 12% mas que la inflacion acumulada del periodo. Si dice -10%, la inflacion comio ese porcentaje de tu capacidad de compra aunque cobres mas pesos nominalmente.'
+      },
+      {
+        q: 'Cada cuanto se actualiza el tipo de cambio MEP?',
+        a: 'El tipo de cambio MEP se actualiza automaticamente desde DolarApi.com cada vez que abris la app, con un cache de 1 hora para no hacer consultas innecesarias.'
+      },
+      {
+        q: 'Que es el IBF?',
+        a: 'El Indice de Bienestar Financiero es un numero del 1 al 100 que resume como te sientes con tu situacion financiera esta semana. Se calcula con 5 preguntas simples, sin necesidad de cargar gastos ni numeros exactos.'
+      },
+      {
+        q: 'Cada cuanto se actualiza el IPC?',
+        a: 'El INDEC publica el IPC mensual los primeros dias habiles de cada mes. Peso Real lo actualiza automaticamente desde la API oficial de datos.gob.ar cada vez que abris la app.'
+      },
+    ]
+  },
+  sueldo: {
+    titulo: 'Entender tu sueldo real',
+    items: [
+      {
+        q: 'Como se calcula mi variacion real?',
+        a: 'Tomamos tu sueldo del mes de referencia, lo multiplicamos por la inflacion acumulada del INDEC hasta hoy, y obtenemos cuanto necesitarias cobrar para mantener el mismo nivel de vida. La diferencia entre ese numero y lo que cobras hoy es tu variacion real.'
+      },
+      {
+        q: 'Que es el sueldo ajustado?',
+        a: 'Es cuanto deberia ser tu sueldo hoy para que tengas el mismo poder de compra que en el mes de referencia que elegiste. Si cobras mas que ese numero, le ganaste a la inflacion. Si cobras menos, perdes poder adquisitivo.'
+      },
+      {
+        q: 'Por que se usa el IPC del INDEC y no otro indice?',
+        a: 'El IPC del INDEC es el indice oficial del gobierno argentino. Aunque es discutido, es el mas usado para actualizar sueldos y contratos. Peso Real lo usa por ser el estandar, pero en V2 vamos a incorporar "tu inflacion real" basada en tus propias compras.'
+      },
+      {
+        q: 'Como interpreto la linea de tiempo?',
+        a: 'Muestra la evolucion de tu sueldo nominal en los ultimos meses. Las barras mas largas no significan mas poder adquisitivo, sino mas pesos nominales. Para ver si realmente mejoro tu situacion, el dato clave es el porcentaje de variacion real arriba.'
+      },
+    ]
+  },
+  ibf: {
+    titulo: 'Entender el Indice de Bienestar',
+    items: [
+      {
+        q: 'Como se calcula el IBF del 1 al 100?',
+        a: 'Cada una de las 5 preguntas tiene un puntaje segun tu respuesta (de 0 a 100). El IBF es el promedio de esos 5 puntajes. Una semana perfecta da 100, una semana muy dificil puede dar cerca de 0.'
+      },
+      {
+        q: 'Por que no tengo que cargar gastos?',
+        a: 'Cargar cada gasto es tedioso y la mayoria de las apps lo abandona a la semana. El IBF funciona con percepcion: como te sentis, si llegaste a fin de mes, si pudiste ahorrar algo. Es mas honesto y mucho mas facil de mantener.'
+      },
+      {
+        q: 'Cada cuanto deberia completarlo?',
+        a: 'Una vez por semana es lo ideal, siempre el mismo dia. Asi el historial tiene consistencia y podes ver tendencias reales. Si lo hacas muy seguido, los resultados van a variar mucho por el estado de animo del momento.'
+      },
+      {
+        q: 'Que hace la app con mis respuestas?',
+        a: 'Las respuestas se usan unicamente para calcular tu IBF y generar una accion concreta personalizada. No se comparten con nadie ni se usan para publicidad. Todo queda guardado solo en tu dispositivo.'
+      },
+      {
+        q: 'Que significa la accion semanal?',
+        a: 'Es una sugerencia concreta y especifica basada en tus respuestas de esa semana, generada por inteligencia artificial. No es un consejo generico: tiene en cuenta si llegaste o no a fin de mes, si pudiste ahorrar, y como te sentis.'
+      },
+    ]
+  },
+  compras: {
+    titulo: 'Memoria de compras',
+    items: [
+      {
+        q: 'Para que sirve registrar precios?',
+        a: 'Para saber si un precio que ves en el super es caro o barato en base a tu propio historial. Con el tiempo, la app aprende como evolucionan los precios de tus productos y te alerta cuando algo sube mas de lo esperado.'
+      },
+      {
+        q: 'Guia: como cargar tu primera compra',
+        steps: [
+          'Toca el boton "+ Agregar" arriba a la derecha',
+          'Elegis la categoria del producto (ej: Lacteos)',
+          'Buscas el producto en la lista o escribis el nombre',
+          'Cargas el precio que viste o pagaste hoy',
+          'Listo. La proxima vez que lo compres, repetis el proceso y la app muestra cuanto cambio'
+        ]
+      },
+      {
+        q: 'Con que frecuencia deberia cargar precios?',
+        a: 'Lo ideal es cargar el precio cada vez que compras el producto. No hace falta que sea exacto ni inmediato: con cargarlo cuando llegar a casa alcanza. Cuantos mas registros tenga cada producto, mas util es el historial.'
+      },
+      {
+        q: 'Que significa la alerta roja?',
+        a: 'Significa que ese producto subio mas del 50% por encima de la inflacion del rubro en el ultimo registro. Por ejemplo, si la inflacion de alimentos fue 4% este mes pero ese producto subio 10%, aparece en rojo como alerta.'
+      },
+      {
+        q: 'Que significa precio minimo historico?',
+        a: 'Que el precio que acabas de cargar es el mas bajo que registraste para ese producto. Es una buena senal para stockearte si el producto se guarda bien, porque probablemente vuelva a subir.'
+      },
+      {
+        q: 'Puedo agregar productos que no estan en la lista?',
+        a: 'Si. Elegis la categoria correspondiente, y en lugar de seleccionar de la lista, escribis el nombre directamente en el campo de texto. Ese producto quedara guardado y aparecer en la lista la proxima vez.'
+      },
+    ]
+  },
+  historial: {
+    titulo: 'Leer tu historial de bienestar',
+    items: [
+      {
+        q: 'Como leer el grafico de barras?',
+        a: 'Cada barra es una semana. Las barras verdes indican semanas con IBF alto (mas de 70), las amarillas semanas medias (40 a 70), y las rojas semanas con mucha presion financiera (menos de 40). La tendencia importa mas que un valor puntual.'
+      },
+      {
+        q: 'Que significa que el IBF bajo esta semana?',
+        a: 'Que esta semana fue mas dificil que la anterior en terminos financieros o emocionales. Una baja puntual es normal. Lo que hay que mirar es si hay varias semanas seguidas en rojo, que puede indicar un patron que vale la pena atender.'
+      },
+      {
+        q: 'Por que el historial tiene limite de 8 semanas?',
+        a: 'Para que el grafico sea claro y legible en el celular. En versiones futuras vas a poder ver el historial completo con filtros por mes o por año.'
+      },
+      {
+        q: 'Puedo borrar registros del historial?',
+        a: 'Por ahora no hay opcion de borrar registros individuales. Si queres reiniciar todo el historial, podes usar la opcion "Reiniciar" en el dashboard. En versiones futuras vamos a agregar la opcion de editar o borrar registros puntuales.'
+      },
+    ]
+  },
+};
+
+function abrirAyuda(seccion) {
+  const data = AYUDA_CONTENIDO[seccion];
+  if (!data) return;
+  document.getElementById('ayuda-titulo').textContent = data.titulo;
+
+  const html = data.items.map((item, idx) => {
+    let respuesta = '';
+    if (item.steps) {
+      respuesta = item.steps.map((s, i) => `
+        <div class="ayuda-step">
+          <div class="ayuda-step-num">${i+1}</div>
+          <div style="font-size:13px;color:var(--text2);line-height:1.5">${s}</div>
+        </div>`).join('');
+    } else {
+      respuesta = `<p>${item.a}</p>`;
+    }
+    return `
+      <div class="ayuda-item" onclick="toggleAyuda(${idx})">
+        <div class="ayuda-q">
+          <span>${item.q}</span>
+          <span class="ayuda-q-arrow" id="arrow-${idx}">&#8964;</span>
+        </div>
+        <div class="ayuda-a" id="ans-${idx}">${respuesta}</div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('ayuda-contenido').innerHTML = html;
+  document.getElementById('modal-ayuda').style.display = 'flex';
+}
+
+function toggleAyuda(idx) {
+  const ans = document.getElementById(`ans-${idx}`);
+  const arrow = document.getElementById(`arrow-${idx}`);
+  const isOpen = ans.classList.contains('open');
+  // Cerrar todos
+  document.querySelectorAll('.ayuda-a').forEach(el => el.classList.remove('open'));
+  document.querySelectorAll('.ayuda-q-arrow').forEach(el => el.classList.remove('open'));
+  // Abrir el tocado si estaba cerrado
+  if (!isOpen) {
+    ans.classList.add('open');
+    arrow.classList.add('open');
+  }
+}
+
+function cerrarAyuda() {
+  document.getElementById('modal-ayuda').style.display = 'none';
+}
+
+// Cerrar con tap en el fondo
+document.getElementById('modal-ayuda').addEventListener('click', function(e) {
+  if (e.target === this) cerrarAyuda();
+});
+
+// ═══════════════════════════════════════════════
+// MENSAJES IA EN SUELDO Y COMPRAS
+// ═══════════════════════════════════════════════
+
+async function generarMensajeSueldo(varReal) {
+  const fallbacks = {
+    positivo: 'En Argentina mantener e incrementar el poder adquisitivo es un logro real. Lo que lograste no es menor.',
+    neutro: 'Mantener el poder adquisitivo en Argentina ya es un merito. Muchos no pueden decir lo mismo.',
+    negativo: 'Perder poder adquisitivo en Argentina es la realidad de la mayoria. Conocer el numero es el primer paso para revertirlo.',
+  };
+  const bucket = varReal > 2 ? 'positivo' : varReal >= -2 ? 'neutro' : 'negativo';
+
+  try {
+    const prompts = {
+      positivo: `El usuario de una app de finanzas personales argentina le gano a la inflacion un ${varReal.toFixed(1)}% en terminos reales. Escribi un mensaje corto (1 oracion) que lo felicite genuinamente, sin exagerar, reconociendo que en Argentina esto es un logro real. En español rioplatense, sin emojis.`,
+      neutro: `El usuario de una app de finanzas personales argentina casi mantuvo su poder adquisitivo (${varReal.toFixed(1)}%). Escribi un mensaje corto (1 oracion) que reconozca que mantener el poder adquisitivo en Argentina ya es meritorio. En español rioplatense, sin emojis.`,
+      negativo: `El usuario de una app de finanzas personales argentina perdio un ${Math.abs(varReal).toFixed(1)}% de poder adquisitivo. Escribi un mensaje corto (1-2 oraciones) empatico y contenedor, que no dramatice, que reconozca que es la realidad de muchos argentinos, y que haya luz al final del tunel. En español rioplatense, sin emojis.`,
+    };
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompts[bucket] }]
+      })
+    });
+
+    if (!res.ok) return fallbacks[bucket];
+    const data = await res.json();
+    return data.content?.find(b => b.type === 'text')?.text?.trim() || fallbacks[bucket];
+  } catch(e) {
+    return fallbacks[bucket];
+  }
+}
+
+async function generarMensajeCompras() {
+  const mensajes = [
+    'La primera vez que registras un precio es la mas importante. La app empieza a trabajar para vos desde ese momento.',
+    'Cada precio que cargas es un dato que la inflacion no te puede sacar. Con el tiempo, tu historial vale oro.',
+    'No hace falta cargar todo el super. Empeza por los 5 productos que mas compras seguido.',
+    'La proxima vez que estes en el super y dudes si el precio subio mucho, vas a tener la respuesta en tu bolsillo.',
+    'Los supermercados suben precios de a poco para que no te des cuenta. Tu historial los expone.',
+  ];
+  return mensajes[Math.floor(Math.random() * mensajes.length)];
 }
 
 // ═══════════════════════════════════════════════
