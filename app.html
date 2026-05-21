@@ -1206,20 +1206,25 @@ async function actualizarIPC() {
 
   try {
     // Serie 148.3_INIVELGENERAL_DICI_M_26 = IPC nivel general mensual INDEC
-    const url = 'https://apis.datos.gob.ar/series/api/series/?ids=148.3_INIVELGENERAL_DICI_M_26&limit=60&sort=asc&format=json&representation_mode=percent_change';
+    const url = 'https://apis.datos.gob.ar/series/api/series/?ids=148.3_INIVELGENERAL_DICI_M_26&limit=60&sort=asc&format=json';
     const res = await fetch(url);
     if (!res.ok) return;
     const data = await res.json();
 
     if (!data.data || !Array.isArray(data.data)) return;
 
+    // La API devuelve valores del indice IPC base
+    // Calculamos la variacion mensual entre valores consecutivos
     const nuevos = {};
-    data.data.forEach(([fecha, valor]) => {
-      if (valor === null) return;
-      // fecha viene como "2024-01-01", tomamos YYYY-MM
+    const datos = data.data.filter(([, v]) => v !== null);
+    for (let i = 1; i < datos.length; i++) {
+      const [fecha, valor] = datos[i];
+      const valorAnterior = datos[i-1][1];
+      if (!valorAnterior) continue;
       const key = fecha.substring(0, 7);
-      nuevos[key] = parseFloat((valor * 100).toFixed(1));
-    });
+      const varMensual = ((valor - valorAnterior) / valorAnterior) * 100;
+      nuevos[key] = parseFloat(varMensual.toFixed(1));
+    }
 
     if (Object.keys(nuevos).length > 0) {
       IPC = { ...IPC, ...nuevos };
@@ -1412,7 +1417,18 @@ function goTo(screenId) {
   };
   if (navMap[screenId]) document.getElementById(navMap[screenId]).classList.add('active');
 
-  if (screenId === 'screen-sueldo') buildSueldo();
+  if (screenId === 'screen-sueldo') {
+      buildSueldo();
+      setTimeout(() => {
+        const el = document.getElementById('sal-mensaje-ia');
+        if (el && state._varRealSueldo !== undefined) {
+          generarMensajeSueldo(state._varRealSueldo).then(msg => {
+            const el2 = document.getElementById('sal-mensaje-ia');
+            if (el2) el2.textContent = msg;
+          });
+        }
+      }, 50);
+    }
   if (screenId === 'screen-ibf') buildIBF();
   if (screenId === 'screen-compras') buildCompras();
   if (screenId === 'screen-producto') {}
@@ -1544,7 +1560,7 @@ function buildSueldo() {
     points.push({ key: k, nominal: sueldo * (0.6 + i * 0.08), real: sueldo * (0.5 + i * 0.04) });
   }
   // Último punto es el actual
-  points[5] = { key: mesHoy, nominal: sueldo, real: sueldo / (1 + infl12/100) };
+  points[5] = { key: mesHoy, nominal: sueldo, real: sueldo / (1 + inflTotal/100) };
 
   const maxVal = Math.max(...points.map(p => p.nominal));
   const container = document.getElementById('timeline-rows');
@@ -1567,21 +1583,8 @@ function buildSueldo() {
       </div>`;
   });
 
-  // Mensaje emocional - se ejecuta despues de que la pantalla sea visible
-  generarMensajeSueldo(varReal).then(msg => {
-    // Reintentar hasta encontrar el elemento (puede tardar si la pantalla no esta activa aun)
-    let intentos = 0;
-    const trySet = () => {
-      const el = document.getElementById('sal-mensaje-ia');
-      if (el) {
-        el.textContent = msg;
-      } else if (intentos < 10) {
-        intentos++;
-        setTimeout(trySet, 150);
-      }
-    };
-    trySet();
-  });
+  // Guardar varReal para usar cuando la pantalla sea visible
+  state._varRealSueldo = varReal;
 }
 
 // ═══════════════════════════════════════════════
