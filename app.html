@@ -1578,7 +1578,7 @@ function buildSueldo() {
         </div>
         <div>
           <div class="timeline-amount">${fARS(p.nominal)}</div>
-          <div class="timeline-pct" style="color:${isNow ? 'var(--accent)' : 'var(--text3)'}">${isNow ? 'hoy' : fPct(-infl12*0.1*(5-i)/5)}</div>
+          <div class="timeline-pct" style="color:${isNow ? 'var(--accent)' : 'var(--text3)'}">${isNow ? 'hoy' : fPct(-inflTotal*0.1*(5-i)/5)}</div>
         </div>
       </div>`;
   });
