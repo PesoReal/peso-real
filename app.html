@@ -973,20 +973,26 @@ select option{background:var(--bg3)}
       <div class="ibf-desc" id="ibf-desc">Respondé las 5 preguntas para calcular tu IBF de esta semana.</div>
     </div>
 
-    <div class="ibf-progress" id="ibf-progress">
-      <div class="ibf-prog-dot active"></div>
-      <div class="ibf-prog-dot"></div>
-      <div class="ibf-prog-dot"></div>
-      <div class="ibf-prog-dot"></div>
-      <div class="ibf-prog-dot"></div>
-    </div>
+    <!-- Landing: estado y botonera -->
+    <div id="ibf-landing" style="display:none"></div>
 
-    <div id="ibf-questions"></div>
+    <!-- Emergente inline -->
+    <div id="ibf-emergente" style="display:none;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:20px;margin-bottom:16px"></div>
+
+    <!-- Cuestionario -->
+    <div id="ibf-cuestionario" style="display:none">
+      <div class="ibf-progress" id="ibf-progress">
+        <div class="ibf-prog-dot active"></div>
+        <div class="ibf-prog-dot"></div>
+        <div class="ibf-prog-dot"></div>
+        <div class="ibf-prog-dot"></div>
+        <div class="ibf-prog-dot"></div>
+      </div>
+      <div id="ibf-questions"></div>
+    </div>
 
   </div>
 </div>
-
-<!-- ══════════════════════════════════════
      SCREEN 5 - COMPRAS
 ══════════════════════════════════════ -->
 <div class="screen" id="screen-compras">
@@ -1062,7 +1068,8 @@ select option{background:var(--bg3)}
       <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
     </button>
     <div class="screen-title">Historial</div>
-    <button class="help-btn" onclick="abrirAyuda('historial')">?</button>
+    <button onclick="abrirEditarIBF()" style="background:rgba(212,240,96,0.12);border:1px solid rgba(212,240,96,0.3);border-radius:8px;color:var(--accent);font-size:12px;font-weight:600;padding:6px 12px;cursor:pointer;font-family:DM Sans,sans-serif">Editar</button>
+    <button class="help-btn" onclick="abrirAyuda('historial')" style="margin-left:0">?</button>
   </div>
   <div class="scroll hist-body">
 
@@ -1103,6 +1110,18 @@ select option{background:var(--bg3)}
       <button onclick="guardarEdicionProducto()" class="btn-primary" style="flex:1">Guardar cambios</button>
       <button onclick="eliminarProducto()" style="background:var(--red-bg);border:1px solid rgba(255,90,90,0.3);border-radius:var(--radius-sm);color:var(--red);font-family:DM Sans,sans-serif;font-size:14px;font-weight:500;padding:18px 16px;cursor:pointer;white-space:nowrap">Eliminar</button>
     </div>
+  </div>
+</div>
+
+<!-- ── Modal editar IBF ── -->
+<div id="modal-editar-ibf" style="display:none;position:fixed;inset:0;z-index:150;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:flex-end">
+  <div style="background:var(--bg2);border-radius:20px 20px 0 0;padding:28px 24px calc(28px + var(--safe-bottom));width:100%;border-top:1px solid var(--border);max-height:80vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="font-family:DM Serif Display,serif;font-size:20px">Editar registro IBF</div>
+      <button onclick="document.getElementById('modal-editar-ibf').style.display='none'" style="background:var(--bg3);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;color:var(--text2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">&times;</button>
+    </div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:16px">Selecciona el registro que queres corregir:</div>
+    <div id="ibf-edit-lista"></div>
   </div>
 </div>
 
@@ -1548,16 +1567,21 @@ function buildSueldo() {
       </div>`;
   });
 
-  // Mensaje emocional generado por IA
-  setTimeout(() => {
-    const msgEl = document.getElementById('sal-mensaje-ia');
-    if (msgEl) {
-      generarMensajeSueldo(varReal).then(msg => {
-        const el = document.getElementById('sal-mensaje-ia');
-        if (el) el.textContent = msg;
-      });
-    }
-  }, 100);
+  // Mensaje emocional - se ejecuta despues de que la pantalla sea visible
+  generarMensajeSueldo(varReal).then(msg => {
+    // Reintentar hasta encontrar el elemento (puede tardar si la pantalla no esta activa aun)
+    let intentos = 0;
+    const trySet = () => {
+      const el = document.getElementById('sal-mensaje-ia');
+      if (el) {
+        el.textContent = msg;
+      } else if (intentos < 10) {
+        intentos++;
+        setTimeout(trySet, 150);
+      }
+    };
+    trySet();
+  });
 }
 
 // ═══════════════════════════════════════════════
@@ -1599,10 +1623,135 @@ const PREGUNTAS = [
 let ibfAnswers = [];
 let ibfCurrent = 0;
 
+function diasDesdeUltimoIBF() {
+  const history = state.ibfHistory || [];
+  if (history.length === 0) return null;
+  const ultimo = new Date(history[history.length - 1].fecha);
+  const hoy = new Date();
+  return Math.floor((hoy - ultimo) / (1000 * 60 * 60 * 24));
+}
+
 function buildIBF() {
+  // Resetear estado visual
+  document.getElementById('ibf-landing').style.display = 'none';
+  document.getElementById('ibf-emergente').style.display = 'none';
+  document.getElementById('ibf-cuestionario').style.display = 'none';
+
+  const dias = diasDesdeUltimoIBF();
+  const history = state.ibfHistory || [];
+
+  // Primera vez — mostrar landing de bienvenida
+  if (history.length === 0) {
+    mostrarLandingIBF(null);
+    return;
+  }
+
+  // Tiene historial — mostrar landing con estado
+  mostrarLandingIBF(dias);
+}
+
+function mostrarLandingIBF(dias) {
+  const landing = document.getElementById('ibf-landing');
+  landing.style.display = 'block';
+
+  let textoEstado = '';
+  if (dias === null) {
+    textoEstado = 'Todavia no completaste ningún IBF. ¡Es el momento ideal para empezar!';
+  } else if (dias === 0) {
+    textoEstado = 'Completaste tu ultimo IBF hoy.';
+  } else if (dias === 1) {
+    textoEstado = 'Tu ultimo IBF fue hace 1 dia.';
+  } else {
+    textoEstado = `Tu ultimo IBF fue hace ${dias} dias.`;
+  }
+
+  landing.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.5">${textoEstado}</div>
+      <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:14px">
+        ¿Querés completar un IBF ahora?
+      </div>
+      <div style="display:flex;gap:10px">
+        <button onclick="responderIBFLanding(true)" class="btn-primary" style="flex:1;padding:14px">
+          Si, completar
+        </button>
+        <button onclick="responderIBFLanding(false)" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text2);font-family:DM Sans,sans-serif;font-size:16px;font-weight:500;padding:14px;cursor:pointer">
+          Ahora no
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function responderIBFLanding(quiere) {
+  const dias = diasDesdeUltimoIBF();
+  const emergente = document.getElementById('ibf-emergente');
+  const msRec = 'Se recomienda completar un IBF al menos cada 5 dias. Si lo haces una vez por semana el mismo dia, aun mejor.';
+
+  if (quiere && (dias === null || dias >= 5)) {
+    // Iniciar cuestionario directo
+    iniciarCuestionarioIBF();
+    return;
+  }
+
+  if (quiere && dias < 5) {
+    // Emergente: recomendar esperar
+    emergente.style.display = 'block';
+    emergente.innerHTML = `
+      <div style="font-size:13px;color:var(--amber);font-weight:500;margin-bottom:8px">Atención</div>
+      <div style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:16px">${msRec}</div>
+      <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:14px">¿Igual querés completar un IBF?</div>
+      <div style="display:flex;gap:10px">
+        <button onclick="iniciarCuestionarioIBF()" class="btn-primary" style="flex:1;padding:14px">Si, completar igual</button>
+        <button onclick="cancelarIBF()" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text2);font-family:DM Sans,sans-serif;font-size:16px;font-weight:500;padding:14px;cursor:pointer">Cancelar</button>
+      </div>
+    `;
+    return;
+  }
+
+  if (!quiere && dias !== null && dias < 5) {
+    // Emergente: IBF cancelado
+    emergente.style.display = 'block';
+    emergente.innerHTML = `
+      <div style="font-size:14px;color:var(--text2);line-height:1.6;text-align:center;padding:8px 0">
+        Inicio de IBF cancelado.
+      </div>
+    `;
+    return;
+  }
+
+  if (!quiere && (dias === null || dias >= 5)) {
+    // Emergente: confirmar que no quiere a pesar de que deberia
+    emergente.style.display = 'block';
+    emergente.innerHTML = `
+      <div style="font-size:13px;color:var(--amber);font-weight:500;margin-bottom:8px">Recordatorio</div>
+      <div style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:16px">${msRec}</div>
+      <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:14px">¿Estas seguro de que no queres completar un IBF?</div>
+      <div style="display:flex;gap:10px">
+        <button onclick="cancelarIBF()" class="btn-primary" style="flex:1;padding:14px;background:var(--bg3);color:var(--text2);border:1px solid var(--border)">Si, no quiero</button>
+        <button onclick="iniciarCuestionarioIBF()" style="flex:1;background:var(--accent);color:#0a0b0d;border:none;border-radius:var(--radius-sm);font-family:DM Sans,sans-serif;font-size:16px;font-weight:600;padding:14px;cursor:pointer">Completar IBF</button>
+      </div>
+    `;
+    return;
+  }
+}
+
+function iniciarCuestionarioIBF() {
+  document.getElementById('ibf-landing').style.display = 'none';
+  document.getElementById('ibf-emergente').style.display = 'none';
+  document.getElementById('ibf-cuestionario').style.display = 'block';
   ibfAnswers = new Array(PREGUNTAS.length).fill(null);
   ibfCurrent = 0;
   renderQuestion(0);
+}
+
+function cancelarIBF() {
+  const emergente = document.getElementById('ibf-emergente');
+  emergente.innerHTML = `
+    <div style="font-size:14px;color:var(--text2);line-height:1.6;text-align:center;padding:8px 0">
+      Inicio de IBF cancelado.
+    </div>
+  `;
 }
 
 function renderQuestion(idx) {
@@ -1683,6 +1832,7 @@ async function calcIBF() {
   document.getElementById('ibf-num').textContent = score;
 
   // Mostrar pantalla de resultado con loader mientras genera la acción
+  document.getElementById('ibf-cuestionario').style.display = 'block';
   document.getElementById('ibf-questions').innerHTML = `
     <div class="question-card" id="ibf-result-card" style="padding:20px 20px">
       <div id="ibf-accion-wrap" style="margin-bottom:20px">
@@ -2915,6 +3065,59 @@ function volverPregunta(idx) {
   ibfCurrent = idx - 1;
   ibfAnswers[idx - 1] = null;
   renderQuestion(idx - 1);
+}
+
+
+function abrirEditarIBF() {
+  const history = state.ibfHistory || [];
+  if (history.length === 0) {
+    alert('No hay registros de IBF para editar.');
+    return;
+  }
+
+  const lista = document.getElementById('ibf-edit-lista');
+  lista.innerHTML = history.map((h, i) => {
+    const d = new Date(h.fecha);
+    const fecha = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
+    const color = h.score >= 70 ? 'var(--green)' : h.score >= 40 ? 'var(--amber)' : 'var(--red)';
+    const bg = h.score >= 70 ? 'var(--green-bg)' : h.score >= 40 ? 'var(--amber-bg)' : 'var(--red-bg)';
+    return `
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:8px">
+        <div style="width:40px;height:40px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-family:DM Serif Display,serif;font-size:16px;color:${color};flex-shrink:0">${h.score}</div>
+        <div style="flex:1">
+          <div style="font-size:14px;color:var(--text)">${fecha}</div>
+          <div style="font-size:12px;color:var(--text3)">Score: ${h.score}/100</div>
+        </div>
+        <button onclick="editarScoreIBF(${i})" style="background:rgba(212,240,96,0.12);border:1px solid rgba(212,240,96,0.3);border-radius:8px;color:var(--accent);font-size:12px;font-weight:600;padding:6px 12px;cursor:pointer;font-family:DM Sans,sans-serif">Editar</button>
+        <button onclick="eliminarRegistroIBF(${i})" style="background:var(--red-bg);border:1px solid rgba(255,90,90,0.3);border-radius:8px;color:var(--red);font-size:12px;font-weight:500;padding:6px 10px;cursor:pointer;font-family:DM Sans,sans-serif">X</button>
+      </div>`;
+  }).join('');
+
+  document.getElementById('modal-editar-ibf').style.display = 'flex';
+}
+
+function editarScoreIBF(idx) {
+  const h = state.ibfHistory[idx];
+  if (!h) return;
+  const nuevo = prompt(`Corregir score (actual: ${h.score}). Ingresa un numero del 1 al 100:`, h.score);
+  if (!nuevo) return;
+  const score = parseInt(nuevo);
+  if (isNaN(score) || score < 1 || score > 100) {
+    alert('El score debe ser un numero entre 1 y 100.');
+    return;
+  }
+  state.ibfHistory[idx].score = score;
+  saveState();
+  abrirEditarIBF();
+  buildHistorial();
+}
+
+function eliminarRegistroIBF(idx) {
+  if (!confirm('Eliminar este registro del historial?')) return;
+  state.ibfHistory.splice(idx, 1);
+  saveState();
+  document.getElementById('modal-editar-ibf').style.display = 'none';
+  buildHistorial();
 }
 
 // ═══════════════════════════════════════════════
