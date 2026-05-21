@@ -1548,37 +1548,45 @@ function buildSueldo() {
   badge.textContent = `${fPct(varReal)} vs. ${mesLabel2} (real)`;
   badge.className = `salary-badge ${varReal >= 0 ? 'gain' : 'loss'}`;
 
-  // Timeline: últimos 6 puntos
-  const keys = Object.keys(IPC).sort();
-  const curIdx = keys.indexOf(mesHoy);
+  // Timeline: últimos 6 puntos cada 2 meses hacia atras
+  // Muestra cuánto equivale el sueldo actual en pesos de cada mes pasado
+  const ipcKeys = Object.keys(IPC).sort();
+  const curIdx = ipcKeys.indexOf(mesHoy);
   const points = [];
   for (let i = 5; i >= 0; i--) {
-    const k = keys[Math.max(0, curIdx - i * 2)];
-    const inflAc = ipcAcumulado(mesRef, k);
-    const sueldoNominal = sueldo * (1 + (i === 0 ? 0 : -inflAc * 0.3 / 100));
-    const sueldoReal = sueldoNominal / (1 + inflAc/100);
-    points.push({ key: k, nominal: sueldo * (0.6 + i * 0.08), real: sueldo * (0.5 + i * 0.04) });
+    const k = ipcKeys[Math.max(0, curIdx - i * 2)];
+    if (k === mesHoy) {
+      points.push({ key: k, equiv: sueldo, isNow: true });
+    } else {
+      // Inflación acumulada desde ese mes hasta hoy
+      const inflDesde = ipcAcumulado(k, mesHoy);
+      // Cuánto equivale el sueldo actual en pesos de ese mes
+      const equiv = sueldo / (1 + inflDesde / 100);
+      points.push({ key: k, equiv, inflDesde, isNow: false });
+    }
   }
-  // Último punto es el actual
-  points[5] = { key: mesHoy, nominal: sueldo, real: sueldo / (1 + inflTotal/100) };
+  // Asegurar que el último punto sea siempre "hoy"
+  if (!points[points.length-1].isNow) {
+    points[points.length-1] = { key: mesHoy, equiv: sueldo, isNow: true };
+  }
 
-  const maxVal = Math.max(...points.map(p => p.nominal));
+  const maxVal = Math.max(...points.map(p => p.equiv));
   const container = document.getElementById('timeline-rows');
   container.innerHTML = '';
-  points.forEach((p, i) => {
-    const pct = Math.round((p.nominal / maxVal) * 100);
-    const isNow = i === points.length - 1;
+  points.forEach((p) => {
+    const pct = Math.round((p.equiv / maxVal) * 100);
+    const subText = p.isNow ? 'hoy' : `+${p.inflDesde.toFixed(1)}% de inflación desde entonces`;
     container.innerHTML += `
       <div class="timeline-row">
         <div class="timeline-date">${mesLabel(p.key)}</div>
         <div class="timeline-bar-wrap">
           <div class="timeline-bar-track">
-            <div class="timeline-bar-fill ${isNow ? 'now' : 'past'}" style="width:${pct}%"></div>
+            <div class="timeline-bar-fill ${p.isNow ? 'now' : 'past'}" style="width:${pct}%"></div>
           </div>
         </div>
         <div>
-          <div class="timeline-amount">${fARS(p.nominal)}</div>
-          <div class="timeline-pct" style="color:${isNow ? 'var(--accent)' : 'var(--text3)'}">${isNow ? 'hoy' : fPct(-inflTotal*0.1*(5-i)/5)}</div>
+          <div class="timeline-amount">${fARS(p.equiv)}</div>
+          <div class="timeline-pct" style="color:${p.isNow ? 'var(--accent)' : 'var(--text3);font-size:10px'}">${subText}</div>
         </div>
       </div>`;
   });
