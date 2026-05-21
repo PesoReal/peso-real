@@ -2760,10 +2760,7 @@ function cerrarAyuda() {
   document.getElementById('modal-ayuda').style.display = 'none';
 }
 
-// Cerrar con tap en el fondo
-document.getElementById('modal-ayuda').addEventListener('click', function(e) {
-  if (e.target === this) cerrarAyuda();
-});
+// Cerrar con tap en el fondo - se registra en init para garantizar que el DOM exista
 
 // ═══════════════════════════════════════════════
 // MENSAJES IA EN SUELDO Y COMPRAS
@@ -2827,6 +2824,12 @@ function resetApp() {
 // INIT
 // ═══════════════════════════════════════════════
 function init() {
+  // Cerrar modal ayuda con tap en el fondo
+  const modalAyuda = document.getElementById('modal-ayuda');
+  if (modalAyuda) modalAyuda.addEventListener('click', function(e) {
+    if (e.target === this) cerrarAyuda();
+  });
+
   // Arrancar la app inmediatamente sin esperar las APIs
   poblarMeses();
   bindMontoInput('inp-sueldo');
