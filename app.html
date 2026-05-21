@@ -1078,6 +1078,34 @@ select option{background:var(--bg3)}
 
 </div><!-- .screens-wrap -->
 
+<!-- ── Modal editar producto ── -->
+<div id="modal-editar-prod" style="display:none;position:fixed;inset:0;z-index:150;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:flex-end">
+  <div style="background:var(--bg2);border-radius:20px 20px 0 0;padding:28px 24px calc(28px + var(--safe-bottom));width:100%;border-top:1px solid var(--border)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="font-family:DM Serif Display,serif;font-size:20px">Editar producto</div>
+      <button onclick="cerrarEditarProducto()" style="background:var(--bg3);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;color:var(--text2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">&times;</button>
+    </div>
+    <div class="field">
+      <label>Nombre del producto</label>
+      <input type="text" id="edit-prod-nombre" autocomplete="off"
+        style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:DM Sans,sans-serif;font-size:16px;padding:14px 16px;outline:none;margin-bottom:4px">
+    </div>
+    <div class="field" style="margin-top:12px">
+      <label>Corregir ultimo precio registrado</label>
+      <div class="input-wrap">
+        <span class="prefix">$</span>
+        <input type="text" id="edit-prod-precio" placeholder="Dejar vacio para no cambiar" inputmode="decimal" autocomplete="off">
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-top:6px">Solo modifica el ultimo precio registrado.</div>
+    </div>
+    <input type="hidden" id="edit-prod-key">
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button onclick="guardarEdicionProducto()" class="btn-primary" style="flex:1">Guardar cambios</button>
+      <button onclick="eliminarProducto()" style="background:var(--red-bg);border:1px solid rgba(255,90,90,0.3);border-radius:var(--radius-sm);color:var(--red);font-family:DM Sans,sans-serif;font-size:14px;font-weight:500;padding:18px 16px;cursor:pointer;white-space:nowrap">Eliminar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── Modal ayuda global ── -->
 <div id="modal-ayuda">
   <div class="ayuda-inner">
@@ -1587,7 +1615,10 @@ function renderQuestion(idx) {
 
   container.innerHTML = `
     <div class="question-card">
-      <div class="q-num">Pregunta ${idx + 1} de ${PREGUNTAS.length}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="q-num" style="margin-bottom:0">Pregunta ${idx + 1} de ${PREGUNTAS.length}</div>
+        ${idx > 0 ? '<button onclick="volverPregunta(' + idx + ')" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text3);font-size:12px;padding:4px 10px;cursor:pointer;font-family:DM Sans,sans-serif">← Anterior</button>' : ''}
+      </div>
       <div class="q-text">${q.texto}</div>
       <div class="q-options">
         ${q.opciones.map((opt, i) => `
@@ -2259,7 +2290,7 @@ function filtrarProductos() {
       style="padding:12px 16px;font-size:14px;color:var(--text2);cursor:pointer;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px"
       onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
       <span style="flex:1">${p}</span>
-      ${esMio ? '<span style="font-size:10px;color:var(--accent);font-weight:500;flex-shrink:0">MIO</span>' : ''}
+      ${esMio ? '<span style="font-size:10px;color:#0a0b0d;background:var(--accent);font-weight:700;flex-shrink:0;padding:2px 6px;border-radius:4px">MIO</span>' : ''}
     </div>`;
   }).join('');
 }
@@ -2434,6 +2465,7 @@ function renderProducto(p, alerta) {
           <div style="font-size:11px;color:var(--text3);margin-top:2px">${catLabel[p.categoria] || p.categoria} - ${h.length} registro${h.length > 1 ? 's' : ''}</div>
           ${badgeHtml}
         </div>
+        <button onclick="event.stopPropagation();editarProducto('${prodKey.replace(/'/g,"\'")}','${p.nombre.replace(/'/g,"\'")}')" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text3);font-size:11px;padding:4px 8px;cursor:pointer;font-family:DM Sans,sans-serif;flex-shrink:0;margin-right:4px">Editar</button>
         ${sparkHtml}
         <div style="text-align:right;flex-shrink:0">
           <div style="font-family:DM Serif Display,serif;font-size:20px">${fARS(ultimo.precio)}</div>
@@ -2766,37 +2798,32 @@ function cerrarAyuda() {
 // MENSAJES IA EN SUELDO Y COMPRAS
 // ═══════════════════════════════════════════════
 
-async function generarMensajeSueldo(varReal) {
-  const fallbacks = {
-    positivo: 'En Argentina mantener e incrementar el poder adquisitivo es un logro real. Lo que lograste no es menor.',
-    neutro: 'Mantener el poder adquisitivo en Argentina ya es un merito. Muchos no pueden decir lo mismo.',
-    negativo: 'Perder poder adquisitivo en Argentina es la realidad de la mayoria. Conocer el numero es el primer paso para revertirlo.',
-  };
+function generarMensajeSueldo(varReal) {
+  // La API de Anthropic requiere backend para evitar CORS
+  // Usamos mensajes curados que cubren todos los casos con el numero real
   const bucket = varReal > 2 ? 'positivo' : varReal >= -2 ? 'neutro' : 'negativo';
+  const pct = Math.abs(varReal).toFixed(1);
 
-  try {
-    const prompts = {
-      positivo: `El usuario de una app de finanzas personales argentina le gano a la inflacion un ${varReal.toFixed(1)}% en terminos reales. Escribi un mensaje corto (1 oracion) que lo felicite genuinamente, sin exagerar, reconociendo que en Argentina esto es un logro real. En español rioplatense, sin emojis.`,
-      neutro: `El usuario de una app de finanzas personales argentina casi mantuvo su poder adquisitivo (${varReal.toFixed(1)}%). Escribi un mensaje corto (1 oracion) que reconozca que mantener el poder adquisitivo en Argentina ya es meritorio. En español rioplatense, sin emojis.`,
-      negativo: `El usuario de una app de finanzas personales argentina perdio un ${Math.abs(varReal).toFixed(1)}% de poder adquisitivo. Escribi un mensaje corto (1-2 oraciones) empatico y contenedor, que no dramatice, que reconozca que es la realidad de muchos argentinos, y que haya luz al final del tunel. En español rioplatense, sin emojis.`,
-    };
+  const mensajes = {
+    positivo: [
+      `Le ganaste a la inflacion un ${varReal.toFixed(1)}% en terminos reales. En Argentina, eso no es poca cosa.`,
+      `Tu sueldo crecio un ${varReal.toFixed(1)}% por encima de la inflacion. Eso es poder adquisitivo genuino, no solo mas pesos.`,
+      `Un ${varReal.toFixed(1)}% de ganancia real en Argentina merece reconocimiento. Muy pocos pueden decir lo mismo.`,
+    ],
+    neutro: [
+      `Mantuviste tu poder adquisitivo en un contexto inflacionario. Es mas dificil de lo que parece y lo lograste.`,
+      `Casi empate con la inflacion. En la Argentina de hoy, mantenerse es un logro en si mismo.`,
+      `Tu sueldo siguio de cerca a la inflacion. En un pais con estos indices, eso ya es una victoria.`,
+    ],
+    negativo: [
+      `Perdiste un ${pct}% de poder adquisitivo, como millones de argentinos. Conocer el numero es el primer paso para revertirlo.`,
+      `Un ${pct}% menos de poder de compra duele, pero tenerlo claro te da ventaja para negociar y planificar. No sos el unico.`,
+      `La inflacion se comio un ${pct}% de tu sueldo real. Es duro, pero saber exactamente cuanto perdiste ya es mas que lo que sabe la mayoria.`,
+    ],
+  };
 
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompts[bucket] }]
-      })
-    });
-
-    if (!res.ok) return fallbacks[bucket];
-    const data = await res.json();
-    return data.content?.find(b => b.type === 'text')?.text?.trim() || fallbacks[bucket];
-  } catch(e) {
-    return fallbacks[bucket];
-  }
+  const opts = mensajes[bucket];
+  return Promise.resolve(opts[Math.floor(Math.random() * opts.length)]);
 }
 
 async function generarMensajeCompras() {
@@ -2808,6 +2835,67 @@ async function generarMensajeCompras() {
     'Los supermercados suben precios de a poco para que no te des cuenta. Tu historial los expone.',
   ];
   return mensajes[Math.floor(Math.random() * mensajes.length)];
+}
+
+
+function editarProducto(key, nombre) {
+  document.getElementById('edit-prod-key').value = key;
+  document.getElementById('edit-prod-nombre').value = nombre;
+  document.getElementById('edit-prod-precio').value = '';
+  bindMontoInput('edit-prod-precio');
+  document.getElementById('modal-editar-prod').style.display = 'flex';
+}
+
+function cerrarEditarProducto() {
+  document.getElementById('modal-editar-prod').style.display = 'none';
+}
+
+function guardarEdicionProducto() {
+  const key = document.getElementById('edit-prod-key').value;
+  const nuevoNombre = document.getElementById('edit-prod-nombre').value.trim();
+  const nuevoPrecio = parseMonto(document.getElementById('edit-prod-precio').value);
+  if (!nuevoNombre) return;
+
+  const compras = getCompras();
+  if (!compras[key]) return;
+
+  // Actualizar nombre
+  compras[key].nombre = nuevoNombre;
+
+  // Actualizar ultimo precio si se cargo uno nuevo
+  if (nuevoPrecio > 0) {
+    const h = compras[key].historial;
+    if (h.length > 0) {
+      h[h.length - 1].precio = nuevoPrecio;
+    }
+  }
+
+  // Si cambio el nombre, actualizar la key
+  const newKey = nuevoNombre.toLowerCase().replace(/\s+/g, '_');
+  if (newKey !== key) {
+    compras[newKey] = compras[key];
+    delete compras[key];
+  }
+
+  saveCompras(compras);
+  cerrarEditarProducto();
+  buildCompras();
+}
+
+function eliminarProducto() {
+  const key = document.getElementById('edit-prod-key').value;
+  if (!confirm('Eliminar este producto y todo su historial?')) return;
+  const compras = getCompras();
+  delete compras[key];
+  saveCompras(compras);
+  cerrarEditarProducto();
+  buildCompras();
+}
+
+function volverPregunta(idx) {
+  ibfCurrent = idx - 1;
+  ibfAnswers[idx - 1] = null;
+  renderQuestion(idx - 1);
 }
 
 // ═══════════════════════════════════════════════
