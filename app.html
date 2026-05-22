@@ -3228,7 +3228,7 @@ function renderMetricasSueldo({ sueldo, sueldoRef, mesRef, mesHoy, inflTotal, va
 // Distribución simulada de IBF para Argentina
 // Basada en contexto económico: inflación alta, incertidumbre, bajo ahorro promedio
 const DATOS_PARES = {
-  totalUsuarios: 1247,
+  totalUsuarios: 743,
   promedioGeneral: 48,
   distribucion: [
     { rango: '0-20',  label: 'Muy difícil',  pct: 8,  color: 'var(--red)' },
@@ -3270,16 +3270,20 @@ function renderComparacionIBF(miScore) {
     ? `${diferencia.toFixed(0)} puntos por encima del promedio`
     : `${Math.abs(diferencia).toFixed(0)} puntos por debajo del promedio`;
 
-  // Barra de distribución con marcador del usuario
+  // Barras horizontales con marcador del usuario
+  const maxPct = Math.max(...DATOS_PARES.distribucion.map(x => x.pct));
   const barras = DATOS_PARES.distribucion.map(d => {
     const [min, max] = d.rango.split('-').map(Number);
     const enEsteRango = miScore >= min && miScore <= max;
+    const barWidth = Math.round((d.pct / maxPct) * 100);
     return `
-      <div style="flex:${d.pct};display:flex;flex-direction:column;align-items:center;gap:4px">
-        <div style="width:100%;height:${8 + d.pct * 1.5}px;background:${enEsteRango ? d.color : d.color + '40'};border-radius:3px;position:relative;transition:all 0.5s">
-          ${enEsteRango ? `<div style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:${d.color};white-space:nowrap">Vos</div>` : ''}
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
+        <div style="font-size:11px;color:${enEsteRango ? d.color : 'var(--text3)'};font-weight:${enEsteRango ? '600' : '400'};width:68px;flex-shrink:0;text-align:right">${d.label}</div>
+        <div style="flex:1;background:var(--bg3);border-radius:3px;height:14px;overflow:hidden;position:relative">
+          <div style="width:${barWidth}%;height:100%;background:${enEsteRango ? d.color : d.color + '55'};border-radius:3px;transition:width 0.6s cubic-bezier(0.16,1,0.3,1)"></div>
+          ${enEsteRango ? '<div style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:9px;font-weight:700;color:var(--bg)">← vos</div>' : ''}
         </div>
-        <div style="font-size:9px;color:var(--text3)">${d.pct}%</div>
+        <div style="font-size:11px;color:${enEsteRango ? d.color : 'var(--text3)'};font-weight:${enEsteRango ? '600' : '400'};width:28px;flex-shrink:0">${d.pct}%</div>
       </div>`;
   }).join('');
 
@@ -3311,14 +3315,8 @@ function renderComparacionIBF(miScore) {
     </div>
 
     <div style="margin-bottom:8px">
-      <div style="font-size:10px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em">Distribución de usuarios</div>
-      <div style="display:flex;gap:3px;align-items:flex-end;height:60px;padding-top:20px">
-        ${barras}
-      </div>
-      <div style="display:flex;justify-content:space-between;margin-top:4px">
-        <div style="font-size:9px;color:var(--text3)">Difícil</div>
-        <div style="font-size:9px;color:var(--text3)">Excelente</div>
-      </div>
+      <div style="font-size:10px;color:var(--text3);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.05em">Distribución de usuarios</div>
+      ${barras}
     </div>
 
     <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:8px">
