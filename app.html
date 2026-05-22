@@ -3231,11 +3231,11 @@ const DATOS_PARES = {
   totalUsuarios: 743,
   promedioGeneral: 48,
   distribucion: [
-    { rango: '0-20',  label: 'Muy difícil',  pct: 8,  color: 'var(--red)' },
+    { rango: '0-20',  label: 'Muy difícil',  pct: 8,  color: '#ff5a5a' },
     { rango: '21-40', label: 'Difícil',       pct: 24, color: '#ff8c5a' },
-    { rango: '41-60', label: 'Moderado',      pct: 38, color: 'var(--amber)' },
+    { rango: '41-60', label: 'Moderado',      pct: 38, color: '#f5a623' },
     { rango: '61-80', label: 'Bueno',         pct: 22, color: '#7fd67f' },
-    { rango: '81-100',label: 'Excelente',     pct: 8,  color: 'var(--green)' },
+    { rango: '81-100',label: 'Excelente',     pct: 8,  color: '#4ade80' },
   ],
   // Promedio por perfil de ahorro (coincide con onboarding)
   porAhorro: {
@@ -3272,7 +3272,7 @@ function renderComparacionIBF(miScore) {
 
   // Barras horizontales con marcador del usuario
   const maxPct = Math.max(...DATOS_PARES.distribucion.map(x => x.pct));
-  const barras = DATOS_PARES.distribucion.map(d => {
+  const barras = [...DATOS_PARES.distribucion].reverse().map(d => {
     const [min, max] = d.rango.split('-').map(Number);
     const enEsteRango = miScore >= min && miScore <= max;
     const barWidth = Math.round((d.pct / maxPct) * 100);
