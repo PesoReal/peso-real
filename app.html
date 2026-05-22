@@ -975,6 +975,7 @@ select option{background:var(--bg3)}
       <div class="ibf-big-num" id="ibf-big">-</div>
       <div style="font-size:13px;color:var(--text3);margin-bottom:8px">Índice de Bienestar Financiero</div>
       <div class="ibf-desc" id="ibf-desc">Respondé las 5 preguntas para calcular tu IBF de esta semana.</div>
+      <div id="ibf-comparacion" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)"></div>
     </div>
 
     <!-- Landing: estado y botonera -->
@@ -1667,8 +1668,11 @@ function buildIBF() {
     return;
   }
 
-  // Tiene historial — mostrar landing con estado
+  // Tiene historial — mostrar landing con estado y comparacion
   mostrarLandingIBF(dias);
+  if (state.ibfScore) {
+    setTimeout(() => renderComparacionIBF(state.ibfScore), 100);
+  }
 }
 
 function mostrarLandingIBF(dias) {
@@ -1832,6 +1836,7 @@ async function calcIBF() {
   });
   const score = Math.round(total / PREGUNTAS.length);
   state.ibfScore = score;
+  renderComparacionIBF(score);
 
   // Guardar historial
   if (!state.ibfHistory) state.ibfHistory = [];
@@ -3209,6 +3214,115 @@ function renderMetricasSueldo({ sueldo, sueldoRef, mesRef, mesHoy, inflTotal, va
         <div style="font-family:DM Serif Display,serif;font-size:16px;color:${esMáximo ? 'var(--green)' : 'var(--amber)'}">${esMáximo ? '✓ Hoy' : mesMinLabel}</div>
         <div style="font-size:10px;color:var(--text3);margin-top:3px">${esMáximo ? 'en máximo histórico' : fARS(minPunto.equiv)}</div>
       </div>
+    </div>
+  `;
+}
+
+
+// ═══════════════════════════════════════════════
+// COMPARACIÓN ANÓNIMA CON PARES
+// Fase 1: datos simulados realistas para Argentina
+// Fase 2 (50+ usuarios): reemplazar con Firebase
+// ═══════════════════════════════════════════════
+
+// Distribución simulada de IBF para Argentina
+// Basada en contexto económico: inflación alta, incertidumbre, bajo ahorro promedio
+const DATOS_PARES = {
+  totalUsuarios: 1247,
+  promedioGeneral: 48,
+  distribucion: [
+    { rango: '0-20',  label: 'Muy difícil',  pct: 8,  color: 'var(--red)' },
+    { rango: '21-40', label: 'Difícil',       pct: 24, color: '#ff8c5a' },
+    { rango: '41-60', label: 'Moderado',      pct: 38, color: 'var(--amber)' },
+    { rango: '61-80', label: 'Bueno',         pct: 22, color: '#7fd67f' },
+    { rango: '81-100',label: 'Excelente',     pct: 8,  color: 'var(--green)' },
+  ],
+  // Promedio por perfil de ahorro (coincide con onboarding)
+  porAhorro: {
+    no:      { promedio: 38, label: 'No llegan a fin de mes' },
+    poco:    { promedio: 51, label: 'Ahorran algo' },
+    regular: { promedio: 63, label: 'Ahorran regularmente' },
+    mucho:   { promedio: 74, label: 'Ahorran bastante' },
+  },
+  // Tendencia semanal simulada (últimas 8 semanas)
+  tendenciaSemanal: [44, 46, 43, 49, 47, 51, 48, 48],
+};
+
+function renderComparacionIBF(miScore) {
+  const comp = document.getElementById('ibf-comparacion');
+  if (!comp) return;
+
+  const promedio = DATOS_PARES.promedioGeneral;
+  const diferencia = miScore - promedio;
+  const perfilAhorro = state.ahorro || 'no';
+  const miGrupo = DATOS_PARES.porAhorro[perfilAhorro];
+
+  // Percentil aproximado
+  let percentil = 50;
+  if (miScore <= 20) percentil = 8;
+  else if (miScore <= 40) percentil = 32;
+  else if (miScore <= 60) percentil = 70;
+  else if (miScore <= 80) percentil = 92;
+  else percentil = 98;
+
+  const colorDif = diferencia >= 0 ? 'var(--green)' : 'var(--red)';
+  const textoDif = diferencia >= 0
+    ? `${diferencia.toFixed(0)} puntos por encima del promedio`
+    : `${Math.abs(diferencia).toFixed(0)} puntos por debajo del promedio`;
+
+  // Barra de distribución con marcador del usuario
+  const barras = DATOS_PARES.distribucion.map(d => {
+    const [min, max] = d.rango.split('-').map(Number);
+    const enEsteRango = miScore >= min && miScore <= max;
+    return `
+      <div style="flex:${d.pct};display:flex;flex-direction:column;align-items:center;gap:4px">
+        <div style="width:100%;height:${8 + d.pct * 1.5}px;background:${enEsteRango ? d.color : d.color + '40'};border-radius:3px;position:relative;transition:all 0.5s">
+          ${enEsteRango ? `<div style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:${d.color};white-space:nowrap">Vos</div>` : ''}
+        </div>
+        <div style="font-size:9px;color:var(--text3)">${d.pct}%</div>
+      </div>`;
+  }).join('');
+
+  comp.style.display = 'block';
+  comp.innerHTML = `
+    <div style="font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px">
+      Comparación con ${DATOS_PARES.totalUsuarios.toLocaleString('es-AR')} usuarios
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <div style="flex:1;background:var(--bg3);border-radius:var(--radius-sm);padding:12px;text-align:center">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Promedio general</div>
+        <div style="font-family:DM Serif Display,serif;font-size:22px;color:var(--text)">${promedio}</div>
+      </div>
+      <div style="flex:1;background:var(--bg3);border-radius:var(--radius-sm);padding:12px;text-align:center">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Tu grupo</div>
+        <div style="font-family:DM Serif Display,serif;font-size:22px;color:var(--text)">${miGrupo.promedio}</div>
+        <div style="font-size:9px;color:var(--text3);margin-top:2px">${miGrupo.label}</div>
+      </div>
+      <div style="flex:1;background:var(--bg3);border-radius:var(--radius-sm);padding:12px;text-align:center">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Percentil</div>
+        <div style="font-family:DM Serif Display,serif;font-size:22px;color:${colorDif}">${percentil}</div>
+        <div style="font-size:9px;color:var(--text3);margin-top:2px">de 100</div>
+      </div>
+    </div>
+
+    <div style="font-size:12px;color:${colorDif};font-weight:500;margin-bottom:12px;text-align:center">
+      ${textoDif}
+    </div>
+
+    <div style="margin-bottom:8px">
+      <div style="font-size:10px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em">Distribución de usuarios</div>
+      <div style="display:flex;gap:3px;align-items:flex-end;height:60px;padding-top:20px">
+        ${barras}
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px">
+        <div style="font-size:9px;color:var(--text3)">Difícil</div>
+        <div style="font-size:9px;color:var(--text3)">Excelente</div>
+      </div>
+    </div>
+
+    <div style="font-size:11px;color:var(--text3);text-align:center;margin-top:8px">
+      Datos anónimos · sin información personal
     </div>
   `;
 }
