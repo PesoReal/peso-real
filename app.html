@@ -3270,15 +3270,15 @@ function renderComparacionIBF(miScore) {
     ? `${diferencia.toFixed(0)} puntos por encima del promedio`
     : `${Math.abs(diferencia).toFixed(0)} puntos por debajo del promedio`;
 
-  // Lista simple: label + porcentaje + indicador usuario
+  // Grid centrado: label + porcentaje + indicador
   const barras = [...DATOS_PARES.distribucion].reverse().map(d => {
     const [min, max] = d.rango.split('-').map(Number);
     const enEsteRango = miScore >= min && miScore <= max;
     return `
-      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:4px;border-radius:10px;background:${enEsteRango ? 'rgba(212,240,96,0.06)' : 'var(--bg3)'};border:1px solid ${enEsteRango ? d.color + '55' : 'var(--border)'}">
-        <div style="flex:1;font-size:13px;color:${enEsteRango ? d.color : 'var(--text2)'};font-weight:${enEsteRango ? '600' : '400'}">${d.label}</div>
-        <div style="font-family:DM Serif Display,serif;font-size:${enEsteRango ? '24px' : '18px'};color:${enEsteRango ? d.color : 'var(--text3)'};flex-shrink:0">${d.pct}%</div>
-        ${enEsteRango ? `<div style="font-size:10px;font-weight:700;color:${d.color};background:${d.color}22;padding:3px 7px;border-radius:6px;white-space:nowrap;flex-shrink:0">← vos</div>` : '<div style="width:46px;flex-shrink:0"></div>'}
+      <div style="display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:12px;padding:10px 14px;margin-bottom:4px;border-radius:10px;background:${enEsteRango ? 'rgba(212,240,96,0.06)' : 'var(--bg3)'};border:1px solid ${enEsteRango ? d.color + '55' : 'var(--border)'}">
+        <div style="font-size:13px;color:${enEsteRango ? d.color : 'var(--text2)'};font-weight:${enEsteRango ? '600' : '400'}">${d.label}</div>
+        <div style="font-family:DM Serif Display,serif;font-size:${enEsteRango ? '24px' : '18px'};color:${enEsteRango ? d.color : 'var(--text3)'}">${d.pct}%</div>
+        <div style="width:46px;text-align:right">${enEsteRango ? `<span style="font-size:10px;font-weight:700;color:${d.color};background:${d.color}22;padding:3px 7px;border-radius:6px">← vos</span>` : ''}</div>
       </div>`;
   }).join('');
 
