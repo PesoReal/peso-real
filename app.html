@@ -3270,20 +3270,19 @@ function renderComparacionIBF(miScore) {
     ? `${diferencia.toFixed(0)} puntos por encima del promedio`
     : `${Math.abs(diferencia).toFixed(0)} puntos por debajo del promedio`;
 
-  // Barras horizontales con marcador del usuario
+  // Lista con puntos y porcentaje destacado
   const maxPct = Math.max(...DATOS_PARES.distribucion.map(x => x.pct));
   const barras = [...DATOS_PARES.distribucion].reverse().map(d => {
     const [min, max] = d.rango.split('-').map(Number);
     const enEsteRango = miScore >= min && miScore <= max;
-    const barWidth = Math.round((d.pct / maxPct) * 100);
+    const puntos = Math.round((d.pct / maxPct) * 20);
+    const dotsStr = '●'.repeat(puntos) + '○'.repeat(20 - puntos);
     return `
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
-        <div style="font-size:11px;color:${enEsteRango ? d.color : 'var(--text3)'};font-weight:${enEsteRango ? '600' : '400'};width:68px;flex-shrink:0;text-align:right">${d.label}</div>
-        <div style="flex:1;background:var(--bg3);border-radius:3px;height:14px;overflow:hidden;position:relative">
-          <div style="width:${barWidth}%;height:100%;background:${enEsteRango ? d.color : d.color + '55'};border-radius:3px;transition:width 0.6s cubic-bezier(0.16,1,0.3,1)"></div>
-          ${enEsteRango ? '<div style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:9px;font-weight:700;color:var(--bg)">← vos</div>' : ''}
-        </div>
-        <div style="font-size:11px;color:${enEsteRango ? d.color : 'var(--text3)'};font-weight:${enEsteRango ? '600' : '400'};width:28px;flex-shrink:0">${d.pct}%</div>
+      <div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid ${enEsteRango ? 'rgba(212,240,96,0.15)' : 'var(--border)'};background:${enEsteRango ? 'rgba(212,240,96,0.04)' : 'transparent'};border-radius:4px;padding:8px 6px">
+        <div style="font-size:12px;color:${enEsteRango ? d.color : 'var(--text2)'};font-weight:${enEsteRango ? '600' : '400'};width:72px;flex-shrink:0">${d.label}</div>
+        <div style="flex:1;font-size:9px;letter-spacing:1px;color:${enEsteRango ? d.color : 'var(--text3)'};overflow:hidden;white-space:nowrap">${dotsStr}</div>
+        <div style="font-family:DM Serif Display,serif;font-size:${enEsteRango ? '20px' : '16px'};color:${enEsteRango ? d.color : 'var(--text3)'};font-weight:500;width:36px;text-align:right;flex-shrink:0">${d.pct}%</div>
+        ${enEsteRango ? '<div style="font-size:10px;font-weight:700;color:' + d.color + ';flex-shrink:0;margin-left:2px">← vos</div>' : '<div style="width:36px"></div>'}
       </div>`;
   }).join('');
 
