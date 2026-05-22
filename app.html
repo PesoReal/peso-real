@@ -1078,12 +1078,30 @@ select option{background:var(--bg3)}
   </div>
   <div class="scroll hist-body">
 
-    <div class="hist-chart">
-      <div class="hist-chart-title">IBF últimas 8 semanas</div>
-      <div class="chart-bars" id="hist-bars"></div>
+    <!-- Tab switcher -->
+    <div style="display:flex;gap:0;background:var(--bg3);border-radius:var(--radius-sm);padding:3px;margin-bottom:20px;border:1px solid var(--border)">
+      <button id="tab-ibf" onclick="switchHistTab('ibf')" style="flex:1;padding:10px;border:none;border-radius:8px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s;background:var(--accent);color:#0a0b0d">
+        IBF semanal
+      </button>
+      <button id="tab-emocional" onclick="switchHistTab('emocional')" style="flex:1;padding:10px;border:none;border-radius:8px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.2s;background:transparent;color:var(--text2)">
+        Historial emocional
+      </button>
     </div>
 
-    <div class="hist-list" id="hist-list"></div>
+    <!-- Tab IBF -->
+    <div id="hist-tab-ibf">
+      <div class="hist-chart">
+      <div class="hist-chart-title">IBF últimas 8 semanas</div>
+      <div class="chart-bars" id="hist-bars"></div>
+      </div><!-- .hist-chart -->
+
+      <div class="hist-list" id="hist-list"></div>
+    </div><!-- #hist-tab-ibf -->
+
+    <!-- Tab Emocional -->
+    <div id="hist-tab-emocional" style="display:none">
+      <div id="hist-emocional-content"></div>
+    </div>
 
   </div>
 </div>
@@ -1840,7 +1858,11 @@ async function calcIBF() {
 
   // Guardar historial
   if (!state.ibfHistory) state.ibfHistory = [];
-  state.ibfHistory.push({ score, fecha: new Date().toISOString() });
+  const respuestaEmocional = ibfAnswers[3]; // pregunta 4: cómo te sentiste
+  const estadoEmocional = respuestaEmocional !== null
+    ? PREGUNTAS[3].opciones[respuestaEmocional]
+    : null;
+  state.ibfHistory.push({ score, fecha: new Date().toISOString(), emocional: estadoEmocional, respEmocional: respuestaEmocional });
   if (state.ibfHistory.length > 8) state.ibfHistory.shift();
 
   saveState();
@@ -3318,6 +3340,134 @@ function renderComparacionIBF(miScore) {
       Datos anónimos · sin información personal
     </div>
   `;
+}
+
+
+// ═══════════════════════════════════════════════
+// HISTORIAL EMOCIONAL
+// ═══════════════════════════════════════════════
+
+let histTabActivo = 'ibf';
+
+function switchHistTab(tab) {
+  histTabActivo = tab;
+
+  const tabIBF = document.getElementById('tab-ibf');
+  const tabEmoc = document.getElementById('tab-emocional');
+  const contentIBF = document.getElementById('hist-tab-ibf');
+  const contentEmoc = document.getElementById('hist-tab-emocional');
+
+  if (tab === 'ibf') {
+    tabIBF.style.background = 'var(--accent)';
+    tabIBF.style.color = '#0a0b0d';
+    tabEmoc.style.background = 'transparent';
+    tabEmoc.style.color = 'var(--text2)';
+    contentIBF.style.display = 'block';
+    contentEmoc.style.display = 'none';
+  } else {
+    tabEmoc.style.background = 'var(--accent)';
+    tabEmoc.style.color = '#0a0b0d';
+    tabIBF.style.background = 'transparent';
+    tabIBF.style.color = 'var(--text2)';
+    contentIBF.style.display = 'none';
+    contentEmoc.style.display = 'block';
+    buildHistorialEmocional();
+  }
+}
+
+function buildHistorialEmocional() {
+  const history = state.ibfHistory || [];
+  const container = document.getElementById('hist-emocional-content');
+  if (!container) return;
+
+  if (history.length === 0) {
+    container.innerHTML = '<div style="color:var(--text3);font-size:14px;padding:16px 0;text-align:center">Completá tu primer IBF para ver el historial emocional.</div>';
+    return;
+  }
+
+  // Config estados emocionales
+  const ESTADOS = {
+    0: { label: 'Tranquilo/a',         color: '#4ade80', bg: 'rgba(74,222,128,0.1)',  emoji: '😌' },
+    1: { label: 'Algo preocupado/a',   color: '#f5a623', bg: 'rgba(245,166,35,0.1)',  emoji: '😐' },
+    2: { label: 'Bastante estresado/a',color: '#ff8c5a', bg: 'rgba(255,140,90,0.1)',  emoji: '😟' },
+    3: { label: 'Con mucha angustia',  color: '#ff5a5a', bg: 'rgba(255,90,90,0.1)',   emoji: '😰' },
+  };
+
+  // Contar registros con dato emocional
+  const conDato = history.filter(h => h.respEmocional !== undefined && h.respEmocional !== null);
+  const sinDato = history.filter(h => h.respEmocional === undefined || h.respEmocional === null);
+
+  // Resumen: distribución emocional
+  const conteo = [0, 0, 0, 0];
+  conDato.forEach(h => { if (h.respEmocional >= 0 && h.respEmocional <= 3) conteo[h.respEmocional]++; });
+  const total = conDato.length;
+
+  // Estado más frecuente
+  const maxIdx = conteo.indexOf(Math.max(...conteo));
+  const estadoPredominante = total > 0 ? ESTADOS[maxIdx] : null;
+
+  let html = '';
+
+  // Card resumen
+  if (total > 0 && estadoPredominante) {
+    html += `
+      <div style="background:${estadoPredominante.bg};border:1px solid ${estadoPredominante.color}33;border-radius:var(--radius);padding:20px;margin-bottom:16px">
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Estado predominante</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="font-size:36px">${estadoPredominante.emoji}</div>
+          <div>
+            <div style="font-family:DM Serif Display,serif;font-size:20px;color:${estadoPredominante.color}">${estadoPredominante.label}</div>
+            <div style="font-size:13px;color:var(--text2);margin-top:2px">En ${conteo[maxIdx]} de ${total} registros</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px">
+          ${Object.entries(ESTADOS).map(([idx, e]) => `
+            <div style="background:var(--bg3);border-radius:8px;padding:10px;display:flex;align-items:center;gap:8px">
+              <div style="font-size:18px">${e.emoji}</div>
+              <div>
+                <div style="font-size:11px;color:var(--text2);line-height:1.3">${e.label}</div>
+                <div style="font-size:14px;font-weight:600;color:${e.color}">${conteo[idx]} veces</div>
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  // Lista cronológica inversa
+  html += `<div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px">Registro semana a semana</div>`;
+
+  const registros = [...history].reverse();
+  registros.forEach((h, i) => {
+    const d = new Date(h.fecha);
+    const fecha = `${d.getDate()} ${MESES[d.getMonth()]} ${d.getFullYear()}`;
+    const tieneEmocional = h.respEmocional !== undefined && h.respEmocional !== null;
+    const estado = tieneEmocional ? ESTADOS[h.respEmocional] : null;
+    const prev = registros[i + 1];
+    const prevEmoc = prev && prev.respEmocional !== undefined ? prev.respEmocional : null;
+    let tendenciaHtml = '';
+    if (tieneEmocional && prevEmoc !== null) {
+      if (h.respEmocional < prevEmoc) tendenciaHtml = '<span style="color:#4ade80;font-size:12px">↑ Mejoró</span>';
+      else if (h.respEmocional > prevEmoc) tendenciaHtml = '<span style="color:#ff5a5a;font-size:12px">↓ Empeoró</span>';
+      else tendenciaHtml = '<span style="color:var(--text3);font-size:12px">→ Igual</span>';
+    }
+
+    html += `
+      <div style="display:flex;align-items:center;gap:12px;padding:14px;background:${tieneEmocional ? estado.bg : 'var(--bg2)'};border:1px solid ${tieneEmocional ? estado.color + '33' : 'var(--border)'};border-radius:var(--radius-sm);margin-bottom:8px">
+        <div style="font-size:28px;flex-shrink:0">${tieneEmocional ? estado.emoji : '❓'}</div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:500;color:${tieneEmocional ? estado.color : 'var(--text2)'}">${tieneEmocional ? estado.label : 'Sin dato emocional'}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">${fecha} · IBF ${h.score}</div>
+        </div>
+        ${tendenciaHtml}
+      </div>`;
+  });
+
+  // Aviso si hay registros sin dato (anteriores a esta versión)
+  if (sinDato.length > 0) {
+    html += `<div style="font-size:12px;color:var(--text3);text-align:center;margin-top:8px;padding:12px;background:var(--bg2);border-radius:8px">${sinDato.length} registro${sinDato.length > 1 ? 's' : ''} anterior${sinDato.length > 1 ? 'es' : ''} no tiene${sinDato.length > 1 ? 'n' : ''} dato emocional — completá un nuevo IBF para empezar a verlo.</div>`;
+  }
+
+  container.innerHTML = html;
 }
 
 // ═══════════════════════════════════════════════
