@@ -3275,14 +3275,17 @@ function renderComparacionIBF(miScore) {
   const barras = [...DATOS_PARES.distribucion].reverse().map(d => {
     const [min, max] = d.rango.split('-').map(Number);
     const enEsteRango = miScore >= min && miScore <= max;
-    const puntos = Math.round((d.pct / maxPct) * 20);
-    const dotsStr = '●'.repeat(puntos) + '○'.repeat(20 - puntos);
+    const puntos = Math.round((d.pct / maxPct) * 16);
+    const dotsStr = Array(16).fill(0).map((_, i) => i < puntos
+      ? `<span style="color:${d.color};opacity:${enEsteRango ? '1' : '0.5'}">●</span>`
+      : `<span style="color:var(--text3);opacity:0.3">○</span>`
+    ).join('');
     return `
-      <div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid ${enEsteRango ? 'rgba(212,240,96,0.15)' : 'var(--border)'};background:${enEsteRango ? 'rgba(212,240,96,0.04)' : 'transparent'};border-radius:4px;padding:8px 6px">
-        <div style="font-size:12px;color:${enEsteRango ? d.color : 'var(--text2)'};font-weight:${enEsteRango ? '600' : '400'};width:72px;flex-shrink:0">${d.label}</div>
-        <div style="flex:1;font-size:9px;letter-spacing:1px;color:${enEsteRango ? d.color : 'var(--text3)'};overflow:hidden;white-space:nowrap">${dotsStr}</div>
-        <div style="font-family:DM Serif Display,serif;font-size:${enEsteRango ? '20px' : '16px'};color:${enEsteRango ? d.color : 'var(--text3)'};font-weight:500;width:36px;text-align:right;flex-shrink:0">${d.pct}%</div>
-        ${enEsteRango ? '<div style="font-size:10px;font-weight:700;color:' + d.color + ';flex-shrink:0;margin-left:2px">← vos</div>' : '<div style="width:36px"></div>'}
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 10px;margin-bottom:4px;border-radius:10px;background:${enEsteRango ? 'rgba(212,240,96,0.06)' : 'var(--bg3)'};border:1px solid ${enEsteRango ? d.color + '55' : 'var(--border)'}">
+        <div style="font-size:13px;color:${enEsteRango ? d.color : 'var(--text2)'};font-weight:${enEsteRango ? '600' : '400'};width:80px;flex-shrink:0;line-height:1.2">${d.label}</div>
+        <div style="flex:1;font-size:11px;letter-spacing:2px;line-height:1">${dotsStr}</div>
+        <div style="font-family:DM Serif Display,serif;font-size:${enEsteRango ? '24px' : '18px'};color:${enEsteRango ? d.color : 'var(--text3)'};width:44px;text-align:right;flex-shrink:0;line-height:1">${d.pct}%</div>
+        ${enEsteRango ? `<div style="font-size:11px;font-weight:700;color:${d.color};flex-shrink:0;background:${d.color}22;padding:3px 7px;border-radius:6px">← vos</div>` : '<div style="width:52px"></div>'}
       </div>`;
   }).join('');
 
