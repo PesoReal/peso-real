@@ -888,6 +888,21 @@ select option{background:var(--bg3)}
       </div>
     </div>
 
+    <!-- Tu inflacion real -->
+    <div id="dash-infl-real-card" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:18px 20px;margin-bottom:16px;cursor:pointer" onclick="goTo('screen-compras')">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">Tu inflación real este mes</div>
+          <div style="display:flex;align-items:baseline;gap:10px">
+            <div style="font-family:DM Serif Display,serif;font-size:28px" id="dash-infl-real-valor">—</div>
+            <div style="font-size:13px;color:var(--text2)">vs IPC <span id="dash-infl-real-ipc">—</span></div>
+          </div>
+          <div style="font-size:12px;color:var(--text3);margin-top:4px" id="dash-infl-real-sub">basado en tus productos registrados</div>
+        </div>
+        <div style="font-size:24px">🧺</div>
+      </div>
+    </div>
+
     <!-- IBF card -->
     <div class="ibf-card" onclick="goTo('screen-ibf')">
       <div class="ibf-ring-wrap">
@@ -1009,7 +1024,10 @@ select option{background:var(--bg3)}
     <button class="help-btn" onclick="abrirAyuda('compras')" style="margin-left:0">?</button>
     <button onclick="abrirFormCompra()" style="background:var(--accent);color:#0a0b0d;border:none;border-radius:20px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:600;padding:8px 16px;cursor:pointer">+ Agregar</button>
   </div>
-  <div class="scroll" id="compras-body" style="padding:0 20px 24px"></div>
+  <div class="scroll" style="padding:0 20px 24px">
+    <div id="infl-real-compras" style="display:none"></div>
+    <div id="compras-body"></div>
+  </div>
 </div>
 
 <!-- Modal agregar compra -->
@@ -1567,6 +1585,9 @@ function buildDashboard() {
   ];
   const accionGuardada = state.accionSemanal;
   document.getElementById('dash-tip').textContent = accionGuardada || tips[Math.floor(Math.random() * tips.length)];
+
+  // Inflacion real
+  renderInflacionRealDashboard();
 }
 
 function ibfScoreDesc(score) {
@@ -2567,6 +2588,9 @@ function buildCompras() {
   const body = document.getElementById('compras-body');
   const productos = Object.values(compras);
 
+  // Mostrar inflacion real si hay suficientes datos
+  renderInflacionRealCompras();
+
   // Mensaje motivacional si hay pocos productos
   let motivHtml = '';
   if (productos.length < 5) {
@@ -3504,6 +3528,145 @@ function buildHistorialEmocional() {
   }
 
   container.innerHTML = html;
+}
+
+
+// ═══════════════════════════════════════════════
+// TU INFLACIÓN REAL — CANASTA PERSONALIZADA
+// ═══════════════════════════════════════════════
+
+function calcularInflacionReal() {
+  const compras = getCompras();
+  const productos = Object.values(compras);
+  const mesHoy = mesActual();
+  const mesAnterior = Object.keys(IPC).sort().slice(-2)[0]; // mes anterior al actual
+
+  // Solo productos con al menos 2 registros en los últimos 2 meses
+  const variaciones = [];
+
+  productos.forEach(p => {
+    const h = p.historial;
+    if (h.length < 2) return;
+
+    // Buscar registros del mes actual y anterior
+    const delMesHoy = h.filter(x => x.mes === mesHoy);
+    const delMesAnt = h.filter(x => x.mes === mesAnterior);
+
+    // Si tiene registros de ambos meses, calcular variación
+    if (delMesHoy.length > 0 && delMesAnt.length > 0) {
+      const precioHoy = delMesHoy[delMesHoy.length - 1].precio;
+      const precioAnt = delMesAnt[delMesAnt.length - 1].precio;
+      const variacion = ((precioHoy - precioAnt) / precioAnt) * 100;
+      variaciones.push({ nombre: p.nombre, variacion, precioHoy, precioAnt });
+      return;
+    }
+
+    // Si no, usar los últimos 2 registros disponibles
+    const ultimo = h[h.length - 1];
+    const penultimo = h[h.length - 2];
+    const diasDif = (new Date(ultimo.fecha) - new Date(penultimo.fecha)) / (1000 * 60 * 60 * 24);
+
+    // Solo si están dentro de los últimos 60 días
+    if (diasDif <= 60 && diasDif >= 1) {
+      const variacion = ((ultimo.precio - penultimo.precio) / penultimo.precio) * 100;
+      variaciones.push({ nombre: p.nombre, variacion, precioHoy: ultimo.precio, precioAnt: penultimo.precio });
+    }
+  });
+
+  if (variaciones.length === 0) return null;
+
+  // Promedio simple de variaciones
+  const promedio = variaciones.reduce((sum, v) => sum + v.variacion, 0) / variaciones.length;
+  const ipcMes = IPC[mesHoy] || IPC[mesAnterior] || 0;
+
+  return {
+    inflacionReal: promedio,
+    ipcOficial: ipcMes,
+    diferencia: promedio - ipcMes,
+    productosUsados: variaciones.length,
+    detalle: variaciones,
+  };
+}
+
+function renderInflacionRealDashboard() {
+  const resultado = calcularInflacionReal();
+  const card = document.getElementById('dash-infl-real-card');
+  if (!card) return;
+
+  if (!resultado || resultado.productosUsados === 0) {
+    card.style.display = 'none';
+    return;
+  }
+
+  card.style.display = 'block';
+  const pct = resultado.inflacionReal.toFixed(1);
+  const color = resultado.diferencia > 2 ? 'var(--red)' : resultado.diferencia < -2 ? 'var(--green)' : 'var(--amber)';
+  const signo = resultado.inflacionReal >= 0 ? '+' : '';
+
+  document.getElementById('dash-infl-real-valor').textContent = signo + pct + '%';
+  document.getElementById('dash-infl-real-valor').style.color = color;
+  document.getElementById('dash-infl-real-ipc').textContent = '+' + resultado.ipcOficial.toFixed(1) + '%';
+
+  let subText = '';
+  if (resultado.diferencia > 2) {
+    subText = `Tu canasta subió ${resultado.diferencia.toFixed(1)}% más que el IPC oficial`;
+  } else if (resultado.diferencia < -2) {
+    subText = `Tu canasta subió ${Math.abs(resultado.diferencia).toFixed(1)}% menos que el IPC oficial`;
+  } else {
+    subText = `Tu canasta acompaña al IPC oficial este mes`;
+  }
+  document.getElementById('dash-infl-real-sub').textContent = subText + ` · ${resultado.productosUsados} producto${resultado.productosUsados > 1 ? 's' : ''}`;
+}
+
+function renderInflacionRealCompras() {
+  const resultado = calcularInflacionReal();
+  const container = document.getElementById('infl-real-compras');
+  if (!container) return;
+
+  if (!resultado || resultado.productosUsados === 0) {
+    container.style.display = 'none';
+    return;
+  }
+
+  container.style.display = 'block';
+  const color = resultado.diferencia > 2 ? 'var(--red)' : resultado.diferencia < -2 ? 'var(--green)' : 'var(--amber)';
+  const signo = resultado.inflacionReal >= 0 ? '+' : '';
+
+  const filas = resultado.detalle
+    .sort((a, b) => b.variacion - a.variacion)
+    .map(v => {
+      const col = v.variacion > resultado.ipcOficial * 1.5 ? 'var(--red)' : v.variacion < 0 ? 'var(--green)' : 'var(--text2)';
+      return `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div style="font-size:13px;color:var(--text2);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${v.nombre}</div>
+          <div style="font-size:14px;font-weight:500;color:${col};flex-shrink:0;margin-left:12px">${v.variacion >= 0 ? '+' : ''}${v.variacion.toFixed(1)}%</div>
+        </div>`;
+    }).join('');
+
+  container.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px">
+      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px">Tu inflación real este mes</div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
+        <div style="text-align:center;flex:1">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Tu canasta</div>
+          <div style="font-family:DM Serif Display,serif;font-size:32px;color:${color}">${signo}${resultado.inflacionReal.toFixed(1)}%</div>
+        </div>
+        <div style="width:1px;height:48px;background:var(--border)"></div>
+        <div style="text-align:center;flex:1">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px">IPC oficial</div>
+          <div style="font-family:DM Serif Display,serif;font-size:32px;color:var(--text2)">+${resultado.ipcOficial.toFixed(1)}%</div>
+        </div>
+        <div style="width:1px;height:48px;background:var(--border)"></div>
+        <div style="text-align:center;flex:1">
+          <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Diferencia</div>
+          <div style="font-family:DM Serif Display,serif;font-size:32px;color:${color}">${resultado.diferencia >= 0 ? '+' : ''}${resultado.diferencia.toFixed(1)}%</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Variación por producto</div>
+      ${filas}
+      <div style="font-size:11px;color:var(--text3);margin-top:12px;text-align:center">Basado en ${resultado.productosUsados} producto${resultado.productosUsados > 1 ? 's' : ''} con al menos 2 registros</div>
+    </div>
+  `;
 }
 
 // ═══════════════════════════════════════════════
