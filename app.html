@@ -942,8 +942,8 @@ select option{background:var(--bg3)}
         <div>
           <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">Tu inflación real este mes</div>
           <div style="display:flex;align-items:baseline;gap:10px">
-            <div style="font-family:DM Serif Display,serif;font-size:28px" id="dash-infl-real-valor">—</div>
-            <div style="font-size:13px;color:var(--text2)">vs IPC <span id="dash-infl-real-ipc">—</span></div>
+            <div style="font-family:DM Serif Display,serif;font-size:28px" id="dash-infl-real-valor">-</div>
+            <div style="font-size:13px;color:var(--text2)">vs IPC <span id="dash-infl-real-ipc">-</span></div>
           </div>
           <div style="font-size:12px;color:var(--text3);margin-top:4px" id="dash-infl-real-sub">basado en tus productos registrados</div>
           <div style="font-size:11px;color:var(--text3);margin-top:6px;line-height:1.4;opacity:0.7">Calculado con los productos que vos registraste. A más productos con historial, más preciso.</div>
@@ -1830,13 +1830,13 @@ function buildIBF() {
   const dias = diasDesdeUltimoIBF();
   const history = state.ibfHistory || [];
 
-  // Primera vez — mostrar landing de bienvenida
+  // Primera vez - mostrar landing de bienvenida
   if (history.length === 0) {
     mostrarLandingIBF(null);
     return;
   }
 
-  // Tiene historial — mostrar landing con estado y comparacion
+  // Tiene historial - mostrar landing con estado y comparacion
   mostrarLandingIBF(dias);
   if (state.ibfScore) {
     setTimeout(() => renderComparacionIBF(state.ibfScore), 100);
@@ -3657,7 +3657,7 @@ function buildHistorialEmocional() {
 
   // Aviso si hay registros sin dato (anteriores a esta versión)
   if (sinDato.length > 0) {
-    html += `<div style="font-size:12px;color:var(--text3);text-align:center;margin-top:8px;padding:12px;background:var(--bg2);border-radius:8px">${sinDato.length} registro${sinDato.length > 1 ? 's' : ''} anterior${sinDato.length > 1 ? 'es' : ''} no tiene${sinDato.length > 1 ? 'n' : ''} dato emocional — completá un nuevo IBF para empezar a verlo.</div>`;
+    html += `<div style="font-size:12px;color:var(--text3);text-align:center;margin-top:8px;padding:12px;background:var(--bg2);border-radius:8px">${sinDato.length} registro${sinDato.length > 1 ? 's' : ''} anterior${sinDato.length > 1 ? 'es' : ''} no tiene${sinDato.length > 1 ? 'n' : ''} dato emocional - completá un nuevo IBF para empezar a verlo.</div>`;
   }
 
   container.innerHTML = html;
@@ -3665,7 +3665,7 @@ function buildHistorialEmocional() {
 
 
 // ═══════════════════════════════════════════════
-// TU INFLACIÓN REAL — CANASTA PERSONALIZADA
+// TU INFLACIÓN REAL - CANASTA PERSONALIZADA
 // ═══════════════════════════════════════════════
 
 function calcularInflacionReal() {
@@ -3799,7 +3799,7 @@ function renderInflacionRealCompras() {
       ${filas}
       <div style="font-size:11px;color:var(--text3);margin-top:12px;text-align:center">Basado en ${resultado.productosUsados} producto${resultado.productosUsados > 1 ? 's' : ''} con al menos 2 registros</div>
       <div style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.6;padding:10px;background:var(--bg3);border-radius:8px">
-        <strong style="color:var(--text2)">¿Cómo se calcula?</strong> Tomamos el precio más reciente de cada producto y lo comparamos con el registro anterior. El promedio de esas variaciones es tu inflación real. Cuantos más productos registres con frecuencia, más representativo es el número. No reemplaza al IPC oficial — lo complementa con tu canasta específica.
+        <strong style="color:var(--text2)">¿Cómo se calcula?</strong> Tomamos el precio más reciente de cada producto y lo comparamos con el registro anterior. El promedio de esas variaciones es tu inflación real. Cuantos más productos registres con frecuencia, más representativo es el número. No reemplaza al IPC oficial - lo complementa con tu canasta específica.
       </div>
     </div>
   `;
@@ -3966,9 +3966,9 @@ function generarSaludo(ctx) {
   let intro = `${saludo}. Soy tu asistente financiero personal y conozco tu situación real.`;
 
   if (ctx.varReal < -10) {
-    intro += ` Veo que tu poder adquisitivo bajó un ${Math.abs(ctx.varReal).toFixed(1)}% — hay cosas concretas que podemos hacer para mejorar eso.`;
+    intro += ` Veo que tu poder adquisitivo bajó un ${Math.abs(ctx.varReal).toFixed(1)}% - hay cosas concretas que podemos hacer para mejorar eso.`;
   } else if (ctx.varReal > 5) {
-    intro += ` Tu sueldo le ganó a la inflación un ${ctx.varReal.toFixed(1)}% — buen momento para pensar en dónde poner ese excedente real.`;
+    intro += ` Tu sueldo le ganó a la inflación un ${ctx.varReal.toFixed(1)}% - buen momento para pensar en dónde poner ese excedente real.`;
   } else {
     intro += ` Tu situación financiera está en equilibrio, aunque siempre hay margen para optimizar.`;
   }
@@ -3988,11 +3988,8 @@ function agregarMensajeBot(texto, conDisclaimer = true) {
 
   // Formatear texto: saltos de linea y negrita básica
   const formateado = texto
-    .replace(/
-
-/g, '<br><br>')
-    .replace(/
-/g, '<br>')
+    .replace(/\n\n/g, '<br><br>')
+    .replace(/\n/g, '<br>')
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
 
   div.innerHTML = formateado;
