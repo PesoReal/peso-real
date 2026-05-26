@@ -3838,6 +3838,12 @@ function buildAsistente() {
 
   // Mensaje de bienvenida si es la primera vez
   if (chatHistory.length === 0) {
+    // Disclaimer inicial - una sola vez
+    const disclaimerDiv = document.createElement('div');
+    disclaimerDiv.style.cssText = 'font-size:11px;color:var(--text3);text-align:center;padding:8px 12px;background:var(--bg3);border-radius:8px;line-height:1.5;margin-bottom:4px';
+    disclaimerDiv.textContent = '⚠ Las respuestas son orientativas y no constituyen asesoramiento financiero profesional.';
+    document.getElementById('chat-messages').appendChild(disclaimerDiv);
+
     const contexto = construirContextoUsuario();
     const saludo = generarSaludo(contexto);
     agregarMensajeBot(saludo, false);
@@ -3939,7 +3945,7 @@ TU FORMA DE RESPONDER:
 - Si alguien pregunta algo que no tiene que ver con finanzas, redirigilo amablemente al tema financiero
 - SIEMPRE termina con una accion concreta y especifica que el usuario pueda hacer
 
-DISCLAIMER OBLIGATORIO: Al final de cada respuesta agrega siempre en una linea separada: "⚠ Esto es orientativo y no constituye asesoramiento financiero profesional."
+No agregues disclaimers ni advertencias al final de tus respuestas. El usuario ya fue informado de que las respuestas son orientativas.
 
 TEMAS QUE PODES RESPONDER (entre muchos otros):
 Ahorro: cuanto ahorrar, donde guardar los pesos, fondos de emergencia, plazos fijos, FCI
