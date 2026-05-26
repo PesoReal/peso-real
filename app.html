@@ -966,15 +966,17 @@ select option{background:var(--bg3)}
 ══════════════════════════════════════ -->
 <div class="screen" id="screen-dashboard">
   <div class="dash-header">
-    <div>
-      <div class="dash-greeting">Hola 👋</div>
-      <div class="dash-logo">Peso <span>Real</span></div>
+    <div style="display:flex;align-items:center;gap:12px;cursor:pointer" onclick="goTo('screen-perfil')">
+      <div id="dash-avatar" style="width:38px;height:38px;border-radius:50%;background:rgba(212,240,96,0.15);border:1.5px solid var(--accent);display:flex;align-items:center;justify-content:center;font-family:Fraunces,serif;font-size:16px;color:var(--accent);flex-shrink:0">?</div>
+      <div>
+        <div class="dash-greeting" id="dash-saludo">Hola 👋</div>
+        <div class="dash-logo">Peso <span>Real</span></div>
+      </div>
     </div>
     <div style="display:flex;align-items:center;gap:10px">
       <div style="text-align:right">
         <div class="dash-date" id="dash-date"></div>
         <div style="font-size:11px;color:var(--text3);margin-top:4px;cursor:pointer" onclick="resetApp()">Reiniciar</div>
-      <div style="font-size:11px;color:var(--text3);margin-top:2px;cursor:pointer" onclick="cerrarSesion()">Cerrar sesion</div>
       </div>
       <button class="help-btn" onclick="abrirAyuda('dashboard')">?</button>
     </div>
@@ -1268,7 +1270,109 @@ select option{background:var(--bg3)}
 </div>
 
 <!-- ══════════════════════════════════════
-     SCREEN 8 - HISTORIAL
+     SCREEN 8 - PERFIL
+══════════════════════════════════════ -->
+<div class="screen" id="screen-perfil" style="background:var(--bg)">
+  <div class="screen-header">
+    <button class="back-btn" onclick="goTo('screen-dashboard')">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </button>
+    <div class="screen-title">Mi perfil</div>
+  </div>
+  <div class="scroll" style="padding:0 20px 24px">
+
+    <!-- Avatar inicial -->
+    <div style="text-align:center;padding:24px 0 20px">
+      <div id="perfil-avatar" style="width:72px;height:72px;border-radius:50%;background:rgba(212,240,96,0.15);border:2px solid var(--accent);display:inline-flex;align-items:center;justify-content:center;font-family:Fraunces,serif;font-size:28px;color:var(--accent);margin-bottom:8px">?</div>
+      <div style="font-size:13px;color:var(--text3)" id="perfil-email-label"></div>
+    </div>
+
+    <!-- Campos -->
+    <div class="field">
+      <label>Nombre *</label>
+      <input type="text" id="perfil-nombre" placeholder="¿Como te llamamos?" autocomplete="name"
+        style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:Outfit,sans-serif;font-size:16px;padding:14px 16px;outline:none">
+    </div>
+
+    <div class="field" style="margin-top:14px">
+      <label>Edad</label>
+      <input type="number" id="perfil-edad" placeholder="Tu edad" inputmode="numeric" min="16" max="99"
+        style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:Outfit,sans-serif;font-size:16px;padding:14px 16px;outline:none;-moz-appearance:textfield;appearance:textfield">
+    </div>
+
+    <div class="field" style="margin-top:14px">
+      <label>Ocupacion</label>
+      <select id="perfil-ocupacion" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:Outfit,sans-serif;font-size:16px;padding:14px 16px;outline:none;-webkit-appearance:none;appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%234a4845%22 stroke-width=%222%22%3E%3Cpath d=%22M6 9l6 6 6-6%22/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 16px center;padding-right:40px">
+        <option value="">Selecciona una opcion</option>
+        <option value="dependencia">Relacion de dependencia</option>
+        <option value="monotributista">Monotributista</option>
+        <option value="freelance">Freelance / Independiente</option>
+        <option value="empresario">Empresario / Dueno de negocio</option>
+        <option value="desempleado">Sin trabajo actualmente</option>
+        <option value="estudiante">Estudiante</option>
+        <option value="jubilado">Jubilado / Pensionado</option>
+      </select>
+    </div>
+
+    <div class="field" style="margin-top:14px">
+      <label>Provincia</label>
+      <select id="perfil-provincia" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:Outfit,sans-serif;font-size:16px;padding:14px 16px;outline:none;-webkit-appearance:none;appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%234a4845%22 stroke-width=%222%22%3E%3Cpath d=%22M6 9l6 6 6-6%22/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 16px center;padding-right:40px">
+        <option value="">Selecciona tu provincia</option>
+        <option value="bsas_caba">Buenos Aires (CABA)</option>
+        <option value="bsas_gba">Buenos Aires (GBA)</option>
+        <option value="bsas_interior">Buenos Aires (Interior)</option>
+        <option value="cordoba">Cordoba</option>
+        <option value="santa_fe">Santa Fe</option>
+        <option value="mendoza">Mendoza</option>
+        <option value="tucuman">Tucuman</option>
+        <option value="salta">Salta</option>
+        <option value="entre_rios">Entre Rios</option>
+        <option value="chaco">Chaco</option>
+        <option value="corrientes">Corrientes</option>
+        <option value="misiones">Misiones</option>
+        <option value="santiago">Santiago del Estero</option>
+        <option value="san_juan">San Juan</option>
+        <option value="jujuy">Jujuy</option>
+        <option value="rio_negro">Rio Negro</option>
+        <option value="neuquen">Neuquen</option>
+        <option value="formosa">Formosa</option>
+        <option value="chubut">Chubut</option>
+        <option value="san_luis">San Luis</option>
+        <option value="catamarca">Catamarca</option>
+        <option value="la_rioja">La Rioja</option>
+        <option value="la_pampa">La Pampa</option>
+        <option value="santa_cruz">Santa Cruz</option>
+        <option value="tierra_fuego">Tierra del Fuego</option>
+      </select>
+    </div>
+
+    <div class="field" style="margin-top:14px">
+      <label>Situacion familiar</label>
+      <select id="perfil-familia" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:Outfit,sans-serif;font-size:16px;padding:14px 16px;outline:none;-webkit-appearance:none;appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2216%22 height=%2216%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%234a4845%22 stroke-width=%222%22%3E%3Cpath d=%22M6 9l6 6 6-6%22/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 16px center;padding-right:40px">
+        <option value="">Selecciona una opcion</option>
+        <option value="soltero">Soltero/a sin hijos</option>
+        <option value="pareja">En pareja sin hijos</option>
+        <option value="hijos">Con hijos (a cargo)</option>
+        <option value="pareja_hijos">En pareja con hijos</option>
+        <option value="otro">Otra situacion</option>
+      </select>
+    </div>
+
+    <button class="btn-primary" onclick="guardarPerfil()" style="margin-top:20px">
+      Guardar perfil
+    </button>
+
+    <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
+      <button onclick="cerrarSesion()" style="width:100%;background:var(--red-bg);border:1px solid rgba(255,90,90,0.2);border-radius:var(--radius-sm);color:var(--red);font-family:Outfit,sans-serif;font-size:15px;font-weight:500;padding:14px;cursor:pointer">
+        Cerrar sesion
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 9 - HISTORIAL
 ══════════════════════════════════════ -->
 <div class="screen" id="screen-historial">
   <div class="screen-header">
@@ -1646,6 +1750,7 @@ function goTo(screenId) {
     'screen-compras': 'nav-compras',
       'screen-producto': 'nav-compras',
       'screen-asistente': 'nav-asistente',
+      'screen-perfil': 'nav-dashboard',
     'screen-historial': 'nav-historial',
   };
   if (navMap[screenId]) document.getElementById(navMap[screenId]).classList.add('active');
@@ -1672,6 +1777,7 @@ function goTo(screenId) {
     if (screenId === 'screen-asistente') buildAsistente();
   if (screenId === 'screen-producto') {}
   if (screenId === 'screen-historial') buildHistorial();
+    if (screenId === 'screen-perfil') buildPerfil();
 }
 
 // ═══════════════════════════════════════════════
@@ -1680,6 +1786,7 @@ function goTo(screenId) {
 function buildDashboard() {
   const now = new Date();
   document.getElementById('dash-date').innerHTML = `${now.getDate()} ${MESES[now.getMonth()]}<br>${now.getFullYear()}`;
+  actualizarDashboardConPerfil();
 
   const sueldo = state.sueldo;
   const sueldoRef = state.sueldoRef || sueldo;
@@ -3993,6 +4100,7 @@ function construirContextoUsuario() {
     tendenciaIBF, inflRealTexto, productosAlerta, productos,
     ipcMesActual: IPC[mesHoy] || 0,
     tcMEP: TC_MEP,
+    perfil: s.perfil || {},
   };
 }
 
@@ -4000,6 +4108,11 @@ function construirSystemPrompt(ctx) {
   return `Sos el asistente financiero personal de un usuario argentino que usa la app Peso Real.
 
 PERFIL DEL USUARIO:
+- Nombre: ${ctx.perfil?.nombre || 'No especificado'}
+- Edad: ${ctx.perfil?.edad || 'No especificada'}
+- Ocupacion: ${ctx.perfil?.ocupacion || 'No especificada'}
+- Provincia: ${ctx.perfil?.provincia || 'No especificada'}
+- Situacion familiar: ${ctx.perfil?.familia || 'No especificada'}
 - Sueldo neto actual: $${ctx.sueldo.toLocaleString('es-AR')} ARS (equivale a USD ${Math.round(ctx.sueldo / ctx.tcMEP).toLocaleString('es-AR')} al tipo MEP)
 - Sueldo en ${ctx.mesRefLabel}: $${ctx.sueldoRef.toLocaleString('es-AR')} ARS
 - Inflacion acumulada desde ${ctx.mesRefLabel}: ${ctx.inflTotal.toFixed(1)}%
@@ -4357,6 +4470,73 @@ window._onAuthStateChanged = async function(user) {
     goToAuth();
   }
 };
+
+
+// ═══════════════════════════════════════════════
+// PERFIL DE USUARIO
+// ═══════════════════════════════════════════════
+
+function buildPerfil() {
+  const perfil = state.perfil || {};
+  const user = window._firebaseUser;
+
+  // Email
+  const emailLabel = document.getElementById('perfil-email-label');
+  if (emailLabel && user) emailLabel.textContent = user.email;
+
+  // Avatar con inicial
+  const nombre = perfil.nombre || '';
+  const inicial = nombre ? nombre.charAt(0).toUpperCase() : '?';
+  const avatar = document.getElementById('perfil-avatar');
+  if (avatar) avatar.textContent = inicial;
+
+  // Llenar campos
+  if (document.getElementById('perfil-nombre')) {
+    document.getElementById('perfil-nombre').value = perfil.nombre || '';
+    document.getElementById('perfil-edad').value = perfil.edad || '';
+    document.getElementById('perfil-ocupacion').value = perfil.ocupacion || '';
+    document.getElementById('perfil-provincia').value = perfil.provincia || '';
+    document.getElementById('perfil-familia').value = perfil.familia || '';
+  }
+}
+
+function guardarPerfil() {
+  const nombre = document.getElementById('perfil-nombre').value.trim();
+  if (!nombre) {
+    document.getElementById('perfil-nombre').focus();
+    return;
+  }
+
+  state.perfil = {
+    nombre,
+    edad: document.getElementById('perfil-edad').value || '',
+    ocupacion: document.getElementById('perfil-ocupacion').value || '',
+    provincia: document.getElementById('perfil-provincia').value || '',
+    familia: document.getElementById('perfil-familia').value || '',
+  };
+
+  saveState();
+  actualizarDashboardConPerfil();
+  goTo('screen-dashboard');
+}
+
+function actualizarDashboardConPerfil() {
+  const perfil = state.perfil || {};
+  const nombre = perfil.nombre || '';
+
+  // Saludo personalizado
+  const hora = new Date().getHours();
+  let saludo = hora < 12 ? 'Buenos dias' : hora < 20 ? 'Buenas tardes' : 'Buenas noches';
+  if (nombre) saludo += ', ' + nombre.split(' ')[0];
+
+  const saludoEl = document.getElementById('dash-saludo');
+  if (saludoEl) saludoEl.textContent = saludo + ' 👋';
+
+  // Avatar con inicial
+  const inicial = nombre ? nombre.charAt(0).toUpperCase() : '?';
+  const avatar = document.getElementById('dash-avatar');
+  if (avatar) avatar.textContent = inicial;
+}
 
 // ═══════════════════════════════════════════════
 // RESET
