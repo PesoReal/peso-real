@@ -253,6 +253,54 @@ select option{background:var(--bg3)}
 .btn-primary:active{transform:scale(0.98)}
 .btn-primary svg{width:18px;height:18px;flex-shrink:0}
 
+/* ── Asistente chat ── */
+.msg-user{
+  align-self:flex-end;
+  background:var(--accent);
+  color:#0a0b0d;
+  border-radius:18px 18px 4px 18px;
+  padding:10px 14px;
+  font-size:14px;
+  max-width:80%;
+  line-height:1.5;
+}
+.msg-bot{
+  align-self:flex-start;
+  background:var(--bg2);
+  border:1px solid var(--border);
+  color:var(--text);
+  border-radius:18px 18px 18px 4px;
+  padding:12px 16px;
+  font-size:14px;
+  max-width:88%;
+  line-height:1.65;
+}
+.msg-bot-disclaimer{
+  font-size:10px;
+  color:var(--text3);
+  margin-top:8px;
+  padding-top:8px;
+  border-top:1px solid var(--border);
+  line-height:1.4;
+}
+.msg-loading{
+  align-self:flex-start;
+  display:flex;
+  gap:5px;
+  padding:14px 16px;
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:18px 18px 18px 4px;
+}
+.msg-loading span{
+  width:7px;height:7px;
+  border-radius:50%;
+  background:var(--text3);
+  animation:pulse 1s infinite;
+}
+.msg-loading span:nth-child(2){animation-delay:0.2s}
+.msg-loading span:nth-child(3){animation-delay:0.4s}
+
 /* ── Boton ayuda ── */
 .help-btn{
   width:32px;height:32px;
@@ -1084,7 +1132,60 @@ select option{background:var(--bg3)}
 </div>
 
 <!-- ══════════════════════════════════════
-     SCREEN 7 - HISTORIAL
+     SCREEN 7 - ASISTENTE FINANCIERO
+══════════════════════════════════════ -->
+<div class="screen" id="screen-asistente" style="background:var(--bg)">
+  <div class="screen-header">
+    <button class="back-btn" onclick="goTo('screen-dashboard')">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </button>
+    <div class="screen-title">Asistente financiero</div>
+    <button class="help-btn" onclick="abrirAyuda('asistente')">?</button>
+  </div>
+
+  <!-- Vista gratuita: teaser -->
+  <div id="asistente-teaser" style="display:none;flex:1;padding:32px 24px;text-align:center;flex-direction:column;align-items:center;justify-content:center">
+    <div style="font-size:48px;margin-bottom:20px">🤖</div>
+    <div style="font-family:DM Serif Display,serif;font-size:26px;letter-spacing:-0.3px;margin-bottom:12px;line-height:1.2">Tu asesor financiero<br>personal</div>
+    <div style="font-size:15px;color:var(--text2);line-height:1.7;margin-bottom:28px;max-width:320px">Hacé cualquier pregunta sobre tu situación financiera y recibí una respuesta que conoce tu sueldo real, tu IBF y tu canasta personal.</div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:left;margin-bottom:28px;width:100%;max-width:340px">
+      <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px">Podés preguntarle</div>
+      <div style="font-size:13px;color:var(--text2);line-height:2">
+        💬 ¿Cuánto debería ahorrar este mes?<br>
+        💬 ¿Me conviene comprar en cuotas?<br>
+        💬 ¿Cómo negocio un aumento?<br>
+        💬 ¿Qué hago con mis pesos sobrantes?<br>
+        💬 ¿Estoy gastando bien mi presupuesto?
+      </div>
+    </div>
+    <button class="btn-primary" style="max-width:280px" onclick="activarPremium()">
+      Activar Premium · USD 5/mes →
+    </button>
+    <div style="font-size:12px;color:var(--text3);margin-top:12px">Cancelás cuando quieras</div>
+  </div>
+
+  <!-- Vista premium: chat -->
+  <div id="asistente-chat" style="display:none;flex:1;flex-direction:column;overflow:hidden">
+    <div style="flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:12px" id="chat-messages"></div>
+    <div style="padding:12px 16px;background:var(--bg2);border-top:1px solid var(--border);padding-bottom:calc(12px + var(--safe-bottom))">
+      <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:8px;line-height:1.4">Las respuestas son orientativas y no constituyen asesoramiento financiero profesional.</div>
+      <div style="display:flex;gap:8px;align-items:flex-end">
+        <textarea id="chat-input" placeholder="Preguntame lo que quieras sobre tu situación financiera..."
+          style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:DM Sans,sans-serif;font-size:14px;padding:12px 14px;outline:none;resize:none;max-height:120px;min-height:44px;line-height:1.5"
+          rows="1"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarMensaje()}"
+          oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+        <button onclick="enviarMensaje()" id="chat-send-btn"
+          style="background:var(--accent);color:#0a0b0d;border:none;border-radius:var(--radius-sm);width:44px;height:44px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SCREEN 8 - HISTORIAL
 ══════════════════════════════════════ -->
 <div class="screen" id="screen-historial">
   <div class="screen-header">
@@ -1196,6 +1297,10 @@ select option{background:var(--bg3)}
     <button class="nav-item" id="nav-compras" onclick="goTo('screen-compras')">
       <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
       <span class="nav-label">Compras</span>
+    </button>
+    <button class="nav-item" id="nav-asistente" onclick="goTo('screen-asistente')">
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      <span class="nav-label">Asistente</span>
     </button>
     <button class="nav-item" id="nav-historial" onclick="goTo('screen-historial')">
       <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
@@ -1455,6 +1560,7 @@ function goTo(screenId) {
     'screen-ibf': 'nav-ibf',
     'screen-compras': 'nav-compras',
       'screen-producto': 'nav-compras',
+      'screen-asistente': 'nav-asistente',
     'screen-historial': 'nav-historial',
   };
   if (navMap[screenId]) document.getElementById(navMap[screenId]).classList.add('active');
@@ -1478,6 +1584,7 @@ function goTo(screenId) {
     }
   if (screenId === 'screen-ibf') buildIBF();
   if (screenId === 'screen-compras') buildCompras();
+    if (screenId === 'screen-asistente') buildAsistente();
   if (screenId === 'screen-producto') {}
   if (screenId === 'screen-historial') buildHistorial();
 }
@@ -2972,6 +3079,31 @@ const AYUDA_CONTENIDO = {
       },
     ]
   },
+  asistente: {
+    titulo: 'Asistente financiero',
+    items: [
+      {
+        q: 'Que sabe el asistente sobre mi?',
+        a: 'El asistente conoce tu sueldo actual y el de referencia, tu variacion real de poder adquisitivo, tu presupuesto, tu IBF y tendencia emocional, los productos de tu canasta y tu inflacion real personal. Usa todo ese contexto para darte respuestas especificas, no genericas.'
+      },
+      {
+        q: 'Que tipo de preguntas puedo hacerle?',
+        a: 'Cualquier cosa relacionada con finanzas personales en Argentina: ahorro, deudas, inversiones, como pedir aumento, que hacer con pesos sobrantes, cuotas vs contado, presupuesto familiar, impuestos basicos, alquiler, tarjetas, aguinaldo y mucho mas.'
+      },
+      {
+        q: 'Las respuestas son confiables?',
+        a: 'El asistente usa inteligencia artificial con contexto real de tu situacion financiera. Las respuestas son orientativas y utiles, pero no reemplazan a un asesor financiero certificado. Para decisiones importantes (inversiones grandes, creditos, etc.) consulta con un profesional.'
+      },
+      {
+        q: 'El asistente recuerda conversaciones anteriores?',
+        a: 'Recuerda la conversacion de la sesion actual. Si cerras la app y volvés, empieza una nueva conversacion. Tus datos financieros (sueldo, IBF, canasta) siempre estan disponibles como contexto.'
+      },
+      {
+        q: 'Por que es una funcion Premium?',
+        a: 'Cada respuesta del asistente requiere procesamiento de inteligencia artificial, lo que tiene un costo. El plan Premium cubre ese costo y permite mantener la calidad del servicio para todos los usuarios.'
+      },
+    ]
+  },
   historial: {
     titulo: 'Leer tu historial de bienestar',
     items: [
@@ -3671,6 +3803,285 @@ function renderInflacionRealCompras() {
       </div>
     </div>
   `;
+}
+
+
+// ═══════════════════════════════════════════════
+// ASISTENTE FINANCIERO CONTEXTUAL (PREMIUM)
+// ═══════════════════════════════════════════════
+
+let chatHistory = [];
+let esPremium = false; // En producción: verificar via Mercado Pago
+
+function activarPremium() {
+  // Placeholder - en producción conectar con Mercado Pago
+  alert('Próximamente: pago via Mercado Pago. Por ahora activado en modo demo.');
+  esPremium = true;
+  buildAsistente();
+}
+
+function buildAsistente() {
+  const teaser = document.getElementById('asistente-teaser');
+  const chat = document.getElementById('asistente-chat');
+
+  // Para demo: siempre mostrar chat. En producción: verificar esPremium
+  const tieneAcceso = true; // cambiar a: esPremium
+
+  if (!tieneAcceso) {
+    teaser.style.display = 'flex';
+    chat.style.display = 'none';
+    return;
+  }
+
+  teaser.style.display = 'none';
+  chat.style.display = 'flex';
+
+  // Mensaje de bienvenida si es la primera vez
+  if (chatHistory.length === 0) {
+    const contexto = construirContextoUsuario();
+    const saludo = generarSaludo(contexto);
+    agregarMensajeBot(saludo, false);
+  }
+}
+
+function construirContextoUsuario() {
+  const s = state;
+  const compras = getCompras();
+  const productos = Object.values(compras);
+  const inflReal = calcularInflacionReal();
+  const mesHoy = mesActual();
+  const [y, m] = (s.mesRef || mesHoy).split('-');
+  const mesRefLabel = s.mesRef ? `${MESES[parseInt(m)-1]} ${y}` : 'el mes de referencia';
+
+  // Sueldo y poder adquisitivo
+  const sueldo = s.sueldo || 0;
+  const sueldoRef = s.sueldoRef || sueldo;
+  const mesRef = s.mesRef || mesHoy;
+  const inflTotal = ipcAcumulado(mesRef, mesHoy);
+  const sueldoNecesario = sueldoRef * (1 + inflTotal / 100);
+  const varReal = sueldoNecesario > 0 ? ((sueldo / sueldoNecesario) - 1) * 100 : 0;
+  const presupuesto = s.presupuesto || 0;
+  const ibfScore = s.ibfScore || null;
+  const ibfHistory = s.ibfHistory || [];
+  const ahorro = s.ahorro || 'no';
+
+  const ahorroLabels = {
+    no: 'no ahorra, generalmente no llega a fin de mes',
+    poco: 'ahorra algo (menos del 10% del sueldo)',
+    regular: 'ahorra regularmente (10-20% del sueldo)',
+    mucho: 'ahorra bastante (mas del 20% del sueldo)',
+  };
+
+  // Tendencia IBF
+  let tendenciaIBF = '';
+  if (ibfHistory.length >= 2) {
+    const ultimo = ibfHistory[ibfHistory.length - 1].score;
+    const penultimo = ibfHistory[ibfHistory.length - 2].score;
+    if (ultimo > penultimo) tendenciaIBF = 'mejorando';
+    else if (ultimo < penultimo) tendenciaIBF = 'empeorando';
+    else tendenciaIBF = 'estable';
+  }
+
+  // Inflacion real de canasta
+  let inflRealTexto = '';
+  if (inflReal && inflReal.productosUsados > 0) {
+    inflRealTexto = `Su inflacion real personal es del ${inflReal.inflacionReal.toFixed(1)}% (IPC oficial: ${inflReal.ipcOficial.toFixed(1)}%), basada en ${inflReal.productosUsados} productos registrados.`;
+  }
+
+  // Productos con alerta
+  const productosAlerta = productos.filter(p => {
+    const h = p.historial;
+    if (h.length < 2) return false;
+    const varProd = ((h[h.length-1].precio - h[h.length-2].precio) / h[h.length-2].precio) * 100;
+    return varProd > (IPC[mesHoy] || 3) * 1.5;
+  });
+
+  return {
+    sueldo, sueldoRef, mesRefLabel, inflTotal, varReal, sueldoNecesario,
+    presupuesto, ibfScore, ibfHistory, ahorro, ahorroLabels,
+    tendenciaIBF, inflRealTexto, productosAlerta, productos,
+    ipcMesActual: IPC[mesHoy] || 0,
+    tcMEP: TC_MEP,
+  };
+}
+
+function construirSystemPrompt(ctx) {
+  return `Sos el asistente financiero personal de un usuario argentino que usa la app Peso Real.
+
+PERFIL DEL USUARIO:
+- Sueldo neto actual: $${ctx.sueldo.toLocaleString('es-AR')} ARS (equivale a USD ${Math.round(ctx.sueldo / ctx.tcMEP).toLocaleString('es-AR')} al tipo MEP)
+- Sueldo en ${ctx.mesRefLabel}: $${ctx.sueldoRef.toLocaleString('es-AR')} ARS
+- Inflacion acumulada desde ${ctx.mesRefLabel}: ${ctx.inflTotal.toFixed(1)}%
+- Variacion real del poder adquisitivo: ${ctx.varReal >= 0 ? '+' : ''}${ctx.varReal.toFixed(1)}% (${ctx.varReal >= 0 ? 'GANO contra la inflacion' : 'PERDIO contra la inflacion'})
+- Presupuesto mensual base: $${ctx.presupuesto.toLocaleString('es-AR')} ARS
+- Habito de ahorro: ${ctx.ahorroLabels[ctx.ahorro]}
+- Indice de Bienestar Financiero (IBF): ${ctx.ibfScore !== null ? ctx.ibfScore + '/100' : 'sin registro aun'} ${ctx.tendenciaIBF ? '(tendencia: ' + ctx.tendenciaIBF + ')' : ''}
+- IPC del mes actual: ${ctx.ipcMesActual.toFixed(1)}%
+${ctx.inflRealTexto ? '- ' + ctx.inflRealTexto : ''}
+${ctx.productosAlerta.length > 0 ? '- Productos que subieron mas que la inflacion: ' + ctx.productosAlerta.map(p => p.nombre).join(', ') : ''}
+${ctx.productos.length > 0 ? '- Cantidad de productos en su canasta personal: ' + ctx.productos.length : ''}
+
+CONTEXTO ECONOMICO ARGENTINA (${new Date().getFullYear()}):
+- Inflacion mensual actual: ~${ctx.ipcMesActual.toFixed(1)}%
+- Tipo de cambio MEP: $${Math.round(ctx.tcMEP).toLocaleString('es-AR')}
+- El sistema financiero argentino incluye: FCI money market, plazos fijos UVA, bonos CER, dolar MEP, CCL
+- Las deudas en tarjeta de credito tienen CFT que puede superar el 100% anual
+- El aguinaldo es salario diferido (mitad en junio, mitad en diciembre)
+
+TU FORMA DE RESPONDER:
+- Hablale de vos (tuteo argentino): "te conviene", "podes hacer", "tenes que"
+- Usa los datos reales del usuario en cada respuesta. Nunca des consejos genericos si tenes su informacion
+- Cuando menciones montos, usa pesos argentinos con formato local ($ 1.200.000)
+- Se directo, claro y empatico. Sin tecnicismos innecesarios
+- Respuestas de maximo 4-5 oraciones, a menos que la pregunta requiera mas detalle
+- Si la pregunta es ambigua, respondela de la forma mas util posible en lugar de pedir aclaracion
+- Podes responder preguntas de economia general, finanzas personales, inversiones, consumo, trabajo y cualquier tema financiero
+- Si alguien pregunta algo que no tiene que ver con finanzas, redirigilo amablemente al tema financiero
+- SIEMPRE termina con una accion concreta y especifica que el usuario pueda hacer
+
+DISCLAIMER OBLIGATORIO: Al final de cada respuesta agrega siempre en una linea separada: "⚠ Esto es orientativo y no constituye asesoramiento financiero profesional."
+
+TEMAS QUE PODES RESPONDER (entre muchos otros):
+Ahorro: cuanto ahorrar, donde guardar los pesos, fondos de emergencia, plazos fijos, FCI
+Deudas: tarjeta de credito, cuotas, prestamos, como priorizar pagos
+Sueldo: como pedir aumento, cuando negociar, cuanto pedir, argumentos con inflacion real
+Inversiones: dolar MEP, FCI, bonos, acciones, criptomonedas, comparativas
+Presupuesto: como armar uno, como ajustarlo, gastos fijos vs variables
+Inflacion: como protegerse, que comprar antes de que suba, stock estrategico
+Consumo: cuotas vs contado, cuando conviene cada opcion, comparar precios
+Trabajo: relacion de dependencia vs monotributo, liquidacion de sueldo, aguinaldo, vacaciones
+Impuestos: monotributo, ganancias, bienes personales (nivel basico, no asesoramiento legal)
+Vivienda: alquiler, actualizacion por ICL, como negociar contratos
+Familia: como manejar finanzas en pareja, gastos de hijos, educacion
+Emergencias: fondo de emergencia, que hacer ante una crisis economica personal
+Jubilacion: ANSES, aportes, opciones de ahorro a largo plazo
+Tarjetas: como usarlas a favor, cashback, descuentos, cuotas sin interes
+Servicios: como reducir gastos fijos, renegociar contratos, alternativas mas baratas`;
+}
+
+function generarSaludo(ctx) {
+  const hora = new Date().getHours();
+  const saludo = hora < 12 ? 'Buenos días' : hora < 20 ? 'Buenas tardes' : 'Buenas noches';
+
+  let intro = `${saludo}. Soy tu asistente financiero personal y conozco tu situación real.`;
+
+  if (ctx.varReal < -10) {
+    intro += ` Veo que tu poder adquisitivo bajó un ${Math.abs(ctx.varReal).toFixed(1)}% — hay cosas concretas que podemos hacer para mejorar eso.`;
+  } else if (ctx.varReal > 5) {
+    intro += ` Tu sueldo le ganó a la inflación un ${ctx.varReal.toFixed(1)}% — buen momento para pensar en dónde poner ese excedente real.`;
+  } else {
+    intro += ` Tu situación financiera está en equilibrio, aunque siempre hay margen para optimizar.`;
+  }
+
+  intro += `
+
+¿Qué querés analizar hoy?`;
+  return intro;
+}
+
+function agregarMensajeBot(texto, conDisclaimer = true) {
+  const container = document.getElementById('chat-messages');
+  if (!container) return;
+
+  const div = document.createElement('div');
+  div.className = 'msg-bot';
+
+  // Formatear texto: saltos de linea y negrita básica
+  const formateado = texto
+    .replace(/
+
+/g, '<br><br>')
+    .replace(/
+/g, '<br>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+  div.innerHTML = formateado;
+
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function agregarMensajeUsuario(texto) {
+  const container = document.getElementById('chat-messages');
+  if (!container) return;
+
+  const div = document.createElement('div');
+  div.className = 'msg-user';
+  div.textContent = texto;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function mostrarLoader() {
+  const container = document.getElementById('chat-messages');
+  if (!container) return;
+  const div = document.createElement('div');
+  div.className = 'msg-loading';
+  div.id = 'msg-loading';
+  div.innerHTML = '<span></span><span></span><span></span>';
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function ocultarLoader() {
+  const loader = document.getElementById('msg-loading');
+  if (loader) loader.remove();
+}
+
+async function enviarMensaje() {
+  const input = document.getElementById('chat-input');
+  const texto = input.value.trim();
+  if (!texto) return;
+
+  const sendBtn = document.getElementById('chat-send-btn');
+  sendBtn.disabled = true;
+  input.value = '';
+  input.style.height = 'auto';
+
+  agregarMensajeUsuario(texto);
+  mostrarLoader();
+
+  // Agregar al historial
+  chatHistory.push({ role: 'user', content: texto });
+
+  const ctx = construirContextoUsuario();
+  const systemPrompt = construirSystemPrompt(ctx);
+
+  // Limitar historial a últimos 10 mensajes para no exceder tokens
+  const mensajesParaEnviar = chatHistory.slice(-10);
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: mensajesParaEnviar,
+      })
+    });
+
+    ocultarLoader();
+
+    if (!res.ok) throw new Error('API error');
+    const data = await res.json();
+    const respuesta = data.content?.find(b => b.type === 'text')?.text?.trim();
+
+    if (respuesta) {
+      chatHistory.push({ role: 'assistant', content: respuesta });
+      agregarMensajeBot(respuesta);
+    } else {
+      throw new Error('No response');
+    }
+
+  } catch(e) {
+    ocultarLoader();
+    agregarMensajeBot('Hubo un error al conectar con el asistente. Por favor intentá de nuevo en unos segundos.', false);
+  }
+
+  sendBtn.disabled = false;
+  input.focus();
 }
 
 // ═══════════════════════════════════════════════
