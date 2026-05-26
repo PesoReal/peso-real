@@ -116,6 +116,11 @@ html,body{
 .screen.active{
   display:flex;
 }
+#screen-auth.active{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
 @keyframes fadeIn{
   from{opacity:0}
   to{opacity:1}
@@ -804,10 +809,12 @@ select option{background:var(--bg3)}
 </head>
 <body>
 <div id="app">
+<div class="screens-wrap">
+
 <!-- ══════════════════════════════════════
      SCREEN 0 - AUTH (LOGIN/REGISTRO)
 ══════════════════════════════════════ -->
-<div class="screen active" id="screen-auth" style="background:var(--bg);display:flex;justify-content:center;align-items:center;padding:32px 24px">
+<div class="screen active" id="screen-auth" style="background:var(--bg);align-items:center;justify-content:center;overflow-y:auto">
   <div style="width:100%;max-width:400px">
     <div style="text-align:center;margin-bottom:40px">
       <div style="font-family:DM Serif Display,serif;font-size:36px;color:var(--accent);letter-spacing:-0.5px;margin-bottom:8px">Peso Real</div>
@@ -840,12 +847,11 @@ select option{background:var(--bg3)}
   </div>
 </div>
 
-<div class="screens-wrap">
 
 <!-- ══════════════════════════════════════
      SCREEN 1 - ONBOARDING
 ══════════════════════════════════════ -->
-<div class="screen active" id="screen-onboarding">
+<div class="screen" id="screen-onboarding">
   <div class="onb-bg">
     <div class="onb-glow g1"></div>
     <div class="onb-glow g2"></div>
@@ -1620,7 +1626,7 @@ function finishOnboarding() {
 // ═══════════════════════════════════════════════
 // NAVEGACIÓN
 // ═══════════════════════════════════════════════
-let currentScreen = 'screen-onboarding';
+let currentScreen = 'screen-auth';
 
 function goTo(screenId) {
   const prev = document.getElementById(currentScreen);
