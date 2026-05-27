@@ -521,33 +521,29 @@
 
   <div class="calc-card">
     <div class="form-group">
-      <label>¿Cuál era tu sueldo en ese momento?</label>
-      <div class="input-wrap">
-        <span class="currency-prefix">$</span>
-        <input type="number" id="sueldo-antes" placeholder="0" min="0" inputmode="numeric">
-      </div>
+      <label>¿En qué mes empezás a medir?</label>
+      <select id="mes-desde"></select>
     </div>
 
-    <div class="row-2">
-      <div class="form-group">
-        <label>Desde</label>
-        <select id="mes-desde"></select>
-      </div>
-      <div class="form-group">
-        <label>Hasta</label>
-        <select id="mes-hasta"></select>
+    <div class="form-group">
+      <label>¿Cuánto cobrabas ese mes?</label>
+      <div class="input-wrap">
+        <span class="currency-prefix">$</span>
+        <input type="number" id="sueldo-antes" placeholder="Ej: 150.000" min="0" inputmode="numeric">
       </div>
     </div>
 
     <div class="form-group" style="margin-bottom:8px">
-      <label>¿Cuál es tu sueldo actual? <span style="color:var(--text3);font-weight:400">(opcional)</span></label>
+      <label>¿Cuánto cobrás hoy? <span style="color:var(--text3);font-weight:400">(opcional)</span></label>
       <div class="input-wrap">
         <span class="currency-prefix">$</span>
-        <input type="number" id="sueldo-actual" placeholder="0" min="0" inputmode="numeric">
+        <input type="number" id="sueldo-actual" placeholder="Ej: 1.200.000" min="0" inputmode="numeric">
       </div>
     </div>
 
-    <button class="btn" onclick="calcular()">Calcular mi poder adquisitivo →</button>
+    <input type="hidden" id="mes-hasta">
+
+    <button class="btn" onclick="calcular()">Ver mi resultado →</button>
 
     <div id="resultado">
       <div class="result-headline">Tu resultado</div>
@@ -655,16 +651,23 @@ function poblarSelects() {
   const desde = document.getElementById('mes-desde');
   const hasta = document.getElementById('mes-hasta');
 
+  // Solo llenar el selector de origen
   keys.forEach(k => {
     const [y, m] = k.split('-');
     const label = `${MESES_ES[parseInt(m)-1]} ${y}`;
     desde.add(new Option(label, k));
-    hasta.add(new Option(label, k));
   });
 
-  // Defaults: desde 12 meses atrás, hasta el último
+  // Default: 12 meses atras
   desde.value = keys[keys.length - 14] || keys[0];
+
+  // hasta siempre es el mes mas reciente (hidden)
   hasta.value = keys[keys.length - 1];
+
+  // Actualizar hasta cuando cambia desde
+  desde.addEventListener('change', () => {
+    hasta.value = keys[keys.length - 1];
+  });
 }
 
 // Calcula inflación acumulada entre dos períodos (inclusive)
