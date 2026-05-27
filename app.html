@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a0b0d">
 <title>Peso Real</title>
@@ -1542,7 +1543,7 @@ async function actualizarIPC() {
 
   try {
     // Serie 148.3_INIVELGENERAL_DICI_M_26 = IPC nivel general mensual INDEC
-    const url = 'https://apis.datos.gob.ar/series/api/series/?ids=148.3_INIVELGENERAL_DICI_M_26&limit=60&sort=asc&format=json';
+    const url = '/api/ipc';
     const res = await fetch(url);
     if (!res.ok) return;
     const data = await res.json();
