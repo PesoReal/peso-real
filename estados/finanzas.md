@@ -37,11 +37,12 @@ Este chat cubre dos capas: finanzas del negocio (costos, MRR, proyecciones) y fi
 
 ### Modelo de ingresos
 - **Gratis:** IBF básico + sueldo real
-- **Premium:** USD 5/mes en ARS
-- **Familiar:** USD 8/mes en ARS (V3)
-- ARPU ponderado esperado: ~USD 5.5
+- **Premium:** ARS 7.000/mes
+- **Familiar:** ARS 12.000/mes (V3)
+- ARPU ponderado esperado: ~ARS 9.000
 - Cobro: Mercado Pago en ARS (pendiente de activar)
-- Facturación en ARS por regulaciones argentinas
+- Facturación: en ARS por regulaciones argentinas
+- **Política de ajuste:** revisión anual en enero, según IPC acumulado del año anterior
 
 ## Finanzas personales / Impositivo
 
@@ -63,8 +64,22 @@ Este chat cubre dos capas: finanzas del negocio (costos, MRR, proyecciones) y fi
 - Mercado Pago como procesador: retiene y acredita en ARS — simplifica la facturación
 - Con ambos proyectos (Peso Real + SaaS monotributistas): evaluar si conviene una sociedad o seguir como persona física
 
-### Pendiente
-- Definir precio en ARS de Premium (actualizable con inflación)
-- Activar Mercado Pago cuando haya primeros usuarios
-- Consultar contador cuando se acerque el primer ingreso
-- Evaluar monotributo vs autónomo según proyección de ingresos
+---
+
+## Estado actual
+- ✅ **Precios finalizados en ARS:** Premium ARS 7.000/mes, Familiar ARS 12.000/mes
+- ✅ **Política de ajuste definida:** revisión anual según IPC acumulado
+- ✅ **Costos operacionales:** $0 hasta escalar (planes gratuitos sostenibles)
+- 🔲 Mercado Pago: no activado (espera primeros usuarios)
+- 🔲 Monotributo: no inscripto (espera ingresos reales)
+- 🔲 Contador: no consultado (pendiente para primer ingreso)
+
+## Tareas pendientes
+1. **Activar Mercado Pago** cuando haya primeros usuarios beta/pagos
+2. **Inscribirse en monotributo** antes del primer cobro (llevar documentación AFIP)
+3. **Consultar contador** cuando se acerque el primer ingreso (tratamiento fiscal, categoría)
+4. **Evaluar estructura legal** si ambos proyectos escalan (persona física vs sociedad)
+5. **Implementar política de ajuste de precios** en app (revisión anual, notificación a usuarios)
+
+---
+*Próxima revisión: cuando haya tracción de usuarios o cambio significativo en MEP/inflación.*
