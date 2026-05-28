@@ -1232,11 +1232,11 @@ select option{background:var(--bg3)}
   </div>
 
   <!-- Vista gratuita: teaser -->
-  <div id="asistente-teaser" style="display:none;flex:1;padding:32px 24px;text-align:center;flex-direction:column;align-items:center;justify-content:center">
+  <div id="asistente-teaser" style="display:none;flex:1;padding:32px 24px;text-align:center;flex-direction:column;align-items:center;justify-content:center;overflow-y:auto">
     <div style="font-size:48px;margin-bottom:20px">🤖</div>
     <div style="font-family:Fraunces,serif;font-size:26px;letter-spacing:-0.3px;margin-bottom:12px;line-height:1.2">Tu asesor financiero<br>personal</div>
     <div style="font-size:15px;color:var(--text2);line-height:1.7;margin-bottom:28px;max-width:320px">Hacé cualquier pregunta sobre tu situación financiera y recibí una respuesta que conoce tu sueldo real, tu IBF y tu canasta personal.</div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:left;margin-bottom:28px;width:100%;max-width:340px">
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:left;margin-bottom:24px;width:100%;max-width:340px">
       <div style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px">Podés preguntarle</div>
       <div style="font-size:13px;color:var(--text2);line-height:2">
         💬 ¿Cuánto debería ahorrar este mes?<br>
@@ -1246,10 +1246,28 @@ select option{background:var(--bg3)}
         💬 ¿Estoy gastando bien mi presupuesto?
       </div>
     </div>
-    <button class="btn-primary" style="max-width:280px" onclick="activarPremium()">
-      Activar Premium · USD 5/mes →
-    </button>
-    <div style="font-size:12px;color:var(--text3);margin-top:12px">Cancelás cuando quieras</div>
+
+    <!-- Planes -->
+    <div style="width:100%;max-width:340px;margin-bottom:16px">
+      <div id="plan-premium-btn" onclick="iniciarPago('premium')" style="background:var(--accent);border-radius:var(--radius-sm);padding:18px 20px;cursor:pointer;margin-bottom:10px;text-align:left;transition:opacity 0.15s">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <div style="font-size:16px;font-weight:700;color:#0a0b0d">Premium</div>
+          <div style="font-family:Fraunces,serif;font-size:20px;color:#0a0b0d;font-weight:600">$7.000<span style="font-size:13px;font-weight:400">/mes</span></div>
+        </div>
+        <div style="font-size:13px;color:rgba(10,11,13,0.65)">Asistente IA + canasta personalizada + comparación con pares</div>
+      </div>
+      <div id="plan-familiar-btn" onclick="iniciarPago('familiar')" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:18px 20px;cursor:pointer;text-align:left;transition:border-color 0.15s">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <div style="font-size:16px;font-weight:600;color:var(--text)">Familiar <span style="font-size:11px;font-weight:400;color:var(--text3);background:var(--bg3);padding:2px 8px;border-radius:20px;margin-left:6px">Próximamente</span></div>
+          <div style="font-family:Fraunces,serif;font-size:20px;color:var(--text2)">$12.000<span style="font-size:13px;font-weight:400">/mes</span></div>
+        </div>
+        <div style="font-size:13px;color:var(--text3)">Todo lo de Premium + hasta 4 personas</div>
+      </div>
+    </div>
+
+    <div id="mp-loading" style="display:none;font-size:14px;color:var(--text2);margin-bottom:12px">Preparando el pago...</div>
+    <div id="mp-error" style="display:none;font-size:13px;color:var(--red);margin-bottom:12px;max-width:300px;line-height:1.5"></div>
+    <div style="font-size:12px;color:var(--text3)">Pago seguro via Mercado Pago · Cancelás cuando quieras</div>
   </div>
 
   <!-- Vista premium: chat -->
@@ -1366,6 +1384,7 @@ select option{background:var(--bg3)}
     </button>
 
     <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
+      <div id="perfil-plan-info" style="margin-bottom:16px"></div>
       <button onclick="cerrarSesion()" style="width:100%;background:var(--red-bg);border:1px solid rgba(255,90,90,0.2);border-radius:var(--radius-sm);color:var(--red);font-family:Outfit,sans-serif;font-size:15px;font-weight:500;padding:14px;cursor:pointer">
         Cerrar sesion
       </button>
@@ -4006,21 +4025,89 @@ function renderInflacionRealCompras() {
 // ═══════════════════════════════════════════════
 
 let chatHistory = [];
-let esPremium = false; // En producción: verificar via Mercado Pago
 
-function activarPremium() {
-  // Placeholder - en producción conectar con Mercado Pago
-  alert('Próximamente: pago via Mercado Pago. Por ahora activado en modo demo.');
-  esPremium = true;
-  buildAsistente();
+function esPremium() {
+  return !!(state.premium && state.premium.activo === true);
+}
+
+async function iniciarPago(plan) {
+  if (plan === 'familiar') return; // Próximamente
+
+  const loadingEl = document.getElementById('mp-loading');
+  const errorEl = document.getElementById('mp-error');
+  const btnEl = document.getElementById('plan-premium-btn');
+
+  loadingEl.style.display = 'block';
+  errorEl.style.display = 'none';
+  btnEl.style.opacity = '0.6';
+  btnEl.style.pointerEvents = 'none';
+
+  try {
+    const user = window._firebaseUser;
+    if (!user) throw new Error('Necesitas iniciar sesion primero.');
+
+    const response = await fetch('/api/mp-create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        uid: user.uid,
+        plan: plan,
+        email: user.email || '',
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.sandbox_init_point) {
+      throw new Error(data.error || 'No se pudo iniciar el pago. Intenta de nuevo.');
+    }
+
+    // Redirigir a MP (sandbox en test, init_point en produccion)
+    window.location.href = data.sandbox_init_point; // CAMBIAR a data.init_point en produccion
+
+  } catch (err) {
+    loadingEl.style.display = 'none';
+    errorEl.style.display = 'block';
+    errorEl.textContent = err.message || 'Error al conectar con Mercado Pago. Intenta de nuevo.';
+    btnEl.style.opacity = '1';
+    btnEl.style.pointerEvents = 'auto';
+  }
+}
+
+function verificarPagoEnURL() {
+  const params = new URLSearchParams(window.location.search);
+  const pago = params.get('pago');
+  const plan = params.get('plan');
+
+  if (pago === 'ok' && plan) {
+    // Limpiar URL
+    window.history.replaceState({}, '', '/app.html');
+    // Esperar a que Firestore actualice via webhook (puede tardar unos segundos)
+    setTimeout(() => {
+      if (esPremium()) {
+        buildAsistente();
+        goTo('screen-asistente');
+        mostrarToastPremium();
+      }
+    }, 2000);
+  } else if (pago === 'error') {
+    window.history.replaceState({}, '', '/app.html');
+  }
+}
+
+function mostrarToastPremium() {
+  const toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;top:60px;left:50%;transform:translateX(-50%);background:var(--accent);color:#0a0b0d;padding:12px 24px;border-radius:30px;font-size:14px;font-weight:600;z-index:999;animation:fadeIn 0.3s ease';
+  toast.textContent = 'Premium activado!';
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3500);
 }
 
 function buildAsistente() {
   const teaser = document.getElementById('asistente-teaser');
   const chat = document.getElementById('asistente-chat');
 
-  // Para demo: siempre mostrar chat. En producción: verificar esPremium
-  const tieneAcceso = true; // cambiar a: esPremium
+  const tieneAcceso = esPremium();
 
   if (!tieneAcceso) {
     teaser.style.display = 'flex';
@@ -4500,6 +4587,32 @@ function buildPerfil() {
     document.getElementById('perfil-provincia').value = perfil.provincia || '';
     document.getElementById('perfil-familia').value = perfil.familia || '';
   }
+
+  // Badge plan
+  const planInfo = document.getElementById('perfil-plan-info');
+  if (planInfo) {
+    if (esPremium()) {
+      const p = state.premium;
+      const fecha = p.fechaActivacion ? new Date(p.fechaActivacion).toLocaleDateString('es-AR') : '';
+      planInfo.innerHTML = `
+        <div style="background:rgba(212,240,96,0.08);border:1px solid rgba(212,240,96,0.2);border-radius:var(--radius-sm);padding:14px 16px;display:flex;align-items:center;gap:12px">
+          <div style="font-size:22px">⭐</div>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--accent)">Plan ${p.plan === 'familiar' ? 'Familiar' : 'Premium'} activo</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:2px">${fecha ? 'Desde ' + fecha : ''}</div>
+          </div>
+        </div>`;
+    } else {
+      planInfo.innerHTML = `
+        <div onclick="goTo('screen-asistente')" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer">
+          <div style="font-size:22px">🔒</div>
+          <div>
+            <div style="font-size:14px;font-weight:500;color:var(--text)">Plan gratuito</div>
+            <div style="font-size:12px;color:var(--accent);margin-top:2px">Activar Premium →</div>
+          </div>
+        </div>`;
+    }
+  }
 }
 
 function guardarPerfil() {
@@ -4575,6 +4688,9 @@ function init() {
 
   // Firebase _onAuthStateChanged maneja la navegacion automaticamente
   // No hacer auto-login desde localStorage
+
+  // Verificar si volvemos de un pago de Mercado Pago
+  verificarPagoEnURL();
 
   // Actualizar IPC y TC MEP en segundo plano - no bloquean la app
   Promise.all([actualizarIPC(), actualizarTCMEP()]).then(() => {
