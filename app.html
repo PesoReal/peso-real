@@ -4531,6 +4531,28 @@ window._onAuthStateChanged = async function(user) {
     // Usuario logueado
     await cargarDatosUsuario(user.uid);
 
+    // Verificar si volvemos de un pago de MP (esperar a tener datos cargados)
+    const params = new URLSearchParams(window.location.search);
+    const pago = params.get('pago');
+    const plan = params.get('plan');
+    if (pago === 'ok' && plan) {
+      window.history.replaceState({}, '', '/app.html');
+      // Recargar datos por si el webhook ya escribio en Firestore
+      await cargarDatosUsuario(user.uid);
+      buildDashboard();
+      document.getElementById('screen-auth').classList.remove('active');
+      document.getElementById('screen-onboarding').classList.remove('active');
+      document.getElementById('screen-dashboard').classList.add('active');
+      currentScreen = 'screen-dashboard';
+      document.getElementById('bottom-nav').classList.add('visible');
+      setTimeout(() => {
+        buildAsistente();
+        goTo('screen-asistente');
+        mostrarToastPremium();
+      }, 1500);
+      return;
+    }
+
     if (state.onboardingDone) {
       buildDashboard();
       document.getElementById('screen-auth').classList.remove('active');
@@ -4690,9 +4712,6 @@ function init() {
 
   // Firebase _onAuthStateChanged maneja la navegacion automaticamente
   // No hacer auto-login desde localStorage
-
-  // Verificar si volvemos de un pago de Mercado Pago
-  verificarPagoEnURL();
 
   // Actualizar IPC y TC MEP en segundo plano - no bloquean la app
   Promise.all([actualizarIPC(), actualizarTCMEP()]).then(() => {
