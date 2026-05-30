@@ -4025,6 +4025,7 @@ function renderInflacionRealCompras() {
 // ═══════════════════════════════════════════════
 
 let chatHistory = [];
+let asistenteInicializado = false;
 
 function esPremium() {
   return !!(state.premium && state.premium.activo === true);
@@ -4119,7 +4120,8 @@ function buildAsistente() {
   chat.style.display = 'flex';
 
   // Mensaje de bienvenida si es la primera vez
-  if (chatHistory.length === 0) {
+  if (chatHistory.length === 0 && !asistenteInicializado) {
+    asistenteInicializado = true;
     // Disclaimer inicial - una sola vez
     const disclaimerDiv = document.createElement('div');
     disclaimerDiv.style.cssText = 'font-size:11px;color:var(--text3);text-align:center;padding:8px 12px;background:var(--bg3);border-radius:8px;line-height:1.5;margin-bottom:4px';
