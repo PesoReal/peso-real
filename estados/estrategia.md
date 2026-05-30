@@ -22,7 +22,7 @@ App de finanzas personales diseñada para el contexto argentino. Tres pilares:
 
 ## Estado del producto
 - MVP V1 (Pilares 1 y 2): COMPLETO
-- V2 (Pilar 3 + canasta): COMPLETO
+- V2 (Pilar 3 + canasta): EN DESARROLLO FINAL
 - V3 (familiar, PWA, integraciones): PENDIENTE
 
 ## Modelo de negocio
@@ -31,7 +31,7 @@ App de finanzas personales diseñada para el contexto argentino. Tres pilares:
 - **Familiar:** USD 8/mes en ARS — hasta 4 personas (V3)
 - ARPU ponderado esperado: ~USD 5.5
 - Churn esperado: <5% por lock-in del historial acumulado
-- Cobro: Mercado Pago en ARS (pendiente de activar)
+- Cobro: Mercado Pago en ARS — YA INTEGRADO
 - Facturación en ARS por regulaciones argentinas
 
 ## Decisiones tomadas
@@ -40,9 +40,41 @@ App de finanzas personales diseñada para el contexto argentino. Tres pilares:
 - Comparación con pares: simulada hasta 50+ usuarios reales
 - Stack estático sin frameworks (velocidad de construcción)
 - Identidad: Peso Real — juego de palabras poder adquisitivo real + verdad financiera
+- Beta cerrada con conocidos antes de lanzamiento público
+- Sin Mercado Pago activo durante la beta — acceso premium manual vía Firebase
+
+## Beta cerrada — estructura definida
+**Objetivo:** validar retención y UX antes de salir al público, sin presión de conversión.
+
+**Perfil:** 5 a 15 personas conocidas, mezcla de perfiles (financieros y no financieros).
+
+**Acceso:** premium gratis, sin fecha de vencimiento fija. Cierre cuando haya feedback suficiente.
+
+**4 comportamientos a observar:**
+1. Retorno semanal sin empuje externo
+2. Completitud del IBF semanal
+3. Carga real de productos en la canasta
+4. Momento de fricción / abandono
+
+**Al cierre de la beta — 4 preguntas clave:**
+1. ¿Qué usaste más?
+2. ¿Qué no entendiste o te costó?
+3. ¿Hubo algún momento en que cerraste la app sin terminar lo que ibas a hacer?
+4. ¿La usarías si fuera paga?
+
+**Herramientas armadas:**
+- Form de registro beta: nombre + email (ya creado en Google Forms)
+- Cuestionario de feedback post-beta: 8 preguntas informales (ya creado en Google Forms)
+
+**Brief técnico para Construcción:**
+- Página `beta.html` independiente (no toca `app.html` ni `index`)
+- Colección `beta_users` en Firestore con emails autorizados
+- Al loguearse, se chequea el email → si está, activa `premium: true` y `beta: true` en el documento del usuario sin pasar por Mercado Pago
+- Desactivación: flag global `beta_active: false` o eliminar colección
+- Identidad visual Peso Real
 
 ## Pendiente estratégico
-- Activar Mercado Pago cuando haya primeros usuarios orgánicos
+- Activar Mercado Pago cuando lleguen los primeros usuarios orgánicos post-beta
 - Formalización: monotributo cuando el negocio genere ingresos
 - Definir precio en ARS actualizable con inflación
 - Métricas a trackear: MRR, churn, usuarios activos semanales, conversión free→premium
