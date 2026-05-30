@@ -4512,6 +4512,22 @@ async function cargarDatosUsuario(uid) {
       await guardarDatosUsuario(uid);
     }
   }
+
+  // Chequeo beta: si el email esta en beta_users y no tiene premium activo, activarlo
+  const user = window._firebaseUser;
+  if (user && user.email && !(state.premium && state.premium.activo)) {
+    try {
+      const betaRef = window._firebaseDoc('beta_users/' + user.email.toLowerCase());
+      const betaSnap = await window._firebaseGetDoc(betaRef);
+      if (betaSnap.exists()) {
+        state.premium = { activo: true, plan: 'beta', fechaActivacion: new Date().toISOString() };
+        state.beta = true;
+        await guardarDatosUsuario(uid);
+      }
+    } catch (e) {
+      // Si falla el chequeo beta, continuar sin bloquear
+    }
+  }
 }
 
 async function guardarDatosUsuario(uid) {
