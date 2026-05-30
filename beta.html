@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peso Real — Beta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Fraunces:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent: #d4f060;
+    --bg: #0a0b0d;
+    --bg2: #111214;
+    --bg3: #1a1b1e;
+    --border: rgba(255,255,255,0.08);
+    --text: #f0f0f0;
+    --text2: #9a9a9a;
+    --text3: #555;
+    --red: #ff5a5a;
+    --radius: 16px;
+    --radius-sm: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: Outfit, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Glow de fondo */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(ellipse, rgba(212,240,96,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .wrap {
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Badge beta */
+  .beta-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(212,240,96,0.1);
+    border: 1px solid rgba(212,240,96,0.25);
+    border-radius: 30px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+
+  .beta-badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  /* Header */
+  .header {
+    margin-bottom: 36px;
+  }
+
+  .logo-text {
+    font-family: Fraunces, serif;
+    font-size: 38px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: -1px;
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+
+  .tagline {
+    font-size: 16px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+
+  /* Card */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    margin-bottom: 16px;
+  }
+
+  .card-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .card-sub {
+    font-size: 14px;
+    color: var(--text2);
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    background: var(--bg3);
+    border-radius: 10px;
+    padding: 3px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+  }
+
+  .tab {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-family: Outfit, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    color: var(--text2);
+  }
+
+  .tab.active {
+    background: var(--accent);
+    color: #0a0b0d;
+  }
+
+  /* Form */
+  .field {
+    margin-bottom: 14px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+
+  .field input {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: Outfit, sans-serif;
+    font-size: 16px;
+    padding: 14px 16px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .field input:focus {
+    border-color: rgba(212,240,96,0.4);
+  }
+
+  .btn-primary {
+    width: 100%;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: #0a0b0d;
+    font-family: Outfit, sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 15px;
+    cursor: pointer;
+    margin-top: 4px;
+    transition: opacity 0.15s;
+    letter-spacing: 0.01em;
+  }
+
+  .btn-primary:hover { opacity: 0.88; }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .error-msg {
+    font-size: 13px;
+    color: var(--red);
+    text-align: center;
+    margin-top: 12px;
+    display: none;
+  }
+
+  /* Estado: no autorizado */
+  .not-auth {
+    text-align: center;
+    padding: 8px 0;
+    display: none;
+  }
+
+  .not-auth-icon { font-size: 36px; margin-bottom: 12px; }
+  .not-auth-title { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+  .not-auth-sub { font-size: 14px; color: var(--text2); line-height: 1.6; }
+
+  /* Estado: bienvenida */
+  .welcome {
+    text-align: center;
+    padding: 8px 0;
+    display: none;
+  }
+
+  .welcome-icon { font-size: 44px; margin-bottom: 16px; }
+  .welcome-title {
+    font-family: Fraunces, serif;
+    font-size: 24px;
+    margin-bottom: 8px;
+    color: var(--accent);
+  }
+  .welcome-sub { font-size: 14px; color: var(--text2); line-height: 1.6; margin-bottom: 24px; }
+
+  .btn-enter {
+    width: 100%;
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: #0a0b0d;
+    font-family: Outfit, sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 15px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-enter:hover { opacity: 0.88; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text3);
+    line-height: 1.7;
+    margin-top: 8px;
+  }
+
+  /* Loading spinner */
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(10,11,13,0.3);
+    border-top-color: #0a0b0d;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .wrap { animation: fadeIn 0.4s ease; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="beta-badge">Beta privada</div>
+
+  <div class="header">
+    <div class="logo-text">Peso Real</div>
+    <div class="tagline">Finanzas que entienden<br>el peso argentino.</div>
+  </div>
+
+  <div class="card">
+
+    <!-- Vista: form login/registro -->
+    <div id="view-form">
+      <div class="card-title">Acceso para betatesters</div>
+      <div class="card-sub">Si recibiste una invitacion, registrate con tu email para activar tu acceso premium gratuito.</div>
+
+      <div class="tabs">
+        <button class="tab active" id="tab-registro" onclick="switchTab('registro')">Crear cuenta</button>
+        <button class="tab" id="tab-login" onclick="switchTab('login')">Ya tengo cuenta</button>
+      </div>
+
+      <div id="form-registro">
+        <div class="field">
+          <label>Nombre</label>
+          <input type="text" id="reg-nombre" placeholder="Tu nombre" autocomplete="name">
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="reg-email" placeholder="tu@email.com" autocomplete="email">
+        </div>
+        <div class="field">
+          <label>Contrasena</label>
+          <input type="password" id="reg-pass" placeholder="Minimo 6 caracteres" autocomplete="new-password">
+        </div>
+        <button class="btn-primary" id="btn-registro" onclick="registrar()">Crear cuenta</button>
+      </div>
+
+      <div id="form-login" style="display:none">
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="log-email" placeholder="tu@email.com" autocomplete="email">
+        </div>
+        <div class="field">
+          <label>Contrasena</label>
+          <input type="password" id="log-pass" placeholder="Tu contrasena" autocomplete="current-password">
+        </div>
+        <button class="btn-primary" id="btn-login" onclick="login()">Ingresar</button>
+      </div>
+
+      <div class="error-msg" id="error-msg"></div>
+    </div>
+
+    <!-- Vista: email no autorizado -->
+    <div class="not-auth" id="view-not-auth">
+      <div class="not-auth-icon">🔒</div>
+      <div class="not-auth-title">Email no autorizado</div>
+      <div class="not-auth-sub">Este email no forma parte de la beta privada. Si crees que es un error, contactate con Adrian.</div>
+    </div>
+
+    <!-- Vista: bienvenida -->
+    <div class="welcome" id="view-welcome">
+      <div class="welcome-icon">🎉</div>
+      <div class="welcome-title" id="welcome-nombre">Bienvenido a la beta</div>
+      <div class="welcome-sub">Tu acceso premium esta activado. Explorá la app y contanos todo lo que pensas — tu opinion construye Peso Real.</div>
+      <button class="btn-enter" onclick="irALaApp()">Entrar a Peso Real →</button>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    Beta privada · Solo acceso por invitacion<br>
+    Tus datos son privados y solo los ves vos.
+  </div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+  import { getFirestore, doc, getDoc, setDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC3kT91m3YFD6O79OVdoGCy3JQR_5HhLFU",
+    authDomain: "peso-real-app.firebaseapp.com",
+    projectId: "peso-real-app",
+    storageBucket: "peso-real-app.appspot.com",
+    messagingSenderId: "1083662699840",
+    appId: "1:1083662699840:web:peso-real"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  async function esBetaTester(email) {
+    const ref = doc(db, 'beta_users', email.toLowerCase());
+    const snap = await getDoc(ref);
+    return snap.exists();
+  }
+
+  async function activarBeta(uid, email, nombre) {
+    const ref = doc(db, 'usuarios', uid);
+    const snap = await getDoc(ref);
+    const datosExistentes = snap.exists() ? snap.data() : {};
+
+    await setDoc(ref, {
+      ...datosExistentes,
+      premium: {
+        activo: true,
+        plan: 'beta',
+        fechaActivacion: new Date().toISOString(),
+      },
+      beta: true,
+      perfil: {
+        ...(datosExistentes.perfil || {}),
+        nombre: nombre || (datosExistentes.perfil && datosExistentes.perfil.nombre) || '',
+      },
+      onboardingDone: datosExistentes.onboardingDone || false,
+    }, { merge: true });
+  }
+
+  function mostrarError(msg) {
+    const el = document.getElementById('error-msg');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function ocultarError() {
+    document.getElementById('error-msg').style.display = 'none';
+  }
+
+  function setLoading(btnId, loading) {
+    const btn = document.getElementById(btnId);
+    if (loading) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>Verificando...';
+    } else {
+      btn.disabled = false;
+      btn.textContent = btnId === 'btn-registro' ? 'Crear cuenta' : 'Ingresar';
+    }
+  }
+
+  async function manejarUsuario(user, nombre) {
+    const autorizado = await esBetaTester(user.email);
+    if (!autorizado) {
+      document.getElementById('view-form').style.display = 'none';
+      document.getElementById('view-not-auth').style.display = 'block';
+      await auth.signOut();
+      return;
+    }
+
+    await activarBeta(user.uid, user.email, nombre);
+
+    const snap = await getDoc(doc(db, 'usuarios', user.uid));
+    const perfil = snap.exists() && snap.data().perfil;
+    const nombreMostrar = (perfil && perfil.nombre) ? perfil.nombre.split(' ')[0] : (nombre ? nombre.split(' ')[0] : '');
+
+    document.getElementById('view-form').style.display = 'none';
+    const welcomeEl = document.getElementById('view-welcome');
+    welcomeEl.style.display = 'block';
+    document.getElementById('welcome-nombre').textContent = nombreMostrar ? 'Bienvenido, ' + nombreMostrar + '!' : 'Bienvenido a la beta!';
+  }
+
+  window.registrar = async function() {
+    ocultarError();
+    const nombre = document.getElementById('reg-nombre').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const pass = document.getElementById('reg-pass').value;
+
+    if (!nombre) return mostrarError('Ingresa tu nombre.');
+    if (!email) return mostrarError('Ingresa tu email.');
+    if (pass.length < 6) return mostrarError('La contrasena debe tener al menos 6 caracteres.');
+
+    setLoading('btn-registro', true);
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      await manejarUsuario(cred.user, nombre);
+    } catch (e) {
+      if (e.code === 'auth/email-already-in-use') {
+        mostrarError('Este email ya tiene cuenta. Usa "Ya tengo cuenta".');
+      } else if (e.code === 'auth/invalid-email') {
+        mostrarError('Email invalido.');
+      } else {
+        mostrarError('Error al crear la cuenta. Intenta de nuevo.');
+      }
+    } finally {
+      setLoading('btn-registro', false);
+    }
+  };
+
+  window.login = async function() {
+    ocultarError();
+    const email = document.getElementById('log-email').value.trim();
+    const pass = document.getElementById('log-pass').value;
+
+    if (!email || !pass) return mostrarError('Completa todos los campos.');
+
+    setLoading('btn-login', true);
+    try {
+      const cred = await signInWithEmailAndPassword(auth, email, pass);
+      await manejarUsuario(cred.user, '');
+    } catch (e) {
+      if (e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password') {
+        mostrarError('Email o contrasena incorrectos.');
+      } else if (e.code === 'auth/user-not-found') {
+        mostrarError('No existe cuenta con ese email. Crea una primero.');
+      } else {
+        mostrarError('Error al ingresar. Intenta de nuevo.');
+      }
+    } finally {
+      setLoading('btn-login', false);
+    }
+  };
+
+  window.irALaApp = function() {
+    window.location.href = '/app.html';
+  };
+
+  window.switchTab = function(tab) {
+    document.getElementById('form-registro').style.display = tab === 'registro' ? 'block' : 'none';
+    document.getElementById('form-login').style.display = tab === 'login' ? 'block' : 'none';
+    document.getElementById('tab-registro').classList.toggle('active', tab === 'registro');
+    document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+    ocultarError();
+  };
+</script>
+
+</body>
+</html>
