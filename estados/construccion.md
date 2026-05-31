@@ -7,6 +7,7 @@ Este chat es exclusivamente para construcción técnica: vibecoding, archivos, d
 ## URLs
 - **App PWA:** https://peso-real-xi.vercel.app/app.html
 - **Calculadora pública:** https://peso-real-xi.vercel.app/
+- **Beta:** https://peso-real-xi.vercel.app/beta.html
 - **Repositorio:** github.com/PesoReal/peso-real
 
 ## Stack técnico
@@ -19,7 +20,7 @@ Este chat es exclusivamente para construcción técnica: vibecoding, archivos, d
 - Google Analytics: G-JTF9Q7FY5K
 
 ## Protocolo de trabajo
-- Claude genera archivos `.txt` → Adrián copia en GitHub (lápiz → Ctrl+A → pegar → Commit) → Vercel autodeploy
+- Claude genera archivos → Adrián copia en GitHub (lápiz → Ctrl+A → pegar → Commit) → Vercel autodeploy
 - Carpeta `api/` en GitHub para Vercel Functions
 - Nunca usar caracteres especiales en JS: — " " ' ' (rompen el parser)
 
@@ -33,16 +34,21 @@ Este chat es exclusivamente para construcción técnica: vibecoding, archivos, d
 - Pantalla de confirmación de sesión activa ("Continuar como [nombre]" / "Usar otra cuenta")
 - Reglas Firestore: cada usuario solo lee/escribe sus propios datos
 
-### Mercado Pago (NUEVO)
+### Mercado Pago
 - `api/mp-create.js` — crea preferencia de pago en MP Checkout Pro
 - `api/mp-webhook.js` — recibe notificación de pago aprobado → activa `premium.activo` en Firestore
 - Planes: Premium $7.000 ARS/mes · Familiar $12.000 ARS/mes (pendiente V3)
 - En sandbox (`sandbox_init_point`). Para producción: cambiar a `init_point` + token `APP_USR-`
-- Usuarios de prueba MP guardados localmente por Adrián
 - `esPremium()` lee `state.premium.activo` desde Firestore en tiempo real
-- Badge de plan en pantalla de perfil
-- Toast de bienvenida al activar premium
-- Redirección post-pago: espera Firebase Auth antes de activar (evita bug del login)
+- Badge de plan en pantalla de perfil + toast de bienvenida al activar
+
+### Beta privada
+- `beta.html` — landing de registro/login para betatesters
+- Colección `beta_users` en Firestore — documentos con ID = email en minúsculas
+- Al registrarse, chequea si el email está en `beta_users` → activa `premium.activo: true` + `beta: true` en Firestore
+- El mismo chequeo corre en `cargarDatosUsuario()` en app.html por si entran directo
+- Desactivación limpia: borrar colección `beta_users` desde Firestore, sin tocar código
+- Link para compartir: https://peso-real-xi.vercel.app/beta.html
 
 ### Pilar 1 — Verdad financiera
 - Dashboard: sueldo ARS + USD al TC MEP (dolarapi.com, caché 1h)
@@ -77,7 +83,7 @@ Este chat es exclusivamente para construcción técnica: vibecoding, archivos, d
 - Nombre, edad, ocupación, provincia, situación familiar
 - Avatar con inicial en dashboard
 - Saludo personalizado según hora
-- Badge de plan (Premium / gratuito con link a upgrade)
+- Badge de plan (Premium / Beta / gratuito con link a upgrade)
 
 ### UX
 - Botón `?` contextual en todas las pantallas
@@ -94,17 +100,20 @@ Este chat es exclusivamente para construcción técnica: vibecoding, archivos, d
 - IPC hardcodeado hasta 2026-03 — actualizar cuando INDEC publique abril 2026
 - Comparación con pares simulada — conectar Firebase cuando haya 50+ usuarios
 - Nombre de app en pantalla de redirección de MP no aparece (cosmético, sin solución clara)
+- PWA no implementada todavía — pendiente para próxima sesión
 
 ## Próximas construcciones
-- Pasar MP a producción (cambiar sandbox_init_point → init_point + token producción)
+- **PWA** — manifest.json + service worker (80% listo, faltan 20 minutos)
+- Pasar MP a producción cuando lleguen ingresos reales
 - Plan familiar hasta 4 personas (V3)
 - PWA Google Play / TWA (V3)
 - IPC dinámico automático (V3)
 
 ## Estado actual
-Todo funciona en producción. Mercado Pago integrado y operativo en sandbox. Premium se activa correctamente via webhook → Firestore → app. Auth con confirmación de sesión activa funcionando.
+Todo en producción y funcionando. Mercado Pago operativo en sandbox. Beta privada lista para usar — cargar emails en colección `beta_users` de Firestore antes de compartir el link.
 
 ## Tareas pendientes
-1. Actualizar IPC abril 2026 (INDEC ya debería haberlo publicado) — 10 minutos
-2. Conseguir primeros usuarios reales para validar el flujo de pago en producción
-3. Cuando haya ingresos: pasar MP a producción y activar monotributo
+1. Cargar emails de betatesters en Firestore (`beta_users`)
+2. Armar PWA (próxima sesión)
+3. Actualizar IPC abril 2026
+4. Cuando haya ingresos: pasar MP a producción + activar monotributo
