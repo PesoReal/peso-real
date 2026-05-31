@@ -49,6 +49,14 @@ Este chat es exclusivamente para construcción técnica: vibecoding, archivos, d
 - El mismo chequeo corre en `cargarDatosUsuario()` en app.html por si entran directo
 - Desactivación limpia: borrar colección `beta_users` desde Firestore, sin tocar código
 - Link para compartir: https://peso-real-xi.vercel.app/beta.html
+- Instrucciones para betatesters: archivo `instrucciones-beta.txt` generado
+
+### PWA
+- `manifest.json` — ya existía, sin cambios necesarios
+- `sw.js` — service worker nuevo, cachea assets estáticos, nunca cachea APIs ni Firebase
+- Registro del SW en `app.html` al final del script
+- Instalable desde Safari en iPhone ("Abrir como app web") y Chrome en Android
+- Chrome en iPhone NO soporta PWA (limitación de Apple/iOS)
 
 ### Pilar 1 — Verdad financiera
 - Dashboard: sueldo ARS + USD al TC MEP (dolarapi.com, caché 1h)
@@ -100,20 +108,17 @@ Este chat es exclusivamente para construcción técnica: vibecoding, archivos, d
 - IPC hardcodeado hasta 2026-03 — actualizar cuando INDEC publique abril 2026
 - Comparación con pares simulada — conectar Firebase cuando haya 50+ usuarios
 - Nombre de app en pantalla de redirección de MP no aparece (cosmético, sin solución clara)
-- PWA no implementada todavía — pendiente para próxima sesión
 
 ## Próximas construcciones
-- **PWA** — manifest.json + service worker (80% listo, faltan 20 minutos)
 - Pasar MP a producción cuando lleguen ingresos reales
 - Plan familiar hasta 4 personas (V3)
 - PWA Google Play / TWA (V3)
 - IPC dinámico automático (V3)
 
 ## Estado actual
-Todo en producción y funcionando. Mercado Pago operativo en sandbox. Beta privada lista para usar — cargar emails en colección `beta_users` de Firestore antes de compartir el link.
+Todo en producción y funcionando. Mercado Pago en sandbox. Beta privada lista — falta cargar emails en Firestore (`beta_users`) cuando lleguen las respuestas del forms. PWA instalable desde Safari (iPhone) y Chrome (Android).
 
 ## Tareas pendientes
-1. Cargar emails de betatesters en Firestore (`beta_users`)
-2. Armar PWA (próxima sesión)
-3. Actualizar IPC abril 2026
-4. Cuando haya ingresos: pasar MP a producción + activar monotributo
+1. Cargar emails de betatesters en Firestore (`beta_users`) cuando lleguen respuestas del forms
+2. Actualizar IPC abril 2026
+3. Cuando haya ingresos: pasar MP a producción + activar monotributo
