@@ -27,12 +27,23 @@ App de finanzas personales diseñada para el contexto argentino. Tres pilares:
 
 ## Modelo de negocio
 - **Gratis:** IBF básico + sueldo real (sin historial)
-- **Premium:** USD 5/mes en ARS — producto completo + asistente IA contextual
-- **Familiar:** USD 8/mes en ARS — hasta 4 personas (V3)
-- ARPU ponderado esperado: ~USD 5.5
+- **Premium:** $7.000 ARS/mes — producto completo + asistente IA contextual
+- **Duo:** $12.000 ARS/mes — 2 personas, canasta compartida opcional
+- ARPU ponderado esperado: a recalcular con precios en ARS fijos
 - Churn esperado: <5% por lock-in del historial acumulado
 - Cobro: Mercado Pago en ARS — YA INTEGRADO
 - Facturación en ARS por regulaciones argentinas
+
+## Plan Duo — decisión tomada
+- Máximo 2 personas (no 4)
+- Nombre: **Duo** (no Familiar, no Pareja)
+- Target: parejas jóvenes / amigos / hermanos que quieren dividir el costo
+- Precio: $12.000 ARS/mes por los dos ($6.000 c/u vs $7.000 individual)
+- Cada usuario mantiene perfil, IBF y dashboard individual
+- Opción al activar el Duo: **"Compartir canasta"** (sí / no, modificable después)
+  - Sí: ambos cargan precios y ven el mismo historial de compras
+  - No: canastas separadas, simplemente pagan juntos más barato
+- Cubre todos los escenarios: pareja que convive, hermanos que no conviven, amigos
 
 ## Decisiones tomadas
 - Firebase para auth y sync (seguridad > open source)
@@ -46,7 +57,7 @@ App de finanzas personales diseñada para el contexto argentino. Tres pilares:
 ## Beta cerrada — estructura definida
 **Objetivo:** validar retención y UX antes de salir al público, sin presión de conversión.
 
-**Perfil:** 5 a 15 personas conocidas, mezcla de perfiles (financieros y no financieros).
+**Perfil:** 5 a 15 personas conocidas, mezcla de perfiles.
 
 **Acceso:** premium gratis, sin fecha de vencimiento fija. Cierre cuando haya feedback suficiente.
 
@@ -76,12 +87,12 @@ App de finanzas personales diseñada para el contexto argentino. Tres pilares:
 ## Pendiente estratégico
 - Activar Mercado Pago cuando lleguen los primeros usuarios orgánicos post-beta
 - Formalización: monotributo cuando el negocio genere ingresos
-- Definir precio en ARS actualizable con inflación
+- Definir mecanismo de actualización del precio ARS con inflación
 - Métricas a trackear: MRR, churn, usuarios activos semanales, conversión free→premium
 - Cross-venta con SaaS de monotributistas (V3)
 
 ## Roadmap V3
-- Plan familiar hasta 4 personas
+- Plan Duo (2 personas, canasta compartida opcional)
 - PWA Google Play (TWA, USD 25 pago único)
 - Integración resúmenes de tarjeta
 - Agente de reporte mensual del negocio (MRR, churn, métricas)
