@@ -1,5 +1,5 @@
 # Peso Real — Construcción
-*Última actualización: Mayo 2026*
+*Última actualización: Junio 2026*
 
 ## Contexto de este chat
 Este chat es exclusivamente para construcción técnica: vibecoding, archivos, deploys, bugs, nuevas features. No se discute estrategia ni marketing acá.
@@ -32,28 +32,36 @@ Este chat es exclusivamente para construcción técnica: vibecoding, archivos, d
 - Sync en tiempo real multi-dispositivo
 - Migración automática desde localStorage al crear cuenta
 - Pantalla de confirmación de sesión activa ("Continuar como [nombre]" / "Usar otra cuenta")
-- Reglas Firestore: cada usuario solo lee/escribe sus propios datos
+- Reglas Firestore: cada usuario solo lee/escribe sus propios datos; `beta_users` es lectura pública
 
 ### Mercado Pago
 - `api/mp-create.js` — crea preferencia de pago en MP Checkout Pro
 - `api/mp-webhook.js` — recibe notificación de pago aprobado → activa `premium.activo` en Firestore
-- Planes: Premium $7.000 ARS/mes · Familiar $12.000 ARS/mes (pendiente V3)
+- Planes: Premium $7.000 ARS/mes · Duo $12.000 ARS/mes (2 personas, pendiente construcción)
 - En sandbox (`sandbox_init_point`). Para producción: cambiar a `init_point` + token `APP_USR-`
 - `esPremium()` lee `state.premium.activo` desde Firestore en tiempo real
 - Badge de plan en pantalla de perfil + toast de bienvenida al activar
 
+### Plan Duo (pendiente construcción)
+- Reemplaza al plan Familiar — máximo 2 personas, $12.000 ARS/mes
+- Cada usuario mantiene perfil, IBF y dashboard individual
+- Al activar: opción "Compartir canasta" (sí/no, modificable después)
+- Si comparten: ambos cargan precios y ven el mismo historial de canasta
+- Si no comparten: canastas separadas, solo comparten el costo
+
 ### Beta privada
 - `beta.html` — landing de registro/login para betatesters
-- Colección `beta_users` en Firestore — documentos con ID = email en minúsculas
-- Al registrarse, chequea si el email está en `beta_users` → activa `premium.activo: true` + `beta: true` en Firestore
+- Colección `beta_users` en Firestore — colección raíz, documentos con ID = email en minúsculas
+- Al registrarse, chequea si el email está en `beta_users` → activa `premium.activo: true` + `beta: true`
 - El mismo chequeo corre en `cargarDatosUsuario()` en app.html por si entran directo
 - Desactivación limpia: borrar colección `beta_users` desde Firestore, sin tocar código
+- Regla Firestore para `beta_users`: lectura pública (`allow read: if true`)
 - Link para compartir: https://peso-real-xi.vercel.app/beta.html
-- Instrucciones para betatesters: archivo `instrucciones-beta.txt` generado
+- **Lección aprendida:** `beta_users` debe ser colección raíz, no anidada dentro de `usuarios`
 
 ### PWA
-- `manifest.json` — ya existía, sin cambios necesarios
-- `sw.js` — service worker nuevo, cachea assets estáticos, nunca cachea APIs ni Firebase
+- `manifest.json` — ya existía, sin cambios
+- `sw.js` — service worker, cachea assets estáticos, nunca cachea APIs ni Firebase
 - Registro del SW en `app.html` al final del script
 - Instalable desde Safari en iPhone ("Abrir como app web") y Chrome en Android
 - Chrome en iPhone NO soporta PWA (limitación de Apple/iOS)
@@ -104,21 +112,38 @@ Este chat es exclusivamente para construcción técnica: vibecoding, archivos, d
 - Captura emails via Brevo (sibforms.com)
 - Logo 128px arriba, 72px abajo
 
+## Reglas Firestore actuales
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /usuarios/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    match /beta_users/{email} {
+      allow read: if true;
+    }
+  }
+}
+```
+
 ## Deuda técnica
-- IPC hardcodeado hasta 2026-03 — actualizar cuando INDEC publique abril 2026
+- IPC hardcodeado hasta 2026-03 — actualizar cuando INDEC publique datos recientes
 - Comparación con pares simulada — conectar Firebase cuando haya 50+ usuarios
-- Nombre de app en pantalla de redirección de MP no aparece (cosmético, sin solución clara)
+- Nombre de app en pantalla de redirección de MP no aparece (cosmético)
+- Plan Duo pendiente de construcción
 
 ## Próximas construcciones
+- Plan Duo (lógica de canasta compartida, invitación al segundo usuario)
 - Pasar MP a producción cuando lleguen ingresos reales
-- Plan familiar hasta 4 personas (V3)
 - PWA Google Play / TWA (V3)
 - IPC dinámico automático (V3)
 
 ## Estado actual
-Todo en producción y funcionando. Mercado Pago en sandbox. Beta privada lista — falta cargar emails en Firestore (`beta_users`) cuando lleguen las respuestas del forms. PWA instalable desde Safari (iPhone) y Chrome (Android).
+Todo en producción. Beta privada funcionando — betatesters acceden vía beta.html y el premium se activa automáticamente. PWA instalable. Mercado Pago en sandbox.
 
 ## Tareas pendientes
-1. Cargar emails de betatesters en Firestore (`beta_users`) cuando lleguen respuestas del forms
-2. Actualizar IPC abril 2026
-3. Cuando haya ingresos: pasar MP a producción + activar monotributo
+1. Terminar de cargar emails de betatesters en Firestore (`beta_users`)
+2. Actualizar IPC con datos recientes de INDEC
+3. Construir Plan Duo
+4. Cuando haya ingresos: pasar MP a producción + activar monotributo
