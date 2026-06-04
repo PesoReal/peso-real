@@ -531,7 +531,7 @@
       <label>¿Cuánto cobrabas ese mes?</label>
       <div class="input-wrap">
         <span class="currency-prefix">$</span>
-        <input type="number" id="sueldo-antes" placeholder="Ej: 150.000" min="0" inputmode="numeric">
+        <input type="text" id="sueldo-antes" placeholder="Ej: 150.000" inputmode="numeric">
       </div>
     </div>
 
@@ -539,7 +539,7 @@
       <label>¿Cuánto cobrás hoy? <span style="color:var(--text3);font-weight:400">(opcional)</span></label>
       <div class="input-wrap">
         <span class="currency-prefix">$</span>
-        <input type="number" id="sueldo-actual" placeholder="Ej: 1.200.000" min="0" inputmode="numeric">
+        <input type="text" id="sueldo-actual" placeholder="Ej: 1.200.000" inputmode="numeric">
       </div>
     </div>
 
@@ -690,8 +690,8 @@ function inflacionAcumulada(desde, hasta) {
 function calcular() {
   const antesInput = document.getElementById('sueldo-antes');
   const actualInput = document.getElementById('sueldo-actual');
-  const sueldoAntes = parseFloat((antesInput._rawValue || '0').replace(',','.')) || 0;
-  const sueldoActual = actualInput._rawValue ? parseFloat(actualInput._rawValue.replace(',','.')) : null;
+  const sueldoAntes = parseFloat(antesInput._rawNum || '0') || 0;
+  const sueldoActual = actualInput._rawNum ? parseFloat(actualInput._rawNum) : null;
   const desde = document.getElementById('mes-desde').value;
   const hasta = document.getElementById('mes-hasta').value;
 
@@ -804,31 +804,56 @@ document.addEventListener('keydown', e => {
 // Init
 poblarSelects();
 
-  // Separadores de miles en inputs de sueldo (max 6 cifras, punto como separador)
-  ['sueldo-antes', 'sueldo-actual'].forEach(id => {
-    const input = document.getElementById(id);
+  // Formato de inputs de sueldo: punto separador miles, coma decimal, max 8 enteros + 2 decimales
+  ['sueldo-antes', 'sueldo-actual'].forEach(function(id) {
+    var input = document.getElementById(id);
     if (!input) return;
-    input._rawValue = '';
+    input._rawNum = '';
+
     input.addEventListener('input', function() {
-      let raw = this.value.replace(/[^0-9,]/g, '').replace(/,{2,}/g, ',');
-      const partes = raw.split(',');
-      if (partes[0].length > 8) partes[0] = partes[0].slice(0, 8);
-      if (partes[1] !== undefined) partes[1] = partes[1].slice(0, 2);
-      raw = partes.join(partes.length > 1 ? ',' : '');
-      this._rawValue = raw;
-      if (raw) {
-        const entera = partes[0] ? parseInt(partes[0]).toLocaleString('de-DE') : '0';
-        this.value = partes.length > 1 ? entera + ',' + (partes[1] || '') : entera;
+      var cursor = this.selectionStart;
+      var val = this.value;
+
+      // Solo permitir digitos, punto y coma
+      val = val.replace(/[^0-9.,]/g, '');
+
+      // Normalizar: tratar punto como separador de miles (ignorarlo), coma como decimal
+      val = val.replace(/\./g, '');
+
+      // Solo una coma
+      var partes = val.split(',');
+      var entera = partes[0] || '';
+      var decimal = partes.length > 1 ? partes.slice(1).join('').slice(0, 2) : null;
+
+      // Limitar parte entera a 8 digitos
+      if (entera.length > 8) entera = entera.slice(0, 8);
+
+      // Guardar valor raw para calculos
+      this._rawNum = decimal !== null ? entera + '.' + decimal : entera;
+
+      // Formatear con puntos como separador de miles
+      var enteraFmt = entera ? parseInt(entera).toLocaleString('es-AR').replace(/,/g, '.') : '';
+
+      if (decimal !== null) {
+        this.value = enteraFmt + ',' + decimal;
+      } else {
+        this.value = enteraFmt;
       }
     });
-    input.addEventListener('focus', function() {
-      if (this._rawValue) this.value = this._rawValue;
-    });
+
     input.addEventListener('blur', function() {
-      if (this._rawValue) {
-        const partes = this._rawValue.split(',');
-        const entera = parseInt(partes[0] || 0).toLocaleString('de-DE');
-        this.value = partes.length > 1 ? entera + ',' + partes[1] : entera;
+      if (!this._rawNum) return;
+      var partes = this._rawNum.split('.');
+      var entera = partes[0] || '0';
+      var decimal = partes[1] || null;
+      var enteraFmt = parseInt(entera).toLocaleString('es-AR').replace(/,/g, '.');
+      this.value = decimal !== null ? enteraFmt + ',' + decimal : enteraFmt;
+    });
+
+    input.addEventListener('focus', function() {
+      if (this._rawNum) {
+        var partes = this._rawNum.split('.');
+        this.value = partes[0] + (partes[1] !== undefined ? ',' + partes[1] : '');
       }
     });
   });
