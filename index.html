@@ -690,8 +690,8 @@ function inflacionAcumulada(desde, hasta) {
 function calcular() {
   const antesInput = document.getElementById('sueldo-antes');
   const actualInput = document.getElementById('sueldo-actual');
-  const sueldoAntes = parseFloat((antesInput._rawValue || antesInput.value.replace(/\./g,'').replace(',','.')) ) || 0;
-  const sueldoActual = parseFloat((actualInput._rawValue || actualInput.value.replace(/\./g,'').replace(',','.')) ) || null;
+  const sueldoAntes = parseFloat((antesInput._rawValue || '0').replace(',','.')) || 0;
+  const sueldoActual = actualInput._rawValue ? parseFloat(actualInput._rawValue.replace(',','.')) : null;
   const desde = document.getElementById('mes-desde').value;
   const hasta = document.getElementById('mes-hasta').value;
 
@@ -804,23 +804,32 @@ document.addEventListener('keydown', e => {
 // Init
 poblarSelects();
 
-  // Separadores de miles en inputs de sueldo
+  // Separadores de miles en inputs de sueldo (max 6 cifras, punto como separador)
   ['sueldo-antes', 'sueldo-actual'].forEach(id => {
     const input = document.getElementById(id);
     if (!input) return;
-    // Store raw numeric value
     input._rawValue = '';
     input.addEventListener('input', function() {
-      // Remove non-numeric
-      const raw = this.value.replace(/[^0-9]/g, '');
+      let raw = this.value.replace(/[^0-9,]/g, '').replace(/,{2,}/g, ',');
+      const partes = raw.split(',');
+      if (partes[0].length > 8) partes[0] = partes[0].slice(0, 8);
+      if (partes[1] !== undefined) partes[1] = partes[1].slice(0, 2);
+      raw = partes.join(partes.length > 1 ? ',' : '');
       this._rawValue = raw;
-      // Format with dots
       if (raw) {
-        this.value = parseInt(raw).toLocaleString('es-AR').replace(/,/g, '.');
+        const entera = partes[0] ? parseInt(partes[0]).toLocaleString('de-DE') : '0';
+        this.value = partes.length > 1 ? entera + ',' + (partes[1] || '') : entera;
       }
     });
     input.addEventListener('focus', function() {
-      if (this._rawValue) this.value = parseInt(this._rawValue).toLocaleString('es-AR');
+      if (this._rawValue) this.value = this._rawValue;
+    });
+    input.addEventListener('blur', function() {
+      if (this._rawValue) {
+        const partes = this._rawValue.split(',');
+        const entera = parseInt(partes[0] || 0).toLocaleString('de-DE');
+        this.value = partes.length > 1 ? entera + ',' + partes[1] : entera;
+      }
     });
   });
 </script>
