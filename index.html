@@ -589,12 +589,10 @@
   <div class="email-section" id="email-section">
     <h2>La app completa está en camino</h2>
     <p>Peso Real va a mostrarte tu sueldo en USD, ajustar tu presupuesto mensual solo con el IPC, y darte un índice de bienestar financiero real. Sin culpa, sin tecnicismos.</p>
-    <form id="sib-form" method="POST" action="https://1f811114.sibforms.com/serve/MUIFAFpN6zqhr5V9iZDUwf46S0aKJ514odzsfcod7scJVD27togDB4Db6vT_V7WxnFwkBBgPIOIFv3hBfHbodzoNl9P-cULAEEWeeBzUjy_AOY3p_yzfdmgcWSJGnZG6Ze_ywSJtDpXhQ70zTBVwJ5DCTTEwK9IOBAYAYYrFZPADDVc9IKNmGKazUhzf0QGGAJlT20BPujvse8gKPQ==" data-type="subscription" style="display:flex; gap:10px; max-width:440px; margin:0 auto;">
-      <input class="input" type="text" id="EMAIL" name="EMAIL" autocomplete="off" value="" placeholder="tu@email.com" data-required="true" required style="flex:1; background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-family:DM Sans,sans-serif; font-size:15px; padding:14px 16px; outline:none;">
-      <input type="text" name="email_address_check" value="" style="display:none">
-      <input type="hidden" name="locale" value="es">
-      <button type="submit" style="background:var(--accent); color:#0e0f11; border:none; border-radius:var(--radius-sm); font-family:DM Sans,sans-serif; font-size:14px; font-weight:600; padding:14px 20px; cursor:pointer; white-space:nowrap; flex-shrink:0;">Avisame cuando esté lista</button>
-    </form>
+    <div style="display:flex; gap:10px; max-width:440px; margin:0 auto;">
+      <input class="input" type="email" id="EMAIL" autocomplete="off" placeholder="tu@email.com" style="flex:1; background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-family:DM Sans,sans-serif; font-size:15px; padding:14px 16px; outline:none;">
+      <button id="btn-avisame" onclick="suscribir()" style="background:var(--accent); color:#0e0f11; border:none; border-radius:var(--radius-sm); font-family:DM Sans,sans-serif; font-size:14px; font-weight:600; padding:14px 20px; cursor:pointer; white-space:nowrap; flex-shrink:0;">Avisame cuando este lista</button>
+    </div>
     <div id="error-message" class="sib-form-message-panel" style="display:none; margin-top:12px; color:#ff5e5e; font-size:14px;">No pudimos validar tu suscripción. Intentá de nuevo.</div>
     <div id="success-message" class="sib-form-message-panel" style="display:none; margin-top:12px; color:var(--green); font-size:15px; font-weight:500;">✓ ¡Anotado! Te avisamos cuando la app esté disponible.</div>
     <p style="font-size:12px; color:var(--text3); margin-top:12px;">Sin spam. Solo un mail cuando lancemos.</p>
@@ -862,11 +860,52 @@ poblarSelects();
 <script>
   window.REQUIRED_CODE_ERROR_MESSAGE = 'Elige un código de país';
   window.LOCALE = 'es';
-  window.EMAIL_INVALID_MESSAGE = 'El email no es válido. Revisá el formato e intentá de nuevo.';
+
+  async function suscribir() {
+    var email = document.getElementById('EMAIL').value.trim();
+    var btn = document.getElementById('btn-avisame');
+    var errorEl = document.getElementById('error-message');
+    var successEl = document.getElementById('success-message');
+
+    if (!email || !/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
+      errorEl.style.display = 'block';
+      errorEl.textContent = 'El email no es valido. Revisa el formato e intenta de nuevo.';
+      successEl.style.display = 'none';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+    errorEl.style.display = 'none';
+
+    try {
+      var formData = new FormData();
+      formData.append('EMAIL', email);
+      formData.append('email_address_check', '');
+      formData.append('locale', 'es');
+
+      var res = await fetch('https://1f811114.sibforms.com/serve/MUIFAFpN6zqhr5V9iZDUwf46S0aKJ514odzsfcod7scJVD27togDB4Db6vT_V7WxnFwkBBgPIOIFv3hBfHbodzoNl9P-cULAEEWeeBzUjy_AOY3p_yzfdmgcWSJGnZG6Ze_ywSJtDpXhQ70zTBVwJ5DCTTEwK9IOBAYAYYrFZPADDVc9IKNmGKazUhzf0QGGAJlT20BPujvse8gKPQ==', {
+        method: 'POST',
+        body: formData,
+        mode: 'no-cors'
+      });
+
+      // no-cors no devuelve status, asumimos exito si no hay error
+      successEl.style.display = 'block';
+      document.getElementById('EMAIL').value = '';
+      btn.textContent = 'Listo!';
+    } catch (e) {
+      errorEl.style.display = 'block';
+      errorEl.textContent = 'No pudimos registrar tu email. Intenta de nuevo.';
+      btn.disabled = false;
+      btn.textContent = 'Avisame cuando este lista';
+    }
+  }
+
   window.REQUIRED_ERROR_MESSAGE = 'Este campo no puede quedar vacío.';
   window.GENERIC_INVALID_MESSAGE = 'La información no es válida. Revisá el formato e intentá de nuevo.';
   var AUTOHIDE = Boolean(0);
 </script>
-<script defer src="https://sibforms.com/forms/end-form/build/main.js"></script>
+
 </body>
 </html>
