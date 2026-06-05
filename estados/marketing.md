@@ -5,7 +5,7 @@ PESO REAL — MARKETING Y CONTENIDO
 
 CONTEXTO DE ESTE CHAT
 ═════════════════════
-Este chat es para canales, copies, posts, comunidades, SEO y contenido para redes. 
+Este chat es para canales, copies, posts, comunidades, SEO y contenido para redes.
 No se construye código acá ni se toman decisiones estratégicas de producto.
 
 ═══════════════════════════════════════════════════════════════════════════════
@@ -34,22 +34,23 @@ CANALES ACTIVOS
 
 REDDIT
 ──────
-- r/AskArgentina: Post principal educativo + mencioná herramienta en comentarios si te preguntan
-- Sábado de Clasificados (r/argentina): Próximo sábado, post directo con link (estrategia de escalada)
-- Timing: Martes-jueves 20-22hs ARS para posts, Sábado 18-22hs para Clasificados
+Estado: Post activo en r/AskArgentina (2.8k vistas, bug de email arreglado)
+Próxima acción: Sábado de Clasificados de r/argentina (este fin de semana)
+Timing: Martes-jueves 20-22hs ARS para posts, Sábado 18-22hs para Clasificados
 
 TWITTER/X (@PesoRealAR)
 ────────────────────────
-- Herramienta: Typefully (scheduling automático)
-- Frecuencia: 2-3 posts cortos + 1 hilo largo por semana (variable)
-- Horarios: Rotación real (lunes 19:30, martes 14:45-21:00, miércoles 20:15, jueves 15:30, viernes 19:45)
-- Bio: "Finanzas personales sin culpa para Argentina. Calculá tu poder adquisitivo real. https://peso-real-xi.vercel.app"
-- Avatar: Isotipo (P+R+$ verde lima)
+Estado: Cuenta creada, lista para contenido
+Herramienta: Typefully (scheduling automático)
+Frecuencia: 2-3 posts cortos + 1 hilo largo por semana (variable)
+Horarios: Rotación real (martes 14:45, miércoles 20:15, jueves 15:30, viernes 19:45, etc.)
+Bio: "Finanzas personales sin culpa para Argentina. Calculá tu poder adquisitivo real. https://peso-real-xi.vercel.app"
+Avatar: Isotipo (P+R+$ verde lima)
 
 EMAIL
 ──────
-- Brevo: Captura desde calculadora pública
-- Google Analytics: G-JTF9Q7FY5K
+Brevo: Captura desde calculadora pública (bug corregido, funcionando)
+Google Analytics: G-JTF9Q7FY5K
 
 ═══════════════════════════════════════════════════════════════════════════════
 TWITTER/X — ESTRATEGIA COMPLETA
@@ -57,18 +58,18 @@ TWITTER/X — ESTRATEGIA COMPLETA
 
 PILARES TEMÁTICOS (ROTACIÓN)
 ─────────────────────────────
-1. Poder adquisitivo: datos INDEC, comparaciones mes a mes, hooks personales
-2. Inflación real: diferencia entre IPC oficial y lo que la gente paga realmente
-3. Dolarización: brecha cambiaria, TC MEP, preguntas que genera la comunidad
-4. Datos + contexto: análisis históricos, contexto regional, comparativas
-5. Historias de la gente: retweets anónimos de respuestas comunitarias, validación de conversación
+1. Poder adquisitivo: datos INDEC, comparaciones, hooks personales
+2. Inflación real: diferencia entre IPC oficial y realidad de consumo
+3. Dolarización: brecha cambiaria, TC MEP, preguntas comunitarias
+4. Educación: cómo calcular, paso a paso, ejemplos concretos
+5. Engagement: encuestas, preguntas abiertas, validación comunitaria
 
 DISTRIBUCIÓN DE CTAs (SIN SONAR VENDEDOR)
 ──────────────────────────────────────────
 30% — Educación pura: Solo preguntas, datos, contexto. Sin CTA.
-40% — Call to conversation: Encuestas, preguntas ("¿a vos cuánto te bajó?"), invitar respuestas
+40% — Call to conversation: Encuestas, preguntas ("¿a vos cuánto te bajó?")
 20% — Soft CTA: "Hice una calculadora" sin presión. Link al final.
-10% — Directo: Cuando es obvio que la app agrega valor al hilo.
+10% — CTA directo: Cuando es obvio que la app agrega valor al hilo.
 
 KEYWORDS NATURALES
 ───────────────────
@@ -93,29 +94,34 @@ QUÉ EVITAR (ANTI-SPAM)
 - "Comenten aquí y los sigo"
 - Links cada 2 horas
 - Hashtags genéricos (#finanzas #argentina #inversión)
+- Emojis excesivos (Twitter AR finanzas es más serio)
 
 QUÉ SÍ HACER
 ────────────
-- Variación real en horarios
+- Variación real en horarios (no parecer scheduler)
 - Responder comentarios dentro de 30-60 min
 - Retweets selectivos (2-3 cuentas relevantes, conversación genuina)
 - Responder mentions sin importar followers
+- Monitorear en vivo mientras Typefully publica
 
 ROADMAP DE ESCALADA (MES 1 → 3)
 ─────────────────────────────────
 MES 1 (semanas 1-4)
   Followers esperados: 100-300
-  Formato principal: Post + hilo + post
+  Engagement: 30-60 comentarios por post
+  Emails capturados: 10-20
   Objetivo: Posicionarse como "voz sobre inflación real"
 
 MES 2 (semanas 5-8)
   Followers esperados: 500-1500
-  Formato principal: Hilos 3-5 tweets + posts puntuales
+  Engagement: 50-100 comentarios por post
+  Emails capturados: 30-50
   Objetivo: Comparativas internacionales, respuestas con datos
 
 MES 3 (semanas 9-12)
   Followers esperados: 2000-5000
-  Formato principal: 1-2 hilos/mes, mentions orgánicas
+  Engagement: 100-200 comentarios por post
+  Emails capturados: 50-100
   Objetivo: Mencionar app en respuestas, no en posts principales
 
 ═══════════════════════════════════════════════════════════════════════════════
@@ -130,146 +136,39 @@ SETUP (UNA SOLA VEZ)
 
 PROCESO SEMANAL (DOMINGO 1 HORA)
 ────────────────────────────────
-1. Abris Typefully
-2. Copias/pegás posts de este documento
-3. Scheduleas cada uno con su fecha + hora
-4. Listo para 10 días automáticos
+1. Abre PDF: PESO_REAL_TWITTER_STRATEGY_V2.pdf
+2. Copia posts/hilos tal como están en el documento
+3. Entra a Typefully → New post → pega contenido
+4. Click Schedule → selecciona fecha + hora → listo
+5. Typefully publica automático a la hora programada
 
 MONITOREO DURANTE LA SEMANA
 ───────────────────────────
-- Posts se publican automático
-- VOS respondés comentarios en vivo (usar guía en responder_comentarios_peso_real.txt)
-- Analizás cuál contenido pega más
+- Posts se publican automático (vos no haces nada)
+- VOS respondés comentarios en vivo (crucial para engagement)
+- Usa guía de respuestas del PDF para cada situación
+- Responde dentro de 30-60 min (muestra actividad real)
 
 ═══════════════════════════════════════════════════════════════════════════════
-POSTS LISTOS PARA TYPEFULLY (SEMANA 1)
-══════════════════════════════════════════
+CONTENIDO LISTO PARA PUBLICAR
+══════════════════════════════
 
-POST 1 — LANZAMIENTO (Lunes 19:30)
-──────────────────────────────────
-Hola, soy Peso Real.
+DOCUMENTO: PESO_REAL_TWITTER_STRATEGY_V2.pdf
 
-Nací porque cansarme de que nadie me diga la verdad: mi sueldo perdió poder adquisitivo.
+Contiene:
+- 23 posts cortos enumerados (listos para copiar/pegar)
+- 5 hilos completos (Inflación real, 3 errores, Cómo calcular, Brecha cambiaria, Por qué IPC no alcanza)
+- Calendario de 4 semanas con orden coherente
+- 10 tipos de comentarios × múltiples respuestas cada uno
+- 8 consejos específicos para Twitter Argentina
 
-Acá sumás datos del INDEC para saber exactamente cuánto poder adquisitivo ganaste o perdiste.
-
-Sin registro. Sin publicidad. Gratis.
-
-https://peso-real-xi.vercel.app
-
-¿Cuánto perdiste vos?
-
-
-POST 2 — GANCHO (Martes 14:45)
-──────────────────────────────
-Te suben el sueldo 100%.
-
-Festejás.
-
-Pero el IPC subió 156%.
-
-En términos reales, perdiste dinero.
-
-Eso es lo que nadie te dice.
-
-Acá podés verlo con datos del INDEC.
-
-
-POST 3 — PREGUNTA (Martes 21:00)
-────────────────────────────────
-Pregunta genuina:
-
-¿Cuándo fue la última vez que tu sueldo le ganó a la inflación?
-
-Si no te acordás, quizás sea porque no pasó en un tiempo.
-
-
-HILO 1 — INFLACIÓN REAL (Miércoles 20:15)
-──────────────────────────────────────────
-(En Typefully: New thread → escribís cada tweet en orden)
-
-TWEET 1:
-Hablemos de poder adquisitivo real.
-
-El INDEC dice que en 12 meses la inflación fue X%.
-
-Pero vos en el supermercado sentís que subió el doble.
-
-¿Quién está equivocado?
-
----
-
-TWEET 2:
-Ninguno. Es que el IPC es un promedio nacional.
-
-Tu canasta de compras no es igual a la de otros.
-
-Vos quizás compras carnes 3 veces por semana (subió 200%).
-Otro come menos carnes (subió 80%).
-
-El IPC te da el promedio. Vos vivís tu realidad.
-
----
-
-TWEET 3:
-De ahí sale la "inflación real" — la que VOS pagás, no la que dice el INDEC.
-
-Y si la registraras mes a mes, verías exactamente cuánto poder adquisitivo perdés.
-
-Sin sorpresas. Con datos.
-
----
-
-TWEET 4:
-Eso es lo que hace Peso Real.
-
-No es un consejo financiero. No es un banco.
-
-Es solo la verdad de tu situación, con números del INDEC.
-
-Gratis.
-
-https://peso-real-xi.vercel.app
-
-¿Cuánto perdiste vos?
-
-
-POST 4 — HOOK (Jueves 15:30)
-─────────────────────────────
-El "poder adquisitivo" es lo que el INDEC no quiere que entiendas.
-
-Porque una vez que lo ves con datos claros, todo cambia.
-
-
-POST 5 — CALL TO CONVERSATION (Viernes 19:45)
-────────────────────────────────────────────────
-Acá en Twitter leo mucho "perdí dinero con mi sueldo fijo".
-
-No estás loco. Tenés razón.
-
-La inflación real es diferente a la del INDEC.
-
-¿Querés calcular la tuya?
+MATERIAL ADICIONAL (en /responder_comentarios_peso_real.txt):
+- Patrones de respuesta resumidos
+- Ejemplos de conversación orgánica
 
 ═══════════════════════════════════════════════════════════════════════════════
-CÓMO RESPONDER COMENTARIOS
-════════════════════════════
-
-VER ARCHIVO: responder_comentarios_peso_real.txt (en repo)
-
-PATRONES PARA CADA TIPO:
-- Crítica: Reconocé punto, explica sin defensivo
-- Pregunta técnica: Responde primero, herramienta al final si es relevante
-- Escéptico: Sin truco, es MVP
-- Positivo: Agradecé + preguntá
-- Debate: Reconocé si tiene razón, ignorá si es troll
-- Trolleo: Ignorá o cierre breve
-
-VELOCIDAD: 30-60 min máximo. El que comenta en vivo es usuario potencial.
-
-═══════════════════════════════════════════════════════════════════════════════
-POST REDDIT LISTO PARA PUBLICAR (r/AskArgentina)
-═════════════════════════════════════════════════════
+POST REDDIT LISTO PARA PUBLICAR (Sábado de Clasificados)
+═════════════════════════════════════════════════════════
 
 TÍTULO:
 Hice una calculadora para saber si realmente ganaste más dinero en estos años (spoiler: probablemente no)
@@ -289,7 +188,7 @@ https://peso-real-xi.vercel.app
 
 Mi sueldo perdió 16.4% desde enero 2023. Me gustaría saber cómo les fue a otros. ¿Alguien quiere compartir el suyo?
 
-TIMING: Publicado en r/AskArgentina. Si lo preguntan por la herramienta en comentarios, mencionála naturalmente.
+STATUS: Publicar este sábado 18-22hs en Sábado de Clasificados de r/argentina
 
 ═══════════════════════════════════════════════════════════════════════════════
 MODELO FREEMIUM (PARA COMUNICACIÓN)
@@ -297,7 +196,7 @@ MODELO FREEMIUM (PARA COMUNICACIÓN)
 
 GRATIS: Calculadora de sueldo real + IBF básico
 PREMIUM: USD 5/mes — Producto completo + asistente IA financiero personal
-COBRO: Pesos por Mercado Pago (próximamente)
+COBRO: Pesos por Mercado Pago (próximamente, post-fiscal setup)
 
 ═══════════════════════════════════════════════════════════════════════════════
 IDENTIDAD VISUAL
@@ -310,44 +209,79 @@ Isotipo: Fusión P+R+$ en verde lima
 Tono visual: Moderno, oscuro, premium pero accesible
 
 ═══════════════════════════════════════════════════════════════════════════════
-SEO — PRÓXIMOS PASOS
-═════════════════════
+CANALES EN ESPERA
+═══════════════════
 
-[ ] Landingpage para "calculadora inflación argentina" (prioritario)
-[ ] Blog post sobre "cómo calcular poder adquisitivo real" (link bait)
-[ ] Integración con Google Search Console
-[ ] Meta tags y Open Graph en URLs principales
+SEO: "calculadora inflación argentina", "sueldo real INDEC" (próximo mes)
+Facebook: Eliminado (no tiene ROI para este público)
+r/finanzaspersonales_es: Backup si Reddit no pega (no prioritario)
 
 ═══════════════════════════════════════════════════════════════════════════════
 ESTADO ACTUAL
 ══════════════
 
 REDDIT
-- Post activo en r/AskArgentina, respuestas en vivo
+- Post activo en r/AskArgentina: 2.8k vistas, ~25 comentarios
+- Bug de email corregido (funciona correctamente)
+- Próximo: Sábado de Clasificados este fin de semana
 
 TWITTER
-- @PesoRealAR creada
-- Contenido prepped en Typefully
-- Listo para publicar domingo
+- Cuenta @PesoRealAR creada
+- Contenido 100% listo en PDF
+- Typefully conectado y listo para usar
 
 BREVO
-- Capturando emails desde calculadora
+- Capturando emails desde calculadora (funcional)
+- Meta: 10-50 emails en próximas 2 semanas
 
-CANALES EN ESPERA
-- SEO (próximo mes)
-- Facebook (eliminado, no vale la pena)
-- r/finanzaspersonales_es (backup si Reddit no pega)
+PLAN GENERAL
+- Sistema de escalada: Reddit → Twitter → Email → Premium (futuro)
+- Contenido coherente y educativo (sin parecer spam)
+- Embudo orgánico sin venta forzada
 
 ═══════════════════════════════════════════════════════════════════════════════
 TAREAS PENDIENTES
 ═══════════════════
 
-[ ] DOMINGO: Copiar/pegar posts en Typefully + schedulear semana 1
-[ ] LUNES: Monitorear primer post en Twitter + responder comentarios en vivo
-[ ] PRÓXIMO SÁBADO: Post en Sábado de Clasificados de r/argentina
-[ ] SEMANA 2: Preparar y schedulear posts para semana 3-4 en Typefully
-[ ] ANÁLISIS (después de 2 semanas): Revisar qué contenido pega más en Twitter
-[ ] SEMANA 3+: Iteración basada en datos de engagement
+INMEDIATO (Este fin de semana)
+[ ] DOMINGO: Abrir Typefully, copiar posts del PDF, schedulear semana 1
+[ ] Este SÁBADO: Publicar en Sábado de Clasificados de r/argentina
+
+SEMANA 1 (Próxima)
+[ ] LUNES: Monitorear primer post en Twitter (@PesoRealAR)
+[ ] LUNES-VIERNES: Responder comentarios en vivo (30-60 min)
+[ ] Revisar engagement por post (notar cuál pega más)
+
+SEMANA 2+
+[ ] PRÓXIMO DOMINGO: Preparar y schedulear posts semana 2-3 en Typefully
+[ ] Iteración: Aumentar frecuencia de posts si pega, reducir si no
+[ ] Análisis: Después de 2 semanas, revisar qué contenido convierte más emails
+
+FUTURO (Mes 2+)
+[ ] SEO: Landing page para "calculadora inflación argentina"
+[ ] Blog post educativo (link bait)
+[ ] Colaboraciones/guest posts en otras plataformas
+[ ] Expansión a más subreddits si pega
+
+═══════════════════════════════════════════════════════════════════════════════
+DOCUMENTOS DE REFERENCIA
+═════════════════════════
+
+En el repositorio:
+- /estados/marketing.md (este archivo, actualizado)
+- /responder_comentarios_peso_real.txt (guía de respuestas resumida)
+- PESO_REAL_TWITTER_STRATEGY_V2.pdf (contenido completo, listo para copiar/pegar)
+
+═══════════════════════════════════════════════════════════════════════════════
+NOTAS IMPORTANTES
+═══════════════════
+
+1. El PDF es tu documento de trabajo. Úsalo como referencia semanal.
+2. Typefully automatiza publicación, vos solo respondés comentarios.
+3. Responde RÁPIDO (30-60 min): eso genera más visualizaciones.
+4. No vendas directo: lleva a la gente a la calculadora, luego al email.
+5. Sé consistente: mejor 5-6 posts/semana regulares que 20 en un día.
+6. Monitorea: después de 2 semanas, ve qué contenido pega y doble ahí.
 
 ═══════════════════════════════════════════════════════════════════════════════
 FIN
