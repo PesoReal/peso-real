@@ -4759,18 +4759,6 @@ window._onAuthStateChanged = async function(user) {
     document.getElementById('auth-cont-nombre').textContent = nombre ? 'Hola, ' + nombre : 'Bienvenido de vuelta';
     document.getElementById('auth-cont-email').textContent = user.email || '';
 
-    // Escuchar cambios en tiempo real
-    const ref = window._firebaseDoc('usuarios/' + user.uid);
-    firestoreUnsub = window._firebaseOnSnapshot(ref, (snap) => {
-      if (snap.exists()) {
-        const newData = snap.data();
-        if (JSON.stringify(newData) !== JSON.stringify(state)) {
-          state = newData;
-          if (currentScreen === 'screen-dashboard') buildDashboard();
-        }
-      }
-    });
-
   } else {
     // No logueado - mostrar form normal
     document.getElementById('auth-continuar').style.display = 'none';
@@ -4782,6 +4770,20 @@ window._onAuthStateChanged = async function(user) {
 function confirmarIngreso() {
   const user = window._firebaseUser;
   if (!user) return;
+
+  // Registrar listener de Firestore en tiempo real
+  if (!firestoreUnsub) {
+    const ref = window._firebaseDoc('usuarios/' + user.uid);
+    firestoreUnsub = window._firebaseOnSnapshot(ref, (snap) => {
+      if (snap.exists()) {
+        const newData = snap.data();
+        if (JSON.stringify(newData) !== JSON.stringify(state)) {
+          state = newData;
+          if (currentScreen === 'screen-dashboard') buildDashboard();
+        }
+      }
+    });
+  }
 
   if (state.onboardingDone) {
     buildDashboard();
