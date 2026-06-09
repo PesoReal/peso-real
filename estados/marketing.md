@@ -1,6 +1,6 @@
 ═══════════════════════════════════════════════════════════════════════════════
 PESO REAL — MARKETING Y CONTENIDO
-Última actualización: Junio 2026
+Última actualización: Junio 2026 (Twitter ACTIVO)
 ═══════════════════════════════════════════════════════════════════════════════
 
 CONTEXTO DE ESTE CHAT
@@ -27,6 +27,7 @@ URLS PARA COMPARTIR
 
 CALCULADORA PÚBLICA (CTA principal): https://peso-real-xi.vercel.app/
 APP COMPLETA: https://peso-real-xi.vercel.app/app.html
+TWITTER: @PesoRealAR
 
 ═══════════════════════════════════════════════════════════════════════════════
 CANALES ACTIVOS
@@ -35,26 +36,40 @@ CANALES ACTIVOS
 REDDIT
 ──────
 Estado: Post activo en r/AskArgentina (2.8k vistas, bug de email arreglado)
-Próxima acción: Sábado de Clasificados de r/argentina (este fin de semana)
+Próxima acción: Sábado de Clasificados de r/argentina (próximo fin de semana)
 Timing: Martes-jueves 20-22hs ARS para posts, Sábado 18-22hs para Clasificados
 
-TWITTER/X (@PesoRealAR)
-────────────────────────
-Estado: Cuenta creada, lista para contenido
-Herramienta: Typefully (scheduling automático)
+TWITTER/X (@PesoRealAR) — EN VIVO
+──────────────────────────────────
+Estado: ACTIVO — Primer tweet publicado hoy
+Contenido: Primeras 2 semanas ya cargadas en Typefully (posts + hilos)
+Herramienta: Typefully (scheduling automático, sin auto-RT/auto-plug/auto-DM)
 Frecuencia: 2-3 posts cortos + 1 hilo largo por semana (variable)
-Horarios: Rotación real (martes 14:45, miércoles 20:15, jueves 15:30, viernes 19:45, etc.)
+Horarios: Rotación real (no sistemática — evita parecer bot)
 Bio: "Finanzas personales sin culpa para Argentina. Calculá tu poder adquisitivo real. https://peso-real-xi.vercel.app"
 Avatar: Isotipo (P+R+$ verde lima)
 
 EMAIL
 ──────
-Brevo: Captura desde calculadora pública (bug corregido, funcionando)
+Brevo: Captura desde calculadora pública (funcional)
 Google Analytics: G-JTF9Q7FY5K
 
 ═══════════════════════════════════════════════════════════════════════════════
-TWITTER/X — ESTRATEGIA COMPLETA
-════════════════════════════════════
+TWITTER/X — ESTRATEGIA ACTIVA
+═════════════════════════════════
+
+DOCUMENTO DE REFERENCIA
+───────────────────────
+PESO_REAL_TWITTER_ARGENTINA.pdf — Contiene:
+- 23 posts enumerados (tono argentino 100%)
+- 5 hilos completos (tono argentino 100%)
+- Calendario de 4 semanas
+- 10 tipos de comentarios con múltiples respuestas
+- 8 consejos para Twitter
+
+CÓMO BUSCAR POSTS EN EL PDF
+───────────────────────────
+Usa Ctrl+F (CMD+F en Mac) + "POST #X" para ir directo a cada post
 
 PILARES TEMÁTICOS (ROTACIÓN)
 ─────────────────────────────
@@ -94,6 +109,7 @@ QUÉ EVITAR (ANTI-SPAM)
 - "Comenten aquí y los sigo"
 - Links cada 2 horas
 - Hashtags genéricos (#finanzas #argentina #inversión)
+- Auto-RT, auto-plug, auto-DM (Typefully) — NO ACTIVAR
 - Emojis excesivos (Twitter AR finanzas es más serio)
 
 QUÉ SÍ HACER
@@ -110,6 +126,7 @@ MES 1 (semanas 1-4)
   Followers esperados: 100-300
   Engagement: 30-60 comentarios por post
   Emails capturados: 10-20
+  Métrica actual: 3 impresiones en 2 horas (normal para cuenta nueva)
   Objetivo: Posicionarse como "voz sobre inflación real"
 
 MES 2 (semanas 5-8)
@@ -125,70 +142,62 @@ MES 3 (semanas 9-12)
   Objetivo: Mencionar app en respuestas, no en posts principales
 
 ═══════════════════════════════════════════════════════════════════════════════
-TYPEFULLY — WORKFLOW DE CONTENIDO
-═══════════════════════════════════
+TYPEFULLY — WORKFLOW EN ACCIÓN
+═════════════════════════════════
 
-SETUP (UNA SOLA VEZ)
-────────────────────
-1. Registrate en Typefully.com
-2. Conecta cuenta Twitter (@PesoRealAR)
-3. Listo — podes schedulear
+SETUP COMPLETADO
+─────────────────
+✅ Registrado en Typefully.com
+✅ Conectada cuenta Twitter (@PesoRealAR)
+✅ Primeras 2 semanas (posts #1-#15 + hilos #1-#2) ya cargadas
 
-PROCESO SEMANAL (DOMINGO 1 HORA)
-────────────────────────────────
-1. Abre PDF: PESO_REAL_TWITTER_STRATEGY_V2.pdf
-2. Copia posts/hilos tal como están en el documento
+PROCESO SEMANAL
+───────────────
+1. Abre PDF: PESO_REAL_TWITTER_ARGENTINA.pdf
+2. Copia posts/hilos tal como están
 3. Entra a Typefully → New post → pega contenido
 4. Click Schedule → selecciona fecha + hora → listo
 5. Typefully publica automático a la hora programada
 
-MONITOREO DURANTE LA SEMANA
-───────────────────────────
-- Posts se publican automático (vos no haces nada)
+MONITOREO EN VIVO
+─────────────────
+- Posts se publican automático (sin intervención)
 - VOS respondés comentarios en vivo (crucial para engagement)
 - Usa guía de respuestas del PDF para cada situación
 - Responde dentro de 30-60 min (muestra actividad real)
 
 ═══════════════════════════════════════════════════════════════════════════════
-CONTENIDO LISTO PARA PUBLICAR
-══════════════════════════════
+CONTENIDO DESPLEGADO
+═════════════════════
 
-DOCUMENTO: PESO_REAL_TWITTER_STRATEGY_V2.pdf
+TWITTER
+───────
+Semana 1: ACTIVA
+- Lunes 19:30 - POST #1 ✓ (PUBLICADO - 3 impresiones en 2 horas)
+- Martes 14:45 - POST #2 (próximo)
+- Martes 21:00 - POST #3 (próximo)
+- Miércoles 20:15 - HILO #1 (próximo)
+- Jueves 15:30 - POST #4 (próximo)
+- Viernes 19:45 - POST #5 (próximo)
 
-Contiene:
-- 23 posts cortos enumerados (listos para copiar/pegar)
-- 5 hilos completos (Inflación real, 3 errores, Cómo calcular, Brecha cambiaria, Por qué IPC no alcanza)
-- Calendario de 4 semanas con orden coherente
-- 10 tipos de comentarios × múltiples respuestas cada uno
-- 8 consejos específicos para Twitter Argentina
+Semana 2: LISTA PARA PUBLICAR
+- Posts #6-#10 y HILO #2 ya schedulados en Typefully
 
-MATERIAL ADICIONAL (en /responder_comentarios_peso_real.txt):
-- Patrones de respuesta resumidos
-- Ejemplos de conversación orgánica
+Semanas 3-4: PENDIENTE DE CARGAR
+- Posts #11-#23 + HILOS #3-#5 listos en PDF
+- Cargar el próximo domingo antes de que termine semana 2
 
 ═══════════════════════════════════════════════════════════════════════════════
-POST REDDIT LISTO PARA PUBLICAR (Sábado de Clasificados)
-═════════════════════════════════════════════════════════
+POST REDDIT LISTO PARA PUBLICAR
+═════════════════════════════════
 
 TÍTULO:
 Hice una calculadora para saber si realmente ganaste más dinero en estos años (spoiler: probablemente no)
 
-CUERPO:
-Hace poco vi un post acá de alguien que le subieron el sueldo 120% en 2 años. "Gané mucho", decía.
-
-Entonces me puse a ver cuánto subió realmente el poder adquisitivo con esos 120% de aumento.
-
-Resultado: perdió 8% en términos reales. El IPC subió más.
-
-De ahí nació esto: una calculadora que toma los datos oficiales del INDEC y te dice exactamente cuánto poder adquisitivo ganaste o perdiste en el período que vos elijas.
-
-Sin tecnicismos. Sin registro. Gratis.
-
-https://peso-real-xi.vercel.app
-
-Mi sueldo perdió 16.4% desde enero 2023. Me gustaría saber cómo les fue a otros. ¿Alguien quiere compartir el suyo?
-
-STATUS: Publicar este sábado 18-22hs en Sábado de Clasificados de r/argentina
+SUBREDDIT: r/argentina
+THREAD: Sábado de Clasificados
+TIMING: Este sábado 18-22hs
+STATUS: Listo para publicar cuando se abra el thread
 
 ═══════════════════════════════════════════════════════════════════════════════
 MODELO FREEMIUM (PARA COMUNICACIÓN)
@@ -206,7 +215,7 @@ Verde lima: #d4f060
 Negro: #0a0b0d
 Fuentes: Outfit + Fraunces
 Isotipo: Fusión P+R+$ en verde lima
-Tono visual: Moderno, oscuro, premium pero accesible
+Tono: Lenguaje argentino 100% (nada de IA)
 
 ═══════════════════════════════════════════════════════════════════════════════
 CANALES EN ESPERA
@@ -217,71 +226,60 @@ Facebook: Eliminado (no tiene ROI para este público)
 r/finanzaspersonales_es: Backup si Reddit no pega (no prioritario)
 
 ═══════════════════════════════════════════════════════════════════════════════
-ESTADO ACTUAL
-══════════════
-
-REDDIT
-- Post activo en r/AskArgentina: 2.8k vistas, ~25 comentarios
-- Bug de email corregido (funciona correctamente)
-- Próximo: Sábado de Clasificados este fin de semana
+ESTADO ACTUAL (HOY)
+════════════════════
 
 TWITTER
-- Cuenta @PesoRealAR creada
-- Contenido 100% listo en PDF
-- Typefully conectado y listo para usar
+✓ Cuenta @PesoRealAR ACTIVA
+✓ Primer post publicado (3 impresiones en 2 horas — normal)
+✓ Primeras 2 semanas cargadas en Typefully
+✓ Semanas 3-4 listos en PDF, pendiente cargar domingo
+
+REDDIT
+- Post r/AskArgentina activo (2.8k vistas)
+- Sábado de Clasificados pendiente (próximo fin de semana)
 
 BREVO
 - Capturando emails desde calculadora (funcional)
-- Meta: 10-50 emails en próximas 2 semanas
 
-PLAN GENERAL
-- Sistema de escalada: Reddit → Twitter → Email → Premium (futuro)
-- Contenido coherente y educativo (sin parecer spam)
-- Embudo orgánico sin venta forzada
+DOCUMENTOS
+✓ PESO_REAL_TWITTER_ARGENTINA.pdf (23 posts + 5 hilos + respuestas)
+✓ responder_comentarios_peso_real.txt (guía de respuestas)
+✓ marketing.md (este documento)
 
 ═══════════════════════════════════════════════════════════════════════════════
 TAREAS PENDIENTES
 ═══════════════════
 
-INMEDIATO (Este fin de semana)
-[ ] DOMINGO: Abrir Typefully, copiar posts del PDF, schedulear semana 1
-[ ] Este SÁBADO: Publicar en Sábado de Clasificados de r/argentina
+ESTA SEMANA
+[ ] Monitorear primer tweet (comentarios, respuestas)
+[ ] Responder rápido si hay engagement
+[ ] Analizar qué posts pegan más (tema, hora, tono)
+[ ] Checkear Brevo (¿entra gente a la calculadora desde Twitter?)
 
-SEMANA 1 (Próxima)
-[ ] LUNES: Monitorear primer post en Twitter (@PesoRealAR)
-[ ] LUNES-VIERNES: Responder comentarios en vivo (30-60 min)
-[ ] Revisar engagement por post (notar cuál pega más)
+PRÓXIMO DOMINGO (antes de que termine semana 2)
+[ ] Cargar posts #11-#23 + HILOS #3-#5 en Typefully
+[ ] Schedulear para semanas 3-4
 
-SEMANA 2+
-[ ] PRÓXIMO DOMINGO: Preparar y schedulear posts semana 2-3 en Typefully
-[ ] Iteración: Aumentar frecuencia de posts si pega, reducir si no
-[ ] Análisis: Después de 2 semanas, revisar qué contenido convierte más emails
+PRÓXIMO SÁBADO
+[ ] Publicar en Sábado de Clasificados de r/argentina
 
 FUTURO (Mes 2+)
 [ ] SEO: Landing page para "calculadora inflación argentina"
 [ ] Blog post educativo (link bait)
 [ ] Colaboraciones/guest posts en otras plataformas
-[ ] Expansión a más subreddits si pega
-
-═══════════════════════════════════════════════════════════════════════════════
-DOCUMENTOS DE REFERENCIA
-═════════════════════════
-
-En el repositorio:
-- /estados/marketing.md (este archivo, actualizado)
-- /responder_comentarios_peso_real.txt (guía de respuestas resumida)
-- PESO_REAL_TWITTER_STRATEGY_V2.pdf (contenido completo, listo para copiar/pegar)
+[ ] Análisis de datos (después de 2 semanas de Twitter)
 
 ═══════════════════════════════════════════════════════════════════════════════
 NOTAS IMPORTANTES
 ═══════════════════
 
-1. El PDF es tu documento de trabajo. Úsalo como referencia semanal.
-2. Typefully automatiza publicación, vos solo respondés comentarios.
-3. Responde RÁPIDO (30-60 min): eso genera más visualizaciones.
-4. No vendas directo: lleva a la gente a la calculadora, luego al email.
-5. Sé consistente: mejor 5-6 posts/semana regulares que 20 en un día.
-6. Monitorea: después de 2 semanas, ve qué contenido pega y doble ahí.
+1. Twitter crece lentamente — primeras 2 semanas son prueba de sistema
+2. No hagas nada diferente — el plan está funcionando
+3. Responde comentarios RÁPIDO (30-60 min) — eso genera engagement
+4. Próximo domingo: carga semanas 3-4 antes de que termine semana 2
+5. No actives auto-RT, auto-plug, auto-DM en Typefully
+6. Usa Ctrl+F en el PDF para buscar rápido cada post
 
 ═══════════════════════════════════════════════════════════════════════════════
 FIN
