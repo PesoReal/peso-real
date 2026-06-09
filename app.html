@@ -118,6 +118,7 @@ html,body{
 }
 .screen.active{
   display:flex;
+  padding-bottom:70px;
 }
 #screen-auth.active{
   display:flex;
@@ -415,10 +416,14 @@ select option{background:var(--bg3)}
 /* ── Bottom nav ── */
 #bottom-nav{
   display:flex;
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  z-index:100;
   background:var(--bg2);
   border-top:1px solid var(--border);
   padding:12px 0 calc(12px + var(--safe-bottom));
-  flex-shrink:0;
   visibility:hidden;
   height:0;
   overflow:hidden;
@@ -4759,6 +4764,18 @@ window._onAuthStateChanged = async function(user) {
     document.getElementById('auth-cont-nombre').textContent = nombre ? 'Hola, ' + nombre : 'Bienvenido de vuelta';
     document.getElementById('auth-cont-email').textContent = user.email || '';
 
+    // Escuchar cambios en tiempo real
+    const ref = window._firebaseDoc('usuarios/' + user.uid);
+    firestoreUnsub = window._firebaseOnSnapshot(ref, (snap) => {
+      if (snap.exists()) {
+        const newData = snap.data();
+        if (JSON.stringify(newData) !== JSON.stringify(state)) {
+          state = newData;
+          if (currentScreen === 'screen-dashboard') buildDashboard();
+        }
+      }
+    });
+
   } else {
     // No logueado - mostrar form normal
     document.getElementById('auth-continuar').style.display = 'none';
@@ -4770,20 +4787,6 @@ window._onAuthStateChanged = async function(user) {
 function confirmarIngreso() {
   const user = window._firebaseUser;
   if (!user) return;
-
-  // Registrar listener de Firestore en tiempo real
-  if (!firestoreUnsub) {
-    const ref = window._firebaseDoc('usuarios/' + user.uid);
-    firestoreUnsub = window._firebaseOnSnapshot(ref, (snap) => {
-      if (snap.exists()) {
-        const newData = snap.data();
-        if (JSON.stringify(newData) !== JSON.stringify(state)) {
-          state = newData;
-          if (currentScreen === 'screen-dashboard') buildDashboard();
-        }
-      }
-    });
-  }
 
   if (state.onboardingDone) {
     buildDashboard();
