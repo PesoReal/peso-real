@@ -1283,12 +1283,12 @@ select option{background:var(--bg3)}
         </div>
         <div style="font-size:13px;color:rgba(10,11,13,0.65)">Asistente IA + canasta personalizada + comparación con pares</div>
       </div>
-      <div id="plan-familiar-btn" onclick="iniciarPago('familiar')" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:18px 20px;cursor:pointer;text-align:left;transition:border-color 0.15s">
+      <div id="plan-duo-btn" onclick="mostrarModalDuo()" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:18px 20px;cursor:pointer;text-align:left;transition:border-color 0.15s">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-          <div style="font-size:16px;font-weight:600;color:var(--text)">Familiar <span style="font-size:11px;font-weight:400;color:var(--text3);background:var(--bg3);padding:2px 8px;border-radius:20px;margin-left:6px">Próximamente</span></div>
+          <div style="font-size:16px;font-weight:600;color:var(--text)">Duo</div>
           <div style="font-family:Fraunces,serif;font-size:20px;color:var(--text2)">$12.000<span style="font-size:13px;font-weight:400">/mes</span></div>
         </div>
-        <div style="font-size:13px;color:var(--text3)">Todo lo de Premium + hasta 4 personas</div>
+        <div style="font-size:13px;color:var(--text3)">Todo lo de Premium para 2 personas · canasta compartida opcional</div>
       </div>
     </div>
 
@@ -4058,8 +4058,69 @@ function esPremium() {
   return !!(state.premium && state.premium.activo === true);
 }
 
-async function iniciarPago(plan) {
-  if (plan === 'familiar') return; // Próximamente
+let duoCanasta = 'compartir';
+
+function mostrarModalDuo() {
+  const modal = document.getElementById('modal-duo');
+  modal.style.display = 'flex';
+  document.getElementById('duo-email-input').value = '';
+  document.getElementById('duo-error').style.display = 'none';
+  seleccionarCanasta('compartir');
+}
+
+function cerrarModalDuo() {
+  document.getElementById('modal-duo').style.display = 'none';
+}
+
+function seleccionarCanasta(opcion) {
+  duoCanasta = opcion;
+  const compartir = document.getElementById('opt-compartir');
+  const separada = document.getElementById('opt-separada');
+  if (opcion === 'compartir') {
+    compartir.style.background = 'var(--accent)';
+    compartir.querySelector('div').style.color = '#0a0b0d';
+    compartir.querySelectorAll('div')[1].style.color = 'rgba(10,11,13,0.65)';
+    separada.style.background = 'var(--bg3)';
+    separada.querySelector('div').style.color = 'var(--text)';
+    separada.querySelectorAll('div')[1].style.color = 'var(--text3)';
+  } else {
+    separada.style.background = 'var(--accent)';
+    separada.querySelector('div').style.color = '#0a0b0d';
+    separada.querySelectorAll('div')[1].style.color = 'rgba(10,11,13,0.65)';
+    compartir.style.background = 'var(--bg3)';
+    compartir.querySelector('div').style.color = 'var(--text)';
+    compartir.querySelectorAll('div')[1].style.color = 'var(--text3)';
+  }
+}
+
+async function confirmarDuo() {
+  const emailDuo = document.getElementById('duo-email-input').value.trim().toLowerCase();
+  const errorEl = document.getElementById('duo-error');
+  const btn = document.getElementById('btn-confirmar-duo');
+
+  if (!emailDuo || !/^[^@]+@[^@]+\.[^@]+$/.test(emailDuo)) {
+    errorEl.style.display = 'block';
+    errorEl.textContent = 'Ingresa un email valido.';
+    return;
+  }
+
+  const user = window._firebaseUser;
+  if (user && emailDuo === user.email.toLowerCase()) {
+    errorEl.style.display = 'block';
+    errorEl.textContent = 'No podes invitarte a vos mismo.';
+    return;
+  }
+
+  errorEl.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'Preparando pago...';
+
+  cerrarModalDuo();
+  await iniciarPago('duo', emailDuo);
+}
+
+async function iniciarPago(plan, emailDuo) {
+  if (plan === 'familiar') return;
 
   const loadingEl = document.getElementById('mp-loading');
   const errorEl = document.getElementById('mp-error');
@@ -4081,6 +4142,7 @@ async function iniciarPago(plan) {
         uid: user.uid,
         plan: plan,
         email: user.email || '',
+        emailDuo: emailDuo || null,
       }),
     });
 
@@ -4121,6 +4183,80 @@ function verificarPagoEnURL() {
   } else if (pago === 'error') {
     window.history.replaceState({}, '', '/app.html');
   }
+}
+
+async function activarInvitadoDuo(user, uidInvitador) {
+  try {
+    // Buscar invitacion pendiente para este email
+    const inviteRef = window._firebaseDoc('duo_invites/' + user.email.toLowerCase());
+    const inviteSnap = await window._firebaseGetDoc(inviteRef);
+
+    if (!inviteSnap.exists()) {
+      // No hay invitacion - mostrar pantalla normal
+      await cargarDatosUsuario(user.uid);
+      mostrarConfirmacionSesion(user);
+      return;
+    }
+
+    const invite = inviteSnap.data();
+
+    // Activar premium del invitado
+    const ref = window._firebaseDoc('usuarios/' + user.uid);
+    const snap = await window._firebaseGetDoc(ref);
+    const datosExistentes = snap.exists() ? snap.data() : {};
+
+    await window._firebaseSetDoc(ref, {
+      ...datosExistentes,
+      premium: {
+        activo: true,
+        plan: 'duo',
+        fechaActivacion: new Date().toISOString(),
+        uidInvitador: invite.uidInvitador,
+        esInvitado: true,
+      },
+    }, { merge: true });
+
+    // Marcar invitacion como aceptada
+    await window._firebaseSetDoc(inviteRef, { estado: 'aceptada' }, { merge: true });
+
+    // Leer datos y entrar a la app
+    await cargarDatosUsuario(user.uid);
+
+    if (state.onboardingDone) {
+      buildDashboard();
+      document.getElementById('screen-auth').classList.remove('active');
+      document.getElementById('screen-dashboard').classList.add('active');
+      currentScreen = 'screen-dashboard';
+      document.getElementById('bottom-nav').classList.add('visible');
+      setTimeout(() => mostrarToastDuo(), 500);
+    } else {
+      document.getElementById('screen-auth').classList.remove('active');
+      document.getElementById('screen-onboarding').classList.add('active');
+      currentScreen = 'screen-onboarding';
+    }
+  } catch (e) {
+    console.error('activarInvitadoDuo error:', e);
+    await cargarDatosUsuario(user.uid);
+    mostrarConfirmacionSesion(user);
+  }
+}
+
+function mostrarConfirmacionSesion(user) {
+  const nombre = (state.perfil && state.perfil.nombre) ? state.perfil.nombre.split(' ')[0] : '';
+  const inicial = nombre ? nombre.charAt(0).toUpperCase() : (user.email ? user.email.charAt(0).toUpperCase() : '?');
+  document.getElementById('auth-continuar').style.display = 'block';
+  document.getElementById('auth-form').style.display = 'none';
+  document.getElementById('auth-cont-avatar').textContent = inicial;
+  document.getElementById('auth-cont-nombre').textContent = nombre ? 'Hola, ' + nombre : 'Bienvenido de vuelta';
+  document.getElementById('auth-cont-email').textContent = user.email || '';
+}
+
+function mostrarToastDuo() {
+  const toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;top:60px;left:50%;transform:translateX(-50%);background:var(--accent);color:#0a0b0d;padding:12px 24px;border-radius:30px;font-size:14px;font-weight:600;z-index:999;animation:fadeIn 0.3s ease';
+  toast.textContent = 'Plan Duo activado!';
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3500);
 }
 
 function mostrarToastPremium() {
@@ -4571,8 +4707,16 @@ function saveCompras(compras) {
 
 window._onAuthStateChanged = async function(user) {
   if (user) {
-    // Verificar si volvemos de un pago de MP (antes de mostrar confirmacion)
+    // Verificar si es invitado duo
     const params = new URLSearchParams(window.location.search);
+    const duoInvite = params.get('duo_invite');
+    if (duoInvite) {
+      window.history.replaceState({}, '', '/app.html');
+      await activarInvitadoDuo(user, duoInvite);
+      return;
+    }
+
+    // Verificar si volvemos de un pago de MP (antes de mostrar confirmacion)
     const pago = params.get('pago');
     const plan = params.get('plan');
     if (pago === 'ok' && plan) {
@@ -4584,6 +4728,18 @@ window._onAuthStateChanged = async function(user) {
       document.getElementById('screen-dashboard').classList.add('active');
       currentScreen = 'screen-dashboard';
       document.getElementById('bottom-nav').classList.add('visible');
+      // Si es plan duo, enviar invitacion al segundo usuario
+      if (plan === 'duo' && state.premium && state.premium.emailDuo) {
+        fetch('/api/duo-invite', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            emailDuo: state.premium.emailDuo,
+            nombreInvitador: (state.perfil && state.perfil.nombre) || '',
+            uidInvitador: user.uid,
+          }),
+        }).catch(() => {});
+      }
       setTimeout(() => {
         buildAsistente();
         goTo('screen-asistente');
@@ -4802,5 +4958,33 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+
+<!-- Modal Duo: ingresar email del segundo usuario -->
+<div id="modal-duo" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;align-items:center;justify-content:center;padding:24px">
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:28px 24px;width:100%;max-width:380px">
+    <div style="font-family:Fraunces,serif;font-size:22px;margin-bottom:8px">Plan Duo</div>
+    <div style="font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:20px">Ingresa el email de la persona con quien vas a compartir el plan. Le vamos a enviar una invitacion para activar su acceso.</div>
+    <div style="margin-bottom:8px">
+      <label style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:8px">Email del segundo usuario</label>
+      <input type="email" id="duo-email-input" placeholder="su@email.com" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:Outfit,sans-serif;font-size:15px;padding:13px 14px;outline:none;box-sizing:border-box">
+    </div>
+    <div style="margin-bottom:20px">
+      <label style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:10px">Canasta de compras</label>
+      <div style="display:flex;gap:8px">
+        <div id="opt-compartir" onclick="seleccionarCanasta('compartir')" style="flex:1;background:var(--accent);border-radius:var(--radius-sm);padding:12px;text-align:center;cursor:pointer;transition:opacity 0.15s">
+          <div style="font-size:13px;font-weight:600;color:#0a0b0d">Compartir</div>
+          <div style="font-size:11px;color:rgba(10,11,13,0.65);margin-top:2px">Ven y editan la misma</div>
+        </div>
+        <div id="opt-separada" onclick="seleccionarCanasta('separada')" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;text-align:center;cursor:pointer;transition:opacity 0.15s">
+          <div style="font-size:13px;font-weight:600;color:var(--text)">Separada</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">Cada uno la suya</div>
+        </div>
+      </div>
+    </div>
+    <div id="duo-error" style="display:none;font-size:13px;color:var(--red);margin-bottom:12px"></div>
+    <button id="btn-confirmar-duo" onclick="confirmarDuo()" style="width:100%;background:var(--accent);border:none;border-radius:var(--radius-sm);color:#0a0b0d;font-family:Outfit,sans-serif;font-size:15px;font-weight:700;padding:14px;cursor:pointer;margin-bottom:10px">Continuar al pago</button>
+    <button onclick="cerrarModalDuo()" style="width:100%;background:none;border:none;color:var(--text3);font-family:Outfit,sans-serif;font-size:14px;cursor:pointer;padding:8px">Cancelar</button>
+  </div>
+</div>
 </body>
 </html>
