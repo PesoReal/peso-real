@@ -5,15 +5,18 @@
     { "src": "api/ipc.js", "use": "@vercel/node" },
     { "src": "api/mp-create.js", "use": "@vercel/node" },
     { "src": "api/mp-webhook.js", "use": "@vercel/node" },
+    { "src": "api/duo-invite.js", "use": "@vercel/node" },
     { "src": "*.html", "use": "@vercel/static" },
     { "src": "*.json", "use": "@vercel/static" },
-    { "src": "*.png", "use": "@vercel/static" }
+    { "src": "*.png", "use": "@vercel/static" },
+    { "src": "*.js", "use": "@vercel/static" }
   ],
   "routes": [
     { "src": "/api/chat", "dest": "/api/chat.js" },
     { "src": "/api/ipc", "dest": "/api/ipc.js" },
     { "src": "/api/mp-create", "dest": "/api/mp-create.js" },
     { "src": "/api/mp-webhook", "dest": "/api/mp-webhook.js" },
+    { "src": "/api/duo-invite", "dest": "/api/duo-invite.js" },
     { "src": "/(.*)", "dest": "/$1" }
   ]
 }
