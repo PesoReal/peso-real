@@ -503,6 +503,7 @@
     .row-2 { grid-template-columns: 1fr; }
     .result-main { grid-template-columns: 1fr; }
     .email-row { flex-direction: column; }
+    .email-row button { width: 100%; }
     h1 { font-size: 36px; }
   }
 </style>
@@ -598,7 +599,7 @@
   <div class="email-section" id="email-section">
     <h2>La app completa está en camino</h2>
     <p>Peso Real va a mostrarte tu sueldo en USD, ajustar tu presupuesto mensual solo con el IPC, y darte un índice de bienestar financiero real. Sin culpa, sin tecnicismos.</p>
-    <div style="display:flex; gap:10px; max-width:440px; margin:0 auto;">
+    <div class="email-row" style="display:flex; gap:10px; max-width:440px; margin:0 auto;">
       <input class="input" type="email" id="EMAIL" autocomplete="off" placeholder="tu@email.com" style="flex:1; background:var(--bg3); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--text); font-family:DM Sans,sans-serif; font-size:15px; padding:14px 16px; outline:none;">
       <button id="btn-avisame" onclick="suscribir()" style="background:var(--accent); color:#0e0f11; border:none; border-radius:var(--radius-sm); font-family:DM Sans,sans-serif; font-size:14px; font-weight:600; padding:14px 20px; cursor:pointer; white-space:nowrap; flex-shrink:0;">Avisame cuando esté lista</button>
     </div>
