@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { uid, plan, email } = req.body;
+    const { uid, plan, email, emailDuo } = req.body;
 
     if (!uid || !plan) {
       return res.status(400).json({ error: 'Faltan parametros: uid y plan son requeridos' });
@@ -19,19 +19,24 @@ export default async function handler(req, res) {
         description: 'Acceso completo: asistente IA, canasta personalizada, comparacion con pares',
         price: 7000,
       },
-      familiar: {
-        title: 'Peso Real Familiar',
-        description: 'Plan familiar hasta 4 personas con acceso completo',
+      duo: {
+        title: 'Peso Real Duo',
+        description: 'Todo lo de Premium para 2 personas con opcion de canasta compartida',
         price: 12000,
       },
     };
 
     const planData = PLANES[plan];
     if (!planData) {
-      return res.status(400).json({ error: 'Plan invalido. Usar: premium o familiar' });
+      return res.status(400).json({ error: 'Plan invalido. Usar: premium o duo' });
     }
 
     const baseUrl = process.env.APP_BASE_URL || 'https://peso-real-xi.vercel.app';
+
+    // Para duo, incluir email del segundo usuario en la referencia
+    const externalRef = plan === 'duo' && emailDuo
+      ? uid + '|' + plan + '|' + emailDuo
+      : uid + '|' + plan;
 
     const body = {
       items: [
@@ -47,7 +52,7 @@ export default async function handler(req, res) {
       payer: {
         email: email || '',
       },
-      external_reference: uid + '|' + plan,
+      external_reference: externalRef,
       back_urls: {
         success: baseUrl + '/app.html?pago=ok&plan=' + plan,
         failure: baseUrl + '/app.html?pago=error',
