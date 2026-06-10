@@ -1,10 +1,8 @@
-const CACHE = 'peso-real-v1';
+const CACHE = 'peso-real-v2';
 const STATIC = [
-  '/app.html',
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png',
-  'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Fraunces:ital,wght@0,400;0,600;1,400&display=swap'
 ];
 
 self.addEventListener('install', e => {
@@ -24,35 +22,34 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
 
-  // API calls: siempre red, nunca cache
-  if (url.pathname.startsWith('/api/')) {
-    return e.respondWith(fetch(e.request));
+  // HTML: siempre red, nunca cache — garantiza actualizaciones inmediatas
+  if (url.pathname.endsWith('.html') || url.pathname === '/') {
+    return e.respondWith(
+      fetch(e.request).catch(() => caches.match('/app.html'))
+    );
   }
 
-  // Firebase y servicios externos: siempre red
-  if (url.hostname.includes('firebase') ||
+  // APIs y servicios externos: siempre red
+  if (url.pathname.startsWith('/api/') ||
+      url.hostname.includes('firebase') ||
       url.hostname.includes('googleapis') ||
       url.hostname.includes('anthropic') ||
       url.hostname.includes('mercadopago') ||
-      url.hostname.includes('dolarapi')) {
+      url.hostname.includes('dolarapi') ||
+      url.hostname.includes('brevo')) {
     return e.respondWith(fetch(e.request));
   }
 
-  // Resto: cache first, red como fallback
+  // Iconos y manifest: cache first
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
       return fetch(e.request).then(response => {
-        if (response && response.status === 200 && response.type === 'basic') {
+        if (response && response.status === 200) {
           const clone = response.clone();
           caches.open(CACHE).then(c => c.put(e.request, clone));
         }
         return response;
-      }).catch(() => {
-        // Offline fallback: devolver app.html para navegacion
-        if (e.request.mode === 'navigate') {
-          return caches.match('/app.html');
-        }
       });
     })
   );
