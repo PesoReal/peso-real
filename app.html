@@ -1308,9 +1308,10 @@ select option{background:var(--bg3)}
     <div style="padding:12px 16px;background:var(--bg2);border-top:1px solid var(--border);padding-bottom:calc(12px + var(--safe-bottom))">
       <div style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:8px;line-height:1.4">Las respuestas son orientativas y no constituyen asesoramiento financiero profesional.</div>
       <div style="display:flex;gap:8px;align-items:flex-end">
-        <textarea id="chat-input" placeholder="Preguntame lo que quieras sobre tu situación financiera..."
+        <textarea id="chat-input" placeholder=""
           style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:Outfit,sans-serif;font-size:14px;padding:12px 14px;outline:none;resize:none;max-height:120px;min-height:44px;line-height:1.5"
           rows="1"
+          enterkeyhint="send"
           onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarMensaje()}"
           oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
         <button onclick="enviarMensaje()" id="chat-send-btn"
@@ -4498,6 +4499,7 @@ async function enviarMensaje() {
   sendBtn.disabled = true;
   input.value = '';
   input.style.height = 'auto';
+  input.focus();
 
   agregarMensajeUsuario(texto);
   mostrarLoader();
