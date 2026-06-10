@@ -13,10 +13,10 @@ Este chat es exclusivamente para construcción técnica: vibecoding, archivos, d
 ## Stack técnico
 - HTML/CSS/JS estático — un solo archivo `app.html`
 - Firebase Auth + Firestore (sync multi-dispositivo, southamerica-east1)
-- Vercel Functions: `api/chat.js` + `api/ipc.js` + `api/mp-create.js` + `api/mp-webhook.js`
+- Vercel Functions: `api/chat.js` + `api/ipc.js` + `api/mp-create.js` + `api/mp-webhook.js` + `api/duo-invite.js`
 - Anthropic API: modelo `claude-sonnet-4-5`
 - Fuentes: Outfit (texto) + Fraunces (títulos/números)
-- Vercel env vars: `ANTHROPIC_API_KEY`, `MP_ACCESS_TOKEN`, `APP_BASE_URL`, `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`
+- Vercel env vars: `ANTHROPIC_API_KEY`, `MP_ACCESS_TOKEN`, `APP_BASE_URL`, `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, `BREVO_API_KEY`
 - Google Analytics: G-JTF9Q7FY5K
 
 ## Protocolo de trabajo
@@ -32,39 +32,40 @@ Este chat es exclusivamente para construcción técnica: vibecoding, archivos, d
 - Sync en tiempo real multi-dispositivo
 - Migración automática desde localStorage al crear cuenta
 - Pantalla de confirmación de sesión activa ("Continuar como [nombre]" / "Usar otra cuenta")
-- Reglas Firestore: cada usuario solo lee/escribe sus propios datos; `beta_users` es lectura pública
+- Reglas Firestore: cada usuario solo lee/escribe sus propios datos; `beta_users` lectura pública; `duo_invites` lectura/escritura por email autenticado
 
 ### Mercado Pago
-- `api/mp-create.js` — crea preferencia de pago en MP Checkout Pro
-- `api/mp-webhook.js` — recibe notificación de pago aprobado → activa `premium.activo` en Firestore
-- Planes: Premium $7.000 ARS/mes · Duo $12.000 ARS/mes (2 personas, pendiente construcción)
+- `api/mp-create.js` — crea preferencia de pago en MP Checkout Pro (Premium + Duo)
+- `api/mp-webhook.js` — recibe notificación de pago aprobado → activa premium en Firestore; para Duo guarda invitación en `duo_invites`
+- Planes: Premium $7.000 ARS/mes · Duo $12.000 ARS/mes
 - En sandbox (`sandbox_init_point`). Para producción: cambiar a `init_point` + token `APP_USR-`
 - `esPremium()` lee `state.premium.activo` desde Firestore en tiempo real
 - Badge de plan en pantalla de perfil + toast de bienvenida al activar
 
-### Plan Duo (pendiente construcción)
-- Reemplaza al plan Familiar — máximo 2 personas, $12.000 ARS/mes
-- Cada usuario mantiene perfil, IBF y dashboard individual
-- Al activar: opción "Compartir canasta" (sí/no, modificable después)
-- Si comparten: ambos cargan precios y ven el mismo historial de canasta
-- Si no comparten: canastas separadas, solo comparten el costo
+### Plan Duo
+- Modal en teaser: ingreso de email del segundo usuario + elección de canasta (compartida/separada)
+- `api/duo-invite.js` — envía email de invitación via Brevo al segundo usuario
+- Segundo usuario activa su acceso entrando a `app.html?duo_invite={uidInvitador}`
+- `activarInvitadoDuo()` lee colección `duo_invites`, activa premium y marca invitación como aceptada
+- Toast "Plan Duo activado" para el invitado
 
 ### Beta privada
 - `beta.html` — landing de registro/login para betatesters
-- Colección `beta_users` en Firestore — colección raíz, documentos con ID = email en minúsculas
-- Al registrarse, chequea si el email está en `beta_users` → activa `premium.activo: true` + `beta: true`
-- El mismo chequeo corre en `cargarDatosUsuario()` en app.html por si entran directo
-- Desactivación limpia: borrar colección `beta_users` desde Firestore, sin tocar código
-- Regla Firestore para `beta_users`: lectura pública (`allow read: if true`)
-- Link para compartir: https://peso-real-xi.vercel.app/beta.html
+- Colección `beta_users` en Firestore — colección raíz, ID = email en minúsculas
+- Al registrarse chequea `beta_users` → activa `premium.activo: true` + `beta: true`
+- Desactivación: borrar colección `beta_users` desde Firestore
 - **Lección aprendida:** `beta_users` debe ser colección raíz, no anidada dentro de `usuarios`
 
 ### PWA
-- `manifest.json` — ya existía, sin cambios
-- `sw.js` — service worker, cachea assets estáticos, nunca cachea APIs ni Firebase
-- Registro del SW en `app.html` al final del script
-- Instalable desde Safari en iPhone ("Abrir como app web") y Chrome en Android
-- Chrome en iPhone NO soporta PWA (limitación de Apple/iOS)
+- `manifest.json` — sin cambios
+- `sw.js` — nunca cachea `.html` (garantiza actualizaciones inmediatas en todos los dispositivos); cachea solo iconos y manifest
+- Instalable desde Safari en iPhone y Chrome en Android
+- Chrome en iOS no soporta PWA (limitación de Apple)
+
+### Open Graph / Twitter Cards
+- Meta tags OG y Twitter en `index.html` y `app.html`
+- `og-image.png` (1200x630) en raíz del repo
+- Verificado con Twitter Card Validator
 
 ### Pilar 1 — Verdad financiera
 - Dashboard: sueldo ARS + USD al TC MEP (dolarapi.com, caché 1h)
@@ -79,7 +80,7 @@ Este chat es exclusivamente para construcción técnica: vibecoding, archivos, d
 - Landing con lógica de días + emergentes inline
 - Acción semanal generada por IA (via /api/chat)
 - Comparación anónima con pares (743 usuarios simulados)
-- Historial IBF + tab historial emocional (captura respuesta Q4)
+- Historial IBF + tab historial emocional
 - Editor de registros IBF
 
 ### Pilar 3 — Memoria de compras
@@ -90,27 +91,32 @@ Este chat es exclusivamente para construcción técnica: vibecoding, archivos, d
 - Canasta personalizada: "Tu inflación real" vs IPC oficial
 
 ### Asistente financiero (Premium)
-- Chat con system prompt completo (sueldo, IBF, canasta, perfil, contexto AR)
+- Chat con system prompt completo
 - Backend: /api/chat → Anthropic API (claude-sonnet-4-5)
-- Acceso controlado por `esPremium()` — lee Firestore en tiempo real
+- `enterkeyhint="send"` → teclado mobile muestra botón Enviar
+- Input se limpia y mantiene foco después de enviar
+- Acceso controlado por `esPremium()`
 - Flag `asistenteInicializado` evita doble mensaje de bienvenida
 
 ### Perfil
 - Nombre, edad, ocupación, provincia, situación familiar
 - Avatar con inicial en dashboard
 - Saludo personalizado según hora
-- Badge de plan (Premium / Beta / gratuito con link a upgrade)
+- Badge de plan (Premium / Duo / Beta / gratuito)
 
 ### UX
+- Bottom nav `position: fixed` — siempre visible por encima de las pantallas
+- Pantallas con `padding-bottom: 70px` para no quedar tapadas por el nav
 - Botón `?` contextual en todas las pantallas
-- Edición de productos, precios e IBF
-- Logo completo + isotipo integrados (verde #d4f060, fondo #0a0b0d)
-- Favicon + PWA icons (icon-192.png, icon-512.png)
+- Logo completo + isotipo integrados
+- Favicon + PWA icons
 
 ### Calculadora pública (index.html)
-- IPC hardcodeado 2022-2026
-- Captura emails via Brevo (sibforms.com)
-- Logo 128px arriba, 72px abajo
+- IPC hardcodeado 2021-2026
+- Input tipo `text` con formato argentino (punto miles, coma decimal, max 8 dígitos)
+- En mobile: input y botón en columna
+- Brevo: fetch directo con `mode: no-cors` (sin script externo)
+- OG tags configurados
 
 ## Reglas Firestore actuales
 ```
@@ -123,27 +129,31 @@ service cloud.firestore {
     match /beta_users/{email} {
       allow read: if true;
     }
+    match /duo_invites/{email} {
+      allow read, write: if request.auth != null && request.auth.token.email == email;
+    }
   }
 }
 ```
 
+## Versión actual
+**v0.2.0** — beta cerrada
+
 ## Deuda técnica
-- IPC hardcodeado hasta 2026-03 — actualizar cuando INDEC publique datos recientes
+- IPC hardcodeado hasta 2026-03 — actualizar con datos recientes de INDEC
 - Comparación con pares simulada — conectar Firebase cuando haya 50+ usuarios
 - Nombre de app en pantalla de redirección de MP no aparece (cosmético)
-- Plan Duo pendiente de construcción
 
 ## Próximas construcciones
-- Plan Duo (lógica de canasta compartida, invitación al segundo usuario)
+- **Notas de parche** — badge en nav + modal de novedades (pendiente texto del chat de Estrategia)
 - Pasar MP a producción cuando lleguen ingresos reales
 - PWA Google Play / TWA (V3)
 - IPC dinámico automático (V3)
 
 ## Estado actual
-Todo en producción. Beta privada funcionando — betatesters acceden vía beta.html y el premium se activa automáticamente. PWA instalable. Mercado Pago en sandbox.
+Todo en producción. Beta cerrada activa. PWA funcionando. SW actualizado para garantizar deploys inmediatos en todos los dispositivos.
 
 ## Tareas pendientes
-1. Terminar de cargar emails de betatesters en Firestore (`beta_users`)
+1. Recibir texto de notas de parche del chat de Estrategia → implementar badge + modal
 2. Actualizar IPC con datos recientes de INDEC
-3. Construir Plan Duo
-4. Cuando haya ingresos: pasar MP a producción + activar monotributo
+3. Cuando haya ingresos: pasar MP a producción + activar monotributo
