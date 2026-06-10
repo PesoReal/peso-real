@@ -1,5 +1,5 @@
 # Peso Real — Estrategia
-*Última actualización: Mayo 2026*
+*Última actualización: Junio 2026*
 
 ## Contexto de este chat
 Este chat es para decisiones de producto, roadmap, modelo de negocio, pricing, pivots y prioridades. No se construye código acá ni se habla de campañas de marketing específicas.
@@ -22,22 +22,22 @@ App de finanzas personales diseñada para el contexto argentino. Tres pilares:
 
 ## Estado del producto
 - MVP V1 (Pilares 1 y 2): COMPLETO
-- V2 (Pilar 3 + canasta): EN DESARROLLO FINAL
-- V3 (familiar, PWA, integraciones): PENDIENTE
+- V2 (Pilar 3 + canasta): COMPLETO
+- Beta cerrada: EN CURSO
+- V3 (Plan Duo, PWA, integraciones): PENDIENTE
 
 ## Modelo de negocio
 - **Gratis:** IBF básico + sueldo real (sin historial)
 - **Premium:** $7.000 ARS/mes — producto completo + asistente IA contextual
-- **Duo:** $12.000 ARS/mes — 2 personas, canasta compartida opcional
-- ARPU ponderado esperado: a recalcular con precios en ARS fijos
+- **Duo:** $12.000 ARS/mes — 2 personas
+- Precios se revisan anualmente cada enero en base al IPC acumulado
 - Churn esperado: <5% por lock-in del historial acumulado
-- Cobro: Mercado Pago en ARS — YA INTEGRADO
+- Cobro: Mercado Pago en ARS — integrado, pendiente de activar post-beta
 - Facturación en ARS por regulaciones argentinas
 
 ## Plan Duo — decisión tomada
-- Máximo 2 personas (no 4)
+- Máximo 2 personas (no 4 — target: parejas jóvenes, hermanos, amigos)
 - Nombre: **Duo** (no Familiar, no Pareja)
-- Target: parejas jóvenes / amigos / hermanos que quieren dividir el costo
 - Precio: $12.000 ARS/mes por los dos ($6.000 c/u vs $7.000 individual)
 - Cada usuario mantiene perfil, IBF y dashboard individual
 - Opción al activar el Duo: **"Compartir canasta"** (sí / no, modificable después)
@@ -54,7 +54,7 @@ App de finanzas personales diseñada para el contexto argentino. Tres pilares:
 - Beta cerrada con conocidos antes de lanzamiento público
 - Sin Mercado Pago activo durante la beta — acceso premium manual vía Firebase
 
-## Beta cerrada — estructura definida
+## Beta cerrada — estado actual
 **Objetivo:** validar retención y UX antes de salir al público, sin presión de conversión.
 
 **Perfil:** 5 a 15 personas conocidas, mezcla de perfiles.
@@ -67,22 +67,23 @@ App de finanzas personales diseñada para el contexto argentino. Tres pilares:
 3. Carga real de productos en la canasta
 4. Momento de fricción / abandono
 
-**Al cierre de la beta — 4 preguntas clave:**
-1. ¿Qué usaste más?
-2. ¿Qué no entendiste o te costó?
-3. ¿Hubo algún momento en que cerraste la app sin terminar lo que ibas a hacer?
-4. ¿La usarías si fuera paga?
-
 **Herramientas armadas:**
-- Form de registro beta: nombre + email (ya creado en Google Forms)
-- Cuestionario de feedback post-beta: 8 preguntas informales (ya creado en Google Forms)
+- Form de registro beta: nombre + email (creado en Google Forms)
+- Cuestionario de feedback post-beta: 8 preguntas informales (creado en Google Forms)
+- beta.html: página independiente con acceso vía Firestore (construida)
 
-**Brief técnico para Construcción:**
-- Página `beta.html` independiente (no toca `app.html` ni `index`)
+**Brief técnico para Construcción (ya entregado):**
 - Colección `beta_users` en Firestore con emails autorizados
-- Al loguearse, se chequea el email → si está, activa `premium: true` y `beta: true` en el documento del usuario sin pasar por Mercado Pago
+- Al loguearse, activa `premium: true` y `beta: true` sin pasar por Mercado Pago
 - Desactivación: flag global `beta_active: false` o eliminar colección
-- Identidad visual Peso Real
+
+## Documentación técnica
+- Documento de Requerimientos Técnicos generado en PDF (v2.0)
+- Incluye: descripción del producto, arquitectura, RF, RNF, modelo de datos, modelo de negocio, endpoints, integraciones, roadmap
+- Destinado a terceros técnicos (ingenieros, socios potenciales)
+
+## Bugs conocidos
+- Botón "Avisarme cuando esté lista" en la calculadora pública no envía el email a Brevo — pendiente de fix en chat de Construcción
 
 ## Pendiente estratégico
 - Activar Mercado Pago cuando lleguen los primeros usuarios orgánicos post-beta
@@ -96,4 +97,4 @@ App de finanzas personales diseñada para el contexto argentino. Tres pilares:
 - PWA Google Play (TWA, USD 25 pago único)
 - Integración resúmenes de tarjeta
 - Agente de reporte mensual del negocio (MRR, churn, métricas)
-- MCP cross-venta con SaaS monotributistas
+- Cross-venta con SaaS de monotributistas
