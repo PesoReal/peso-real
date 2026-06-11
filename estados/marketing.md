@@ -35,7 +35,7 @@ CANALES ACTIVOS
 
 REDDIT
 ──────
-Estado: Post activo en r/AskArgentina (2.8k vistas)
+Estado: Post activo en r/AskArgentina
 Próxima acción: Sábado de Clasificados de r/argentina (cuando se abra)
 Timing: Martes-jueves 20-22hs ARS para posts, Sábado 18-22hs para Clasificados
 
@@ -43,13 +43,12 @@ TWITTER/X (@PesoRealAR) — EN VIVO
 ──────────────────────────────────
 Estado: ACTIVO Y CORRIENDO
 Contenido JUNIO: Semanas 1-4 completamente cargadas (posts #1-#20 + hilos #1-#4)
-Contenido JULIO: Listo en PDF, pendiente cargar
+Contenido JULIO: Listo en PDF, pendiente cargar en Typefully
 Herramienta: Typefully (scheduling automático, sin auto-RT/auto-plug/auto-DM)
 Frecuencia: 2-3 posts cortos + 1 hilo largo por semana
 Horarios: Rotación real (lunes-viernes, sin publicar fines de semana)
 Bio: "Finanzas personales sin culpa para Argentina. Calculá tu poder adquisitivo real. https://peso-real-xi.vercel.app"
 Avatar: Isotipo (P+R+$ verde lima)
-Métricas (después 1 semana): Engagement inicial bajo (normal para cuenta nueva)
 
 EMAIL
 ──────
@@ -70,7 +69,7 @@ JULIO 2026
 ──────────
 Archivo: PESO_REAL_JULIO_2026.pdf
 Contiene: 40 posts nuevos + 4 hilos nuevos (6-31 julio, lunes a viernes)
-Temas: Inflación invisible, sueldo nominal vs real, estrategias contra inflación
+Temas: Inflación invisible, sueldo nominal vs real, poder adquisitivo histórico 2020-2026, estrategias contra inflación
 Estado: Listo para cargar en Typefully
 Próxima acción: Cargar el domingo antes de que termine junio
 
@@ -134,7 +133,6 @@ MES 1 (JUNIO - semanas 1-4)
   Followers esperados: 100-300
   Engagement: 30-60 comentarios por post
   Emails capturados: 10-20
-  Métricas reales: Engagement inicial bajo (normal)
   Objetivo: Posicionarse como "voz sobre inflación real"
 
 MES 2 (JULIO - semanas 5-8)
@@ -158,7 +156,6 @@ JUNIO — COMPLETADO
 ───────────────────
 ✅ Primeras 4 semanas cargadas
 ✅ Posts #1-#20 + hilos #1-#4 en publicación
-✅ Publicando automático desde 2 junio
 
 JULIO — LISTO PARA CARGAR
 ──────────────────────────
@@ -215,7 +212,8 @@ MODELO FREEMIUM (PARA COMUNICACIÓN)
 ═══════════════════════════════════════
 
 GRATIS: Calculadora de sueldo real + IBF básico
-PREMIUM: USD 5/mes — Producto completo + asistente IA financiero personal
+PREMIUM: ARS 7.000/mes — Producto completo + asistente IA financiero personal
+DUO: ARS 12.000/mes — 2 personas (parejas, hermanos, amigos)
 COBRO: Pesos por Mercado Pago (próximamente, post-fiscal setup)
 
 ═══════════════════════════════════════════════════════════════════════════════
@@ -224,7 +222,7 @@ IDENTIDAD VISUAL
 
 Verde lima: #d4f060
 Negro: #0a0b0d
-Fuentes: Outfit + Fraunces
+Fuente: DM Sans (pesos 300/400/500/600/700)
 Isotipo: Fusión P+R+$ en verde lima
 Tono: Lenguaje argentino 100% (nada de IA)
 
