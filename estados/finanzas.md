@@ -40,7 +40,7 @@ Este chat cubre dos capas: finanzas del negocio (costos, MRR, proyecciones) y fi
 ### Modelo de ingresos
 - **Gratis:** IBF básico + sueldo real
 - **Premium:** ARS 7.000/mes
-- **Familiar:** ARS 12.000/mes (V3)
+- **Duo:** ARS 12.000/mes (2 personas — parejas, hermanos, amigos)
 - ARPU ponderado esperado: ~ARS 9.000
 - Cobro: Mercado Pago en ARS (integración LISTA, sandbox ACTIVO, producción PENDIENTE)
 - Facturación: en ARS por regulaciones argentinas
@@ -72,10 +72,11 @@ Este chat cubre dos capas: finanzas del negocio (costos, MRR, proyecciones) y fi
 ---
 
 ## Estado actual
-- ✅ **Precios finalizados en ARS:** Premium ARS 7.000/mes, Familiar ARS 12.000/mes
+- ✅ **Precios finalizados en ARS:** Premium ARS 7.000/mes, Duo ARS 12.000/mes (2 personas)
 - ✅ **Política de ajuste definida:** revisión anual según IPC acumulado
 - ✅ **Integración Mercado Pago:** COMPLETADA (sandbox activo)
 - ✅ **Costos operacionales:** $0 hasta escalar (planes gratuitos sostenibles)
+- ✅ **Beta cerrada activa:** 5–15 contactos con acceso premium gratuito
 - 🔲 **Contador:** no consultado — BLOQUEADOR (necesario para pasos siguientes)
 - 🔲 Monotributo: no inscripto (espera consulta con contador)
 - 🔲 Punto de venta AFIP: no tramitado (se hace junto con monotributo)
@@ -110,7 +111,7 @@ Con info del contador:
 
 ### SEMANA 4: Activar producción en Mercado Pago
 - Verificar que MP detecte monotributo
-- Cambiar base de datos/configuración (si hay hardcodeadas URLs de sandbox)
+- Cambiar configuración de sandbox a producción en código (chat de Construcción)
 - **TEST EN VIVO CON USUARIO BETA** antes de promocionar públicamente
 
 ---
@@ -129,7 +130,7 @@ Con info del contador:
 ## Notas operacionales
 - **Timing crítico:** no cobrar un peso sin estar inscripto en monotributo (AFIP puede sancionar)
 - **Mercado Pago retenciones:** automáticas según categoría, no hay que hacer nada
-- **Cambio de precios anual:** implementar en código (revisión enero de cada año)
+- **Cambio de precios anual:** implementar en código (revisión enero de cada año) — coordinar con chat de Construcción
 - **Segunda facturación:** SaaS monotributistas puede usar misma cuenta o crear otra (definir con contador)
 
 ---
