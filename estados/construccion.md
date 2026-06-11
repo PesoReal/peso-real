@@ -15,7 +15,7 @@ Este chat es exclusivamente para construcción técnica: vibecoding, archivos, d
 - Firebase Auth + Firestore (sync multi-dispositivo, southamerica-east1)
 - Vercel Functions: `api/chat.js` + `api/ipc.js` + `api/mp-create.js` + `api/mp-webhook.js` + `api/duo-invite.js`
 - Anthropic API: modelo `claude-sonnet-4-5`
-- Fuentes: Outfit (texto) + Fraunces (títulos/números)
+- Fuente: DM Sans (pesos 300/400/500/600/700) — Google Fonts
 - Vercel env vars: `ANTHROPIC_API_KEY`, `MP_ACCESS_TOKEN`, `APP_BASE_URL`, `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, `BREVO_API_KEY`
 - Google Analytics: G-JTF9Q7FY5K
 
@@ -37,12 +37,13 @@ Este chat es exclusivamente para construcción técnica: vibecoding, archivos, d
 ### Mercado Pago
 - `api/mp-create.js` — crea preferencia de pago en MP Checkout Pro (Premium + Duo)
 - `api/mp-webhook.js` — recibe notificación de pago aprobado → activa premium en Firestore; para Duo guarda invitación en `duo_invites`
-- Planes: Premium $7.000 ARS/mes · Duo $12.000 ARS/mes
+- Planes: Premium ARS 7.000/mes · Duo ARS 12.000/mes (2 personas)
 - En sandbox (`sandbox_init_point`). Para producción: cambiar a `init_point` + token `APP_USR-`
 - `esPremium()` lee `state.premium.activo` desde Firestore en tiempo real
 - Badge de plan en pantalla de perfil + toast de bienvenida al activar
 
 ### Plan Duo
+- Máximo 2 personas (parejas, hermanos, amigos — no plan familiar)
 - Modal en teaser: ingreso de email del segundo usuario + elección de canasta (compartida/separada)
 - `api/duo-invite.js` — envía email de invitación via Brevo al segundo usuario
 - Segundo usuario activa su acceso entrando a `app.html?duo_invite={uidInvitador}`
@@ -146,14 +147,14 @@ service cloud.firestore {
 
 ## Próximas construcciones
 - **Notas de parche** — badge en nav + modal de novedades (pendiente texto del chat de Estrategia)
-- Pasar MP a producción cuando lleguen ingresos reales
+- Pasar MP a producción cuando llegue setup fiscal (contador + monotributo + PV AFIP)
 - PWA Google Play / TWA (V3)
 - IPC dinámico automático (V3)
 
 ## Estado actual
-Todo en producción. Beta cerrada activa. PWA funcionando. SW actualizado para garantizar deploys inmediatos en todos los dispositivos.
+Todo en producción. Beta cerrada activa. PWA funcionando. SW actualizado para garantizar deploys inmediatos en todos los dispositivos. Fuente migrada a DM Sans en app.html e index.html.
 
 ## Tareas pendientes
 1. Recibir texto de notas de parche del chat de Estrategia → implementar badge + modal
 2. Actualizar IPC con datos recientes de INDEC
-3. Cuando haya ingresos: pasar MP a producción + activar monotributo
+3. Cuando llegue setup fiscal: pasar MP a producción + activar monotributo
