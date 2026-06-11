@@ -23,22 +23,22 @@ App de finanzas personales diseñada para el contexto argentino. Tres pilares:
 ## Estado del producto
 - MVP V1 (Pilares 1 y 2): COMPLETO
 - V2 (Pilar 3 + canasta): COMPLETO
-- Beta cerrada: EN CURSO
+- Beta cerrada: EN CURSO (5–15 contactos conocidos, acceso premium gratuito)
 - V3 (Plan Duo, PWA, integraciones): PENDIENTE
 
 ## Modelo de negocio
 - **Gratis:** IBF básico + sueldo real (sin historial)
-- **Premium:** $7.000 ARS/mes — producto completo + asistente IA contextual
-- **Duo:** $12.000 ARS/mes — 2 personas
+- **Premium:** ARS 7.000/mes — producto completo + asistente IA contextual
+- **Duo:** ARS 12.000/mes — 2 personas
 - Precios se revisan anualmente cada enero en base al IPC acumulado
 - Churn esperado: <5% por lock-in del historial acumulado
-- Cobro: Mercado Pago en ARS — integrado, pendiente de activar post-beta
+- Cobro: Mercado Pago en ARS — integrado en sandbox, producción pendiente de setup fiscal
 - Facturación en ARS por regulaciones argentinas
 
 ## Plan Duo — decisión tomada
-- Máximo 2 personas (no 4 — target: parejas jóvenes, hermanos, amigos)
+- Máximo 2 personas (no plan familiar — target: parejas jóvenes, hermanos, amigos)
 - Nombre: **Duo** (no Familiar, no Pareja)
-- Precio: $12.000 ARS/mes por los dos ($6.000 c/u vs $7.000 individual)
+- Precio: ARS 12.000/mes por los dos (ARS 6.000 c/u vs ARS 7.000 individual)
 - Cada usuario mantiene perfil, IBF y dashboard individual
 - Opción al activar el Duo: **"Compartir canasta"** (sí / no, modificable después)
   - Sí: ambos cargan precios y ven el mismo historial de compras
@@ -53,6 +53,7 @@ App de finanzas personales diseñada para el contexto argentino. Tres pilares:
 - Identidad: Peso Real — juego de palabras poder adquisitivo real + verdad financiera
 - Beta cerrada con conocidos antes de lanzamiento público
 - Sin Mercado Pago activo durante la beta — acceso premium manual vía Firebase
+- Fuente tipográfica: DM Sans (migrada desde Outfit + Fraunces en junio 2026)
 
 ## Beta cerrada — estado actual
 **Objetivo:** validar retención y UX antes de salir al público, sin presión de conversión.
@@ -68,29 +69,25 @@ App de finanzas personales diseñada para el contexto argentino. Tres pilares:
 4. Momento de fricción / abandono
 
 **Herramientas armadas:**
-- Form de registro beta: nombre + email (creado en Google Forms)
-- Cuestionario de feedback post-beta: 8 preguntas informales (creado en Google Forms)
-- beta.html: página independiente con acceso vía Firestore (construida)
+- Form de registro beta: nombre + email (Google Forms)
+- Cuestionario de feedback post-beta: 8 preguntas informales (Google Forms)
+- beta.html: página independiente con acceso vía Firestore
 
-**Brief técnico para Construcción (ya entregado):**
-- Colección `beta_users` en Firestore con emails autorizados
-- Al loguearse, activa `premium: true` y `beta: true` sin pasar por Mercado Pago
-- Desactivación: flag global `beta_active: false` o eliminar colección
+## Canales de adquisición activos
+- **Twitter/X (@PesoRealAR):** activo, junio completo publicando, julio preparado
+- **Reddit:** post en r/AskArgentina activo; Sábado de Clasificados de r/argentina pendiente
+- **Email:** captura vía Brevo desde calculadora pública (funcional)
 
 ## Documentación técnica
 - Documento de Requerimientos Técnicos generado en PDF (v2.0)
 - Incluye: descripción del producto, arquitectura, RF, RNF, modelo de datos, modelo de negocio, endpoints, integraciones, roadmap
-- Destinado a terceros técnicos (ingenieros, socios potenciales)
-
-## Bugs conocidos
-- Botón "Avisarme cuando esté lista" en la calculadora pública no envía el email a Brevo — pendiente de fix en chat de Construcción
 
 ## Pendiente estratégico
-- Activar Mercado Pago cuando lleguen los primeros usuarios orgánicos post-beta
-- Formalización: monotributo cuando el negocio genere ingresos
-- Definir mecanismo de actualización del precio ARS con inflación
+- Activar Mercado Pago producción cuando llegue setup fiscal (contador + monotributo + PV AFIP)
+- Formalización: monotributo antes de cobrar el primer peso
 - Métricas a trackear: MRR, churn, usuarios activos semanales, conversión free→premium
 - Cross-venta con SaaS de monotributistas (V3)
+- Post-beta: recolectar y analizar feedback para definir roadmap V3
 
 ## Roadmap V3
 - Plan Duo (2 personas, canasta compartida opcional)
@@ -98,3 +95,9 @@ App de finanzas personales diseñada para el contexto argentino. Tres pilares:
 - Integración resúmenes de tarjeta
 - Agente de reporte mensual del negocio (MRR, churn, métricas)
 - Cross-venta con SaaS de monotributistas
+
+## Tareas pendientes
+1. Notas de parche — definir texto y features a comunicar → pasar a chat de Construcción para implementar badge + modal
+2. Definir criterio de cierre de beta (¿cuánto feedback es suficiente?)
+3. Activar MP producción cuando el bloqueador fiscal se resuelva
+4. Definir contenido de agosto en Twitter basado en métricas de julio
