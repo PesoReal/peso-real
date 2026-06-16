@@ -93,13 +93,12 @@ V1 y V2 completas y en producción. Beta cerrada activa con acceso premium manua
 - **Precios fijados en ARS** con revisión anual en enero. Referencia interna: Premium ≈ USD 5/mes al TC MEP, Duo ≈ USD 8/mes entre dos.
 - **Beta cerrada sin fecha de vencimiento fija:** cierre discrecional cuando haya feedback suficiente.
 - **Formularios de beta simplificados:** registro solo pide nombre + email (suficiente para dar el acceso).
-
+- **Bug de captura de email resuelto. El botón "Avisarme cuando esté lista" en la calculadora pública fue corregido — fetch directo a Brevo con mode:no-cors sin script externo.
 ---
 
 # Bloqueos
 
 1. **Formalización fiscal no resuelta:** sin monotributo activo no se puede cobrar ningún peso. Bloquea la activación de Mercado Pago en producción. Depende de una acción externa (consultar contador → inscribirse en AFIP).
-2. **Edad de cuenta de Reddit:** el lanzamiento en Reddit está age-gated. No se puede publicar hasta que la cuenta tenga antigüedad suficiente.
 
 ---
 
