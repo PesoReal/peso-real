@@ -1,0 +1,140 @@
+name: Sync master_contexto
+
+on:
+  push:
+    paths:
+      - 'estados/construccion.md'
+      - 'estados/estrategia.md'
+      - 'estados/marketing.md'
+      - 'estados/finanzas.md'
+      - 'estados/estado_actual.md'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependencias
+        run: npm install @anthropic-ai/sdk
+
+      - name: Generar master_contexto.md
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          node << 'EOF'
+          const Anthropic = require('@anthropic-ai/sdk');
+          const fs = require('fs');
+
+          const client = new Anthropic();
+
+          function leerArchivo(path) {
+            try {
+              return fs.readFileSync(path, 'utf8');
+            } catch {
+              return '(archivo no encontrado)';
+            }
+          }
+
+          const construccion = leerArchivo('estados/construccion.md');
+          const estrategia   = leerArchivo('estados/estrategia.md');
+          const marketing    = leerArchivo('estados/marketing.md');
+          const finanzas     = leerArchivo('estados/finanzas.md');
+          const estadoActual = leerArchivo('estados/estado_actual.md');
+
+          const prompt = `
+          Sos el sistema de sincronización de contexto del proyecto Peso Real.
+          Tu única tarea es generar un archivo master_contexto.md actualizado y compacto.
+
+          REGLAS ESTRICTAS:
+          - El archivo resultante no debe superar 400 líneas
+          - Priorizá bloqueadores, decisiones recientes y próximas acciones
+          - Eliminá cualquier detalle técnico que solo le sirva al chat dueño
+          - Mantené la estructura de secciones exactamente como se indica abajo
+          - No agregues secciones nuevas
+          - Fecha de hoy: ${new Date().toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })}
+
+          ESTRUCTURA OBLIGATORIA DEL ARCHIVO:
+          # master_contexto.md — Peso Real
+          *Generado automáticamente. No editar manualmente.*
+          *Última actualización: [fecha]*
+
+          ## 🚦 Estado general
+          (tabla con Producto / Fiscal / Marketing / Ingresos y su estado)
+
+          ## 🔴 Bloqueadores activos
+          (lista numerada, máx 5 items)
+
+          ## 📌 Últimas decisiones tomadas
+          (lista con guión, máx 6 items, con fecha si está disponible)
+
+          ## 🔨 Construcción
+          Estado, próxima tarea, deuda técnica (máx 3 items), pendiente bloqueado
+
+          ## 🎯 Estrategia
+          Estado, señales de beta, pendientes estratégicos (máx 4 items)
+
+          ## 📣 Marketing
+          Estado por canal, próxima acción urgente
+
+          ## 💰 Finanzas
+          MRR actual, costos, cadena fiscal pendiente (numerada y en orden)
+
+          ## 🗂️ Archivos de referencia
+          (tabla fija — no cambiar)
+
+          ## 👤 Instrucción por chat
+          (instrucción fija por chat — no cambiar)
+
+          ARCHIVOS FUENTE:
+
+          === estado_actual.md ===
+          ${estadoActual}
+
+          === construccion.md ===
+          ${construccion}
+
+          === estrategia.md ===
+          ${estrategia}
+
+          === marketing.md ===
+          ${marketing}
+
+          === finanzas.md ===
+          ${finanzas}
+
+          Generá el master_contexto.md completo ahora. Solo el contenido del archivo, sin explicaciones.
+          `;
+
+          async function main() {
+            const message = await client.messages.create({
+              model: 'claude-sonnet-4-6',
+              max_tokens: 4000,
+              messages: [{ role: 'user', content: prompt }]
+            });
+
+            const contenido = message.content[0].text;
+            fs.writeFileSync('estados/master_contexto.md', contenido, 'utf8');
+            console.log('master_contexto.md generado correctamente');
+          }
+
+          main().catch(err => {
+            console.error('Error:', err);
+            process.exit(1);
+          });
+          EOF
+
+      - name: Commit master_contexto.md
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add estados/master_contexto.md
+          git diff --staged --quiet || git commit -m "sync: actualizar master_contexto.md [bot]"
+          git push
