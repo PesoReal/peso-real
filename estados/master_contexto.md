@@ -1,113 +1,133 @@
-# master_contexto.md — Peso Real
-*Generado automáticamente. No editar manualmente.*
-*Última actualización: Junio 2026*
+# Master Contexto — Peso Real
+*Generado automáticamente — no editar manualmente*
+*Última actualización: Julio 2026*
 
 ---
 
-## 🚦 Estado general
-
-| Área | Estado |
-|------|--------|
-| Producto | ✅ V2 en producción, beta activa |
-| Fiscal | 🔴 Bloqueado — contador pendiente |
-| Marketing | 🟡 Twitter activo, julio pendiente cargar |
-| Ingresos | 🔴 $0 — MP sandbox, producción bloqueada |
+## Qué es este archivo
+Síntesis unificada de todos los contextos del proyecto. Permite a cualquier chat, IA o colaborador entender Peso Real sin leer conversaciones anteriores.
 
 ---
 
-## 🔴 Bloqueadores activos
+## El producto
 
-1. **Contador no consultado** → bloquea monotributo → bloquea MP producción → bloquea primer cobro
-2. **Notas de parche v0.2.0** → copy listo en Estrategia, implementación pendiente en Construcción
-3. **Contenido julio** → PDF listo, pendiente cargar en Typefully antes de fin de junio
+**Peso Real** es una PWA de gestión financiera personal diseñada para Argentina.
 
----
+**Tres pilares:**
+1. **Ingresos/Egresos** *(nuevo núcleo — V2)*: registro de movimientos con categoría, concepto libre, monto ARS, fecha, referencia USD al TC MEP del día. Balance mensual automático y desglose porcentual por categoría.
+2. **Bienestar Financiero (IBF)**: 5 preguntas semanales, puntaje 1-100, acción concreta. Sin carga de gastos. Diferencial de retención — no se toca.
+3. **Memoria de Compras**: historial de precios por producto, comparación vs. IPC del rubro, "tu inflación real" vs. IPC oficial. Diferencial de retención — no se toca.
 
-## 📌 Últimas decisiones tomadas
+**Sección secundaria:**
+- Dashboard de sueldo real ajustado por IPC INDEC y TC MEP — ya no es el protagonista, sigue accesible.
 
-- **Plan Familiar eliminado** → reemplazado por Plan Duo (máx 2 personas, ARS 12.000/mes)
-- **Tipografía migrada** a DM Sans en app.html e index.html
-- **Bug Brevo resuelto** → botón "Avisarme" en calculadora pública funcional
-- **Beta cerrada activa** → 5-15 usuarios con premium gratuito vía `beta_users` en Firestore
-- **Precios fijados** → Premium ARS 7.000/mes · Duo ARS 12.000/mes · revisión anual enero por IPC
+**Asistente IA (Premium):** mismo backend (Anthropic API via Vercel Function), system prompt a actualizar con datos del módulo de egresos.
 
 ---
 
-## 🔨 Construcción
+## El emprendedor
 
-**Estado:** Todo en producción. V2 completa.
-
-**Próxima tarea:** Implementar badge + modal de Novedades (notas de parche v0.2.0) — esperando texto de Estrategia
-
-**Deuda técnica:**
-- IPC hardcodeado hasta 2026-03 (actualizar con datos INDEC recientes)
-- Comparación con pares simulada (conectar Firebase cuando haya 50+ usuarios)
-
-**Pendiente bloqueado por fiscal:**
-- Swap MP sandbox → producción (`sandbox_init_point` → `init_point` + token `APP_USR-`)
+- Adrián, 27 años, Lomas de Zamora, Buenos Aires
+- Empleado en relación de dependencia (finanzas/administración)
+- Disponibilidad: 5-15 horas semanales
+- No sabe programar — construye con Claude
+- Desarrolla en paralelo un SaaS de gestión para monotributistas (mismo usuario base)
+- Capital inicial: hasta $500.000 ARS
 
 ---
 
-## 🎯 Estrategia
+## Stack técnico
 
-**Estado:** Beta en curso. Sin criterio formal de cierre definido.
+- **Frontend:** HTML/CSS/JS estático sin frameworks (`app.html` — single file PWA)
+- **Auth + DB:** Firebase Authentication + Firestore
+- **Backend:** Vercel Functions (Node.js) — `api/chat.js`, `api/ipc.js`, `api/mp-create.js`, `api/mp-webhook.js`, `api/duo-invite.js`
+- **IA:** Anthropic API (claude-sonnet-4-5) proxeada en Vercel
+- **Pagos:** Mercado Pago Checkout Pro (sandbox activo, producción pendiente)
+- **Deploy:** GitHub (pencil UI) → Vercel autodeploy
+- **Email:** Brevo (captura + transaccional)
+- **Automatización:** GitHub Actions regenera `master_contexto.md` en cada push a `estados/`
 
-**4 señales a observar en beta:**
-1. Retorno semanal sin empuje externo
-2. Completitud IBF semanal
-3. Carga real de canasta
-4. Momento de fricción / abandono
-
-**Pendientes estratégicos:**
-- Definir criterio de cierre de beta
-- Notas de parche → pasar texto a Construcción
-- Definir contenido agosto en Twitter (post-métricas de julio)
-- Activar MP producción cuando se resuelva fiscal
-
----
-
-## 📣 Marketing
-
-**Twitter @PesoRealAR:** activo, junio completo publicando
-
-**Estado por canal:**
-- Twitter: ✅ Junio cargado · 🟡 Julio PDF listo, pendiente Typefully
-- Reddit: 🟡 Post r/AskArgentina activo · Sábado Clasificados pendiente
-- Brevo: ✅ Capturando emails desde calculadora
-
-**Próxima acción urgente:** Cargar julio en Typefully antes de fin de junio
+**URLs en producción:**
+- App: https://peso-real-xi.vercel.app/app.html
+- Calculadora pública: https://peso-real-xi.vercel.app
+- Beta: https://peso-real-xi.vercel.app/beta.html
+- Repositorio: github.com/PesoReal/peso-real
 
 ---
 
-## 💰 Finanzas
+## Modelo de negocio
 
-**MRR actual:** ARS 0 (pre-revenue)
-**Costos operativos:** ~USD 0 (todos en plan gratuito)
+| Plan | Precio | Usuarios | Incluye |
+|------|--------|----------|---------|
+| Free | Gratis | 1 | IBF básico + sueldo real sin historial |
+| Premium | $7.000 ARS/mes | 1 | Producto completo + asistente IA |
+| Duo | $12.000 ARS/mes | 2 | 2 cuentas Premium + canasta compartida opcional |
 
-**Cadena fiscal pendiente (en orden):**
-1. Consultar contador → 2. Alta monotributo AFIP → 3. Punto de venta → 4. Completar MP con CUIT → 5. Activar MP producción
-
-**No cobrar un peso antes del paso 1.**
-
----
-
-## 🗂️ Archivos de referencia
-
-| Archivo | Chat dueño | Cuándo leer |
-|---------|-----------|-------------|
-| `construccion.md` | Construcción | Solo si necesitás stack técnico o historial de builds |
-| `estrategia.md` | Estrategia | Solo si necesitás roadmap o decisiones de producto |
-| `marketing.md` | Marketing | Solo si necesitás copies, canales o calendario |
-| `finanzas.md` | Finanzas | Solo si necesitás costos, proyecciones o fiscal |
-| `estado_actual.md` | Todos | Referencia operativa completa |
-| `resumen_ejecutivo.md` | CEO/COO | Visión de conjunto |
+- Precios revisados anualmente en enero por IPC acumulado
+- Cobro vía Mercado Pago en ARS
+- Churn esperado <5% por lock-in del historial
 
 ---
 
-## 👤 Instrucción por chat
+## Estado actual
 
-**Construcción:** Leer sección 🔨 + Bloqueadores. Ignorar el resto.
-**Estrategia:** Leer sección 🎯 + Últimas decisiones. Ignorar el resto.
-**Marketing:** Leer sección 📣 + Estado general. Ignorar el resto.
-**Finanzas:** Leer sección 💰 + Bloqueadores. Ignorar el resto.
-**CEO/COO:** Leer todo este archivo. No leer los .md individuales.
+| Componente | Estado |
+|-----------|--------|
+| V1 (Pilares IBF + Canasta + Dashboard) | COMPLETO |
+| Plan Duo (invitación, canasta compartida) | COMPLETO |
+| Beta cerrada (beta.html + Firestore) | ACTIVA |
+| Módulo ingresos/egresos | EN CONSTRUCCIÓN (V2) |
+| Mercado Pago producción | BLOQUEADO (fiscal) |
+| Lanzamiento público | PENDIENTE (post-beta) |
+| V3 (TWA, tarjetas, agente de reporte) | PENDIENTE |
+
+---
+
+## Decisiones clave tomadas
+
+- **Reenfoque de producto:** Peso Real es un gestor financiero personal, no solo una app de poder adquisitivo. Decisión aprobada en chat CEO/COO.
+- **Dashboard de poder adquisitivo:** pasa a sección secundaria.
+- **IBF y canasta:** intocables — son el diferencial de retención.
+- **Módulo de egresos:** carga manual primero, integración bancaria después (V3+).
+- **Plan Duo:** máximo 2 personas, canasta compartida opcional activable por usuario.
+- **Sin integración bancaria en V2:** se valida carga manual antes de automatizar.
+- **Beta cerrada:** acceso premium manual vía Firestore (`beta:true`, `premium:true`), sin fecha de vencimiento fija.
+
+---
+
+## Bloqueos activos
+
+1. **Fiscal:** sin monotributo no se puede cobrar. Cadena: contador → monotributo → punto de venta AFIP → MP producción.
+2. **Reddit:** age-gated, requiere antigüedad de cuenta.
+
+---
+
+## Orden de construcción V2
+
+1. Módulo de ingresos/egresos (tipo, categoría, concepto, monto ARS, fecha, ref. USD MEP)
+2. Balance mensual automático + desglose porcentual por categoría
+3. Actualización del system prompt del asistente IA con datos de egresos
+4. Reconexión del dashboard de poder adquisitivo como sección secundaria
+5. *(V3)* Vínculo entre egresos de supermercado e historial de canasta
+
+---
+
+## Estructura de chats
+
+| Chat | Scope | Archivo de estado |
+|------|-------|-------------------|
+| Construcción | Código, archivos, deploys | `estados/construccion.md` |
+| Estrategia | Producto, roadmap, decisiones | `estados/estrategia.md` |
+| Marketing | Canales, copies, comunidades | `estados/marketing.md` |
+| Finanzas | Negocio + fiscal personal | `estados/finanzas.md` |
+| CEO/COO | Visión, decisiones ejecutivas | `estados/ceo_coo.md` |
+
+---
+
+## Identidad visual
+
+- Negro: `#0a0b0d`
+- Verde lima: `#d4f060`
+- Fuente: DM Sans (300–700)
+- Isotipo: fusión P+$+R en verde lima sobre negro
+- Referencias: Stripe, Linear, Vercel, Notion dark mode
