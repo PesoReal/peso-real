@@ -4,14 +4,14 @@
 ---
 
 # Resumen general
-V1 y V2 completas y en producción. Beta cerrada activa con acceso premium manual vía Firestore. Mercado Pago integrado en sandbox, pendiente de activar en producción hasta resolver la formalización fiscal. El foco actual es ejecutar la beta, recopilar feedback real y desbloquear el cobro.
+V1 completa y en producción. V2 en construcción activa: el producto evoluciona de app de poder adquisitivo a gestor financiero personal contextualizado para Argentina. El cambio central es el módulo de ingresos/egresos. Beta cerrada activa con acceso premium manual vía Firestore. Mercado Pago en sandbox, bloqueado por formalización fiscal pendiente.
 
 ---
 
 # Completado
 
-**Producto**
-- Pilar 1: Dashboard de sueldo real ajustado por IPC INDEC con tipo de cambio MEP
+**Producto — V1**
+- Pilar 1: Dashboard de sueldo real ajustado por IPC INDEC con tipo de cambio MEP (reconvertido a sección secundaria)
 - Pilar 2: IBF semanal (5 preguntas, puntaje 1-100, acción concreta, historial)
 - Pilar 3: Canasta de compras con historial de precios y comparación vs. IPC por rubro
 - Asistente IA contextual (Premium) vía Anthropic API proxeada en Vercel Function
@@ -20,9 +20,9 @@ V1 y V2 completas y en producción. Beta cerrada activa con acceso premium manua
 - PWA instalable (Safari iOS + Chrome Android)
 - Calculadora pública en https://peso-real-xi.vercel.app
 - App en producción en https://peso-real-xi.vercel.app/app.html
-- Fix botón "Avisarme cuando esté lista" en calculadora pública — fetch directo a Brevo con mode:no-cors (sin script externo)
+- Fix botón "Avisarme cuando esté lista" — fetch directo a Brevo con mode:no-cors
 
-**Plan Duo**
+**Plan Duo — V1**
 - Modal de upgrade con ingreso de email del segundo usuario y elección de canasta (compartida/separada)
 - `api/duo-invite.js` — envío de email de invitación via Brevo
 - Activación automática del segundo usuario vía `app.html?duo_invite={uid}`
@@ -35,92 +35,102 @@ V1 y V2 completas y en producción. Beta cerrada activa con acceso premium manua
 - Cuestionario de feedback post-beta (8 preguntas informales) creado en Google Forms
 
 **Decisiones de producto**
-- Plan Duo definido: 2 personas, $12.000 ARS/mes, canasta compartida opcional
-- Nombres de planes definidos: Free / Premium / Duo (descartados: Familiar, Pareja)
-- Precios definidos: Premium $7.000 ARS/mes, Duo $12.000 ARS/mes
-- Política de precios: revisión anual cada enero basada en IPC acumulado
+- Plan Duo: 2 personas, $12.000 ARS/mes, canasta compartida opcional
+- Precios: Premium $7.000 ARS/mes, Duo $12.000 ARS/mes — revisión anual en enero por IPC
+- Reenfoque de producto aprobado: Peso Real es ahora un gestor financiero personal, no solo una app de poder adquisitivo
 
 **Documentación**
-- Documento de Requerimientos Técnicos PDF v2.0 generado
-- Notas de Parche v0.2.0 PDF generado (incluye texto para modal, estructura de changelog y consideraciones legales)
-- resumen_ejecutivo.md generado
-- estados/estrategia.md actualizado
+- Documento de Requerimientos Técnicos PDF v2.0
+- Notas de Parche v0.2.0 PDF
+- resumen_ejecutivo.md
+- estado_actual.md
+- estados/estrategia.md
 
 ---
 
 # En progreso
 
+- **Módulo de ingresos/egresos (V2 — núcleo del cambio):** en construcción
 - Beta cerrada: invitaciones a primeros betatesters pendientes de envío
-- Observación de 4 señales de comportamiento: retención semanal, completitud IBF, carga de canasta, momentos de fricción
 
 ---
 
 # Pendiente
 
+**Producto — V2 (orden de construcción)**
+1. Módulo de ingresos/egresos con campos: tipo (ingreso/egreso), categoría predeterminada, concepto libre, monto ARS, fecha, referencia USD al TC MEP del día
+2. Balance mensual automático: ingresos - egresos = resultado del mes
+3. Desglose porcentual por categoría
+4. Actualización del system prompt del asistente IA con datos del módulo de egresos
+5. Reconexión del dashboard de poder adquisitivo como sección secundaria (desvinculado del bloque de captura de emails para usuarios registrados)
+
 **Fiscal (bloqueante para cobrar)**
-1. Consultar contador familiar con experiencia en emprendimientos digitales
+1. Consultar contador
 2. Inscripción en monotributo en AFIP
-3. Obtener punto de venta en AFIP para facturas tipo C
-4. Activar Mercado Pago en producción (swap `sandbox_init_point` → `init_point` y token)
+3. Obtener punto de venta en AFIP
+4. Activar Mercado Pago en producción
 
-**Producto**
-- Implementar sistema de notas de parche en la app (badge en nav + modal de Novedades) — copy v0.2.0 listo en PDF de Estrategia, falta construcción en chat de Construcción
-- V3: PWA en Google Play vía TWA (pago único USD 25)
-- V3: Integración de resúmenes de tarjeta de crédito/débito
-- V3: Agente de reporte mensual del negocio (MRR, churn, métricas)
+**Lanzamiento público (post-beta)**
+- Lanzamiento en Reddit (r/argentina, r/personalfinance_es)
+- Activación de Twitter/X (@PesoRealAR)
+- Términos y condiciones formales
 
-**Lanzamiento público**
-- Lanzamiento en Reddit (r/argentina, r/personalfinance_es) — pendiente post-beta
-- Activación de Twitter/X (@PesoRealAR) con contenido orgánico
-- Términos y condiciones formales (obligatorios antes de cobrar)
+**V3 (después del lanzamiento)**
+- Vínculo entre egresos de supermercado e historial de canasta de compras
+- PWA en Google Play vía TWA
+- Integración de resúmenes de tarjeta
+- Agente de reporte mensual del negocio
+- Cross-venta con SaaS de monotributistas
 
 ---
 
 # Próximas acciones recomendadas
 
-1. **Implementar modal de Novedades** con las notas de parche v0.2.0 ya redactadas → chat de Construcción
-2. **Enviar invitaciones beta** a los primeros 5 contactos con el link a beta.html y mensaje personalizado
-3. **Consultar contador** para desbloquear la cadena fiscal (monotributo → punto de venta → MP producción)
-4. **Esperar 2-3 semanas** de uso real antes de pedir feedback formal con el cuestionario de Google Forms
+1. **Consultar contador** — desbloquea toda la cadena fiscal
+2. **Pasar brief del módulo de egresos** al chat de Construcción
+3. **Enviar invitaciones beta** a los primeros 5 contactos
+4. **Esperar 2-3 semanas** de uso antes de pedir feedback con el cuestionario
 
 ---
 
 # Decisiones recientes
 
-- **Plan Familiar descartado.** Reemplazado por Plan Duo: máximo 2 usuarios, $12.000 ARS/mes, canasta compartida opcional activable por cada usuario. Fundamento: el tercer integrante típico de un hogar (hijo menor) no es usuario relevante del producto.
-- **Nombre "Duo" elegido** sobre "Pareja" (connotación limitante) y "Familiar" (scope incorrecto).
-- **Canasta del Plan Duo es opcional:** cada usuario puede elegir compartirla o mantenerla separada, modificable en cualquier momento.
-- **Precios fijados en ARS** con revisión anual en enero. Referencia interna: Premium ≈ USD 5/mes al TC MEP, Duo ≈ USD 8/mes entre dos.
-- **Beta cerrada sin fecha de vencimiento fija:** cierre discrecional cuando haya feedback suficiente.
-- **Formularios de beta simplificados:** registro solo pide nombre + email (suficiente para dar el acceso).
-- **Bug de captura de email resuelto. El botón "Avisarme cuando esté lista" en la calculadora pública fue corregido — fetch directo a Brevo con mode:no-cors sin script externo.
+- **Reenfoque de producto aprobado:** Peso Real evoluciona de app de poder adquisitivo a gestor financiero personal contextualizado para Argentina.
+- **Dashboard de poder adquisitivo:** pasa a sección secundaria. Se mantiene accesible pero no es el protagonista.
+- **IBF e historial de canasta:** se mantienen sin cambios — son el diferencial de retención.
+- **Asistente IA:** mismo backend, mismo modelo. Solo se actualiza el system prompt con los nuevos datos de egresos.
+- **Integración bancaria descartada para V2:** primero se valida carga manual, después se evalúa automatizar.
+- **Bug de captura de email resuelto:** botón "Avisarme cuando esté lista" corregido con fetch directo a Brevo con mode:no-cors.
+- **Plan Familiar descartado:** reemplazado por Plan Duo (máximo 2 personas).
+
 ---
 
 # Bloqueos
 
-1. **Formalización fiscal no resuelta:** sin monotributo activo no se puede cobrar ningún peso. Bloquea la activación de Mercado Pago en producción. Depende de una acción externa (consultar contador → inscribirse en AFIP).
+1. **Formalización fiscal:** sin monotributo no se puede cobrar. Bloquea Mercado Pago en producción.
+2. **Edad de cuenta de Reddit:** lanzamiento age-gated, no publicable hasta tener antigüedad suficiente.
 
 ---
 
 # Riesgos abiertos
 
-1. **Retención no validada:** el producto existe pero no tiene usuarios reales con uso sostenido. La beta es el primer test real.
-2. **Fundador único con tiempo limitado:** 5-15 horas semanales. Cualquier imprevisto técnico o fiscal puede retrasar el roadmap significativamente.
-3. **Dependencia de fuentes externas:** IPC INDEC y API de tipo de cambio MEP son datos críticos. Un cambio en su estructura rompe features centrales.
-4. **Depreciación del precio en ARS:** la inflación erosiona el valor real del precio mensual entre revisiones anuales. Si la inflación acumulada es alta, el aumento de enero puede generar fricción con usuarios activos.
-5. **Costo de la API de Anthropic a escala:** actualmente ~USD 0.002 por conversación. Bajo con pocos usuarios, pero requiere monitoreo cuando escale.
+1. **Retención no validada:** la beta es el primer test real de uso sostenido.
+2. **Reposicionamiento del pitch:** el diferencial "sin cargar gastos" desaparece con el módulo de egresos. El discurso de venta necesita actualizarse antes del lanzamiento público.
+3. **Fundador único con tiempo limitado:** 5-15 horas semanales.
+4. **Dependencia de APIs externas:** IPC INDEC y TC MEP. Un cambio en su estructura rompe features centrales.
+5. **Depreciación del precio en ARS:** la inflación erosiona el valor real entre revisiones anuales.
+6. **Costo de API Anthropic a escala:** ~USD 0.002/conversación. Bajo ahora, requiere monitoreo al escalar.
 
 ---
 
 # Preguntas abiertas
 
-- **¿Cuándo exactamente activar Mercado Pago en producción?** Depende del contador. Sin respuesta hasta resolver la cadena fiscal.
-- **¿Mecanismo exacto de actualización de precios en enero?** No está definido si el aumento aplica a usuarios existentes automáticamente o con período de gracia.
-- **¿Cuándo lanzar públicamente?** Sin criterio formal definido. Implícitamente: cuando la retención de beta sea satisfactoria y el cobro esté habilitado.
-- **¿Términos y condiciones?** Obligatorios antes de cobrar. Formato y contenido mínimo no definidos aún.
-- **¿Cross-venta con SaaS de monotributistas?** Producto en desarrollo paralelo. Integración con Peso Real planificada para V3 pero sin detalle definido.
+- **¿Mecanismo de actualización de precios en enero?** No definido si aplica a usuarios existentes automáticamente o con período de gracia.
+- **¿Cuándo lanzar públicamente?** Criterio implícito: retención de beta satisfactoria + cobro habilitado.
+- **¿Términos y condiciones?** Obligatorios antes de cobrar. Formato mínimo no definido.
+- **¿Cross-venta con SaaS de monotributistas?** Planificado para V3, sin detalle definido.
 
 ---
 
 # Última actualización
-Junio 2026 — corregido por chat de Construcción.
+Julio 2026 — post reenfoque estratégico de producto aprobado en chat CEO/COO.
