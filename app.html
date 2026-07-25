@@ -106,6 +106,41 @@ html,body{
   height:100%;
 }
 
+/* ── Desktop: centrar el layout mobile en vez de estirarlo ── */
+@media (min-width:640px){
+  html,body{ overflow:auto; }
+  body{
+    background:var(--bg2);
+    display:flex;
+    justify-content:center;
+  }
+  #app{
+    max-width:480px;
+    width:100%;
+    height:100vh;
+    height:100dvh;
+    border-left:1px solid var(--border);
+    border-right:1px solid var(--border);
+    box-shadow:0 0 60px rgba(0,0,0,0.4);
+  }
+  #bottom-nav{
+    left:50%;
+    right:auto;
+    width:100%;
+    max-width:480px;
+    transform:translateX(-50%);
+  }
+  #modal-compra, #modal-editar-prod, #modal-editar-ibf, #modal-movimiento, #modal-editar-sueldo{
+    justify-content:center;
+  }
+  #modal-compra > div, #modal-editar-prod > div, #modal-editar-ibf > div, #modal-movimiento > div, #modal-editar-sueldo > div{
+    max-width:480px;
+  }
+  #modal-duo{
+    justify-content:center;
+  }
+}
+
 /* ── Screens ── */
 .screen{
   position:absolute;
@@ -1039,26 +1074,13 @@ select option{background:var(--bg3)}
       </div>
     </div>
 
-    <!-- Poder adquisitivo -->
-    <div class="power-card">
-      <div class="power-label">Tu poder adquisitivo</div>
-      <div class="power-value loss" id="dash-pct">-</div>
-      <div class="power-sub" id="dash-power-sub">vs. hace 12 meses ajustado por IPC</div>
-      <div class="power-bar-track">
-        <div class="power-bar-fill loss" id="dash-bar" style="width:0%"></div>
-      </div>
-      <div class="power-bar-labels">
-        <span>Inflación: <span id="dash-infl">-</span></span>
-        <span>Tu aumento: <span id="dash-aumento">-</span></span>
-      </div>
-    </div>
-
     <!-- Grid: sueldo ARS + USD -->
     <div class="grid2">
       <div class="mini-card" onclick="goTo('screen-sueldo')">
         <div class="mini-card-label">Sueldo ARS</div>
         <div class="mini-card-value" id="dash-ars">-</div>
         <div class="mini-card-sub">neto mensual</div>
+        <div style="font-size:11px;margin-top:4px;font-weight:500" id="dash-sueldo-var"></div>
       </div>
       <div class="mini-card" onclick="goTo('screen-sueldo')">
         <div class="mini-card-label">Sueldo USD</div>
@@ -1139,6 +1161,9 @@ select option{background:var(--bg3)}
       <div class="salary-amount" id="sal-ars">-</div>
       <div class="salary-usd" id="sal-usd">≈ USD -</div>
       <span class="salary-badge loss" id="sal-badge">- vs. hace 12 meses</span>
+      <div style="margin-top:14px">
+        <button onclick="abrirEditarSueldo()" style="background:transparent;border:1px solid var(--border);border-radius:20px;color:var(--accent);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:8px 18px;cursor:pointer">Actualizar sueldo de este mes</button>
+      </div>
     </div>
 
     <div class="timeline">
@@ -1615,6 +1640,25 @@ select option{background:var(--bg3)}
   </div>
 </div>
 
+<!-- ── Modal actualizar sueldo ── -->
+<div id="modal-editar-sueldo" style="display:none;position:fixed;inset:0;z-index:150;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:flex-end">
+  <div style="background:var(--bg2);border-radius:20px 20px 0 0;padding:28px 24px calc(28px + var(--safe-bottom));width:100%;border-top:1px solid var(--border)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="font-family:'DM Sans',sans-serif;font-size:20px">Actualizar sueldo</div>
+      <button onclick="cerrarEditarSueldo()" style="background:var(--bg3);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;color:var(--text2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">&times;</button>
+    </div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:16px">Cargá el sueldo neto que cobraste este mes. La comparación contra la inflación se recalcula automáticamente.</div>
+    <div class="field">
+      <label>Sueldo neto de este mes</label>
+      <div class="input-wrap">
+        <span class="prefix">$</span>
+        <input type="text" id="edit-sueldo-monto" inputmode="decimal" autocomplete="off">
+      </div>
+    </div>
+    <button onclick="guardarSueldoActualizado()" class="btn-primary" style="width:100%;margin-top:18px">Guardar</button>
+  </div>
+</div>
+
 <!-- ── Modal ayuda global ── -->
 <div id="modal-ayuda">
   <div class="ayuda-inner">
@@ -1640,6 +1684,10 @@ select option{background:var(--bg3)}
     <button class="nav-item" id="nav-ibf" onclick="goTo('screen-ibf')">
       <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
       <span class="nav-label">Bienestar</span>
+    </button>
+    <button class="nav-item" id="nav-movimientos" onclick="goTo('screen-movimientos')">
+      <svg viewBox="0 0 24 24"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>
+      <span class="nav-label">Movim.</span>
     </button>
     <button class="nav-item" id="nav-compras" onclick="goTo('screen-compras')">
       <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
@@ -1922,6 +1970,7 @@ function goTo(screenId) {
     'screen-dashboard': 'nav-dashboard',
     'screen-sueldo': 'nav-sueldo',
     'screen-ibf': 'nav-ibf',
+    'screen-movimientos': 'nav-movimientos',
     'screen-compras': 'nav-compras',
       'screen-producto': 'nav-compras',
       'screen-asistente': 'nav-asistente',
@@ -2152,19 +2201,12 @@ function buildDashboard() {
   // Sueldo necesario hoy para mantener el poder adquisitivo de mesRef
   const sueldoNecesario = sueldoRef * (1 + infl / 100);
   // Variación real: si el sueldo actual supera o no al sueldo ajustado por inflación
-  const aumentoNominal = sueldoRef > 0 ? ((sueldo - sueldoRef) / sueldoRef) * 100 : 0;
   const varReal = sueldoNecesario > 0 ? ((sueldo / sueldoNecesario) - 1) * 100 : 0;
 
-  document.getElementById('dash-pct').textContent = fPct(varReal);
-  document.getElementById('dash-pct').className = `power-value ${varReal >= 0 ? 'gain' : 'loss'}`;
-  document.getElementById('dash-power-sub').textContent = `vs. ${mesLabel(mesRef)} ajustado por IPC del INDEC`;
-  document.getElementById('dash-infl').textContent = fPct(infl);
-  document.getElementById('dash-aumento').textContent = fPct(aumentoNominal);
-
-  const barPct = Math.min(100, Math.abs(varReal) / Math.abs(infl) * 100);
-  const barEl = document.getElementById('dash-bar');
-  barEl.className = `power-bar-fill ${varReal >= 0 ? 'gain' : 'loss'}`;
-  setTimeout(() => barEl.style.width = barPct + '%', 300);
+  // Indicador chico de variación real (el detalle completo vive en la sección Sueldo)
+  const sueldoVarEl = document.getElementById('dash-sueldo-var');
+  sueldoVarEl.textContent = `${fPct(varReal)} poder adquisitivo`;
+  sueldoVarEl.style.color = varReal >= 0 ? 'var(--green)' : 'var(--red)';
 
   // Sueldo ARS y USD
   document.getElementById('dash-ars').textContent = fARS(sueldo);
@@ -2255,6 +2297,29 @@ function ibfScoreDesc(score) {
 // ═══════════════════════════════════════════════
 // SUELDO REAL
 // ═══════════════════════════════════════════════
+function abrirEditarSueldo() {
+  document.getElementById('edit-sueldo-monto').value = '';
+  document.getElementById('modal-editar-sueldo').style.display = 'flex';
+  setTimeout(() => document.getElementById('edit-sueldo-monto').focus(), 100);
+}
+
+function cerrarEditarSueldo() {
+  document.getElementById('modal-editar-sueldo').style.display = 'none';
+}
+
+function guardarSueldoActualizado() {
+  const monto = parseMonto(document.getElementById('edit-sueldo-monto').value);
+  if (!monto || monto <= 0) {
+    document.getElementById('edit-sueldo-monto').focus();
+    return;
+  }
+  state.sueldo = monto;
+  saveState();
+  cerrarEditarSueldo();
+  buildSueldo();
+  buildDashboard();
+}
+
 function buildSueldo() {
   const sueldo = state.sueldo;
   const sueldoRef = state.sueldoRef || sueldo;
@@ -3549,6 +3614,10 @@ const AYUDA_CONTENIDO = {
     titulo: 'Entender tu sueldo real',
     items: [
       {
+        q: 'Como actualizo mi sueldo cada mes?',
+        a: 'Toca "Actualizar sueldo de este mes" arriba y cargá el neto que cobraste. La variacion real y la linea de tiempo se recalculan al instante contra el mes de referencia que elegiste al empezar.'
+      },
+      {
         q: 'Como se calcula mi variacion real?',
         a: 'Tomamos tu sueldo del mes de referencia, lo multiplicamos por la inflacion acumulada del INDEC hasta hoy, y obtenemos cuanto necesitarias cobrar para mantener el mismo nivel de vida. La diferencia entre ese numero y lo que cobras hoy es tu variacion real.'
       },
@@ -4694,7 +4763,7 @@ function construirContextoUsuario() {
 }
 
 function construirSystemPrompt(ctx) {
-  return `Sos el asistente financiero personal de un usuario argentino que usa la app Peso Real.
+  return `Sos el asistente de economía familiar personal de un usuario argentino que usa la app Peso Real. No sos solo una calculadora de sueldo: pensás en el panorama completo de su economía domestica — cuanto entra, cuanto sale, en que se va la plata, y como se compara contra la inflación.
 
 PERFIL DEL USUARIO:
 - Nombre: ${ctx.perfil?.nombre || 'No especificado'}
@@ -5268,6 +5337,7 @@ function init() {
   bindMontoInput('inp-sueldo-ref');
   bindMontoInput('inp-presupuesto');
   bindMontoInput('mov-monto');
+  bindMontoInput('edit-sueldo-monto');
 
   // Firebase _onAuthStateChanged maneja la navegacion automaticamente
   // No hacer auto-login desde localStorage
