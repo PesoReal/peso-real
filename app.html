@@ -523,6 +523,8 @@ select option{background:var(--bg3)}
 }
 .power-value.loss{color:var(--red)}
 .power-value.gain{color:var(--green)}
+.mov-balance-value.loss{color:var(--red)}
+.mov-balance-value.gain{color:var(--green)}
 .power-sub{font-size:13px;color:var(--text2);margin-bottom:16px}
 .power-bar-track{
   height:4px;
@@ -1018,6 +1020,25 @@ select option{background:var(--bg3)}
   </div>
   <div class="scroll dash-body">
 
+    <!-- Balance del mes (ingresos/egresos) -->
+    <div class="mov-balance-card" onclick="goTo('screen-movimientos')" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;cursor:pointer">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em">Balance del mes</div>
+        <div style="font-size:12px;color:var(--accent)">Ver detalle →</div>
+      </div>
+      <div class="mov-balance-value gain" id="dash-mov-balance" style="font-family:'DM Sans',sans-serif;font-size:32px;margin-bottom:14px">-</div>
+      <div style="display:flex;gap:24px">
+        <div>
+          <div style="font-size:11px;color:var(--text3)">Ingresos</div>
+          <div style="color:var(--green);font-family:'DM Sans',sans-serif;font-size:16px" id="dash-mov-ingresos">-</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text3)">Egresos</div>
+          <div style="color:var(--red);font-family:'DM Sans',sans-serif;font-size:16px" id="dash-mov-egresos">-</div>
+        </div>
+      </div>
+    </div>
+
     <!-- Poder adquisitivo -->
     <div class="power-card">
       <div class="power-label">Tu poder adquisitivo</div>
@@ -1468,6 +1489,48 @@ select option{background:var(--bg3)}
   </div>
 </div>
 
+<!-- ══════════════════════════════════════
+     SCREEN - MOVIMIENTOS (INGRESOS/EGRESOS)
+══════════════════════════════════════ -->
+<div class="screen" id="screen-movimientos">
+  <div class="screen-header">
+    <button class="back-btn" onclick="goTo('screen-dashboard')">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </button>
+    <div class="screen-title">Ingresos y egresos</div>
+    <button class="help-btn" onclick="abrirAyuda('movimientos')" style="margin-left:0">?</button>
+  </div>
+  <div class="scroll" style="padding:20px">
+
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px">
+      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px" id="mov-mes-label">-</div>
+      <div class="mov-balance-value gain" id="mov-balance" style="font-family:'DM Sans',sans-serif;font-size:34px;margin-bottom:14px">-</div>
+      <div style="display:flex;gap:24px">
+        <div>
+          <div style="font-size:11px;color:var(--text3)">Ingresos</div>
+          <div style="color:var(--green);font-family:'DM Sans',sans-serif;font-size:16px" id="mov-ingresos">-</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text3)">Egresos</div>
+          <div style="color:var(--red);font-family:'DM Sans',sans-serif;font-size:16px" id="mov-egresos">-</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-bottom:20px">
+      <button onclick="abrirFormMovimiento('egreso')" style="flex:1;background:var(--red-bg);border:1px solid rgba(255,90,90,0.3);border-radius:var(--radius-sm);color:var(--red);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;padding:14px;cursor:pointer">+ Egreso</button>
+      <button onclick="abrirFormMovimiento('ingreso')" style="flex:1;background:var(--green-bg);border:1px solid rgba(74,222,128,0.3);border-radius:var(--radius-sm);color:var(--green);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;padding:14px;cursor:pointer">+ Ingreso</button>
+    </div>
+
+    <div style="margin-bottom:8px;font-family:'DM Sans',sans-serif;font-size:16px">Desglose por categoría</div>
+    <div id="mov-desglose" style="margin-bottom:24px"></div>
+
+    <div style="margin-bottom:8px;font-family:'DM Sans',sans-serif;font-size:16px">Movimientos del mes</div>
+    <div id="mov-lista"></div>
+
+  </div>
+</div>
+
 </div><!-- .screens-wrap -->
 
 <!-- ── Modal editar producto ── -->
@@ -1507,6 +1570,48 @@ select option{background:var(--bg3)}
     </div>
     <div style="font-size:13px;color:var(--text2);margin-bottom:16px">Selecciona el registro que queres corregir:</div>
     <div id="ibf-edit-lista"></div>
+  </div>
+</div>
+
+<!-- ── Modal cargar movimiento ── -->
+<div id="modal-movimiento" style="display:none;position:fixed;inset:0;z-index:150;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:flex-end">
+  <div style="background:var(--bg2);border-radius:20px 20px 0 0;padding:28px 24px calc(28px + var(--safe-bottom));width:100%;border-top:1px solid var(--border);max-height:85vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="font-family:'DM Sans',sans-serif;font-size:20px">Nuevo movimiento</div>
+      <button onclick="cerrarFormMovimiento()" style="background:var(--bg3);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;color:var(--text2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">&times;</button>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-bottom:18px">
+      <button id="mov-tipo-egreso" onclick="elegirTipoMovimiento('egreso')" style="flex:1;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;padding:12px;cursor:pointer">Egreso</button>
+      <button id="mov-tipo-ingreso" onclick="elegirTipoMovimiento('ingreso')" style="flex:1;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;padding:12px;cursor:pointer">Ingreso</button>
+    </div>
+
+    <div class="field">
+      <label>Categoría</label>
+      <select id="mov-categoria" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;padding:14px 16px;outline:none"></select>
+    </div>
+
+    <div class="field" style="margin-top:12px">
+      <label>Concepto (opcional)</label>
+      <input type="text" id="mov-concepto" placeholder="Ej: Supermercado, freelance, etc." autocomplete="off"
+        style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;padding:14px 16px;outline:none">
+    </div>
+
+    <div class="field" style="margin-top:12px">
+      <label>Monto</label>
+      <div class="input-wrap">
+        <span class="prefix">$</span>
+        <input type="text" id="mov-monto" inputmode="decimal" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="field" style="margin-top:12px">
+      <label>Fecha</label>
+      <input type="date" id="mov-fecha"
+        style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;padding:14px 16px;outline:none">
+    </div>
+
+    <button onclick="guardarMovimiento()" class="btn-primary" style="width:100%;margin-top:18px">Guardar movimiento</button>
   </div>
 </div>
 
@@ -1627,6 +1732,21 @@ async function actualizarIPC() {
 }
 
 const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+
+const CATEGORIAS_EGRESO = {
+  comida: { label: 'Comida', icono: '🍔' },
+  transporte: { label: 'Transporte', icono: '🚗' },
+  entretenimiento: { label: 'Entretenimiento', icono: '🎬' },
+  salud: { label: 'Salud', icono: '💊' },
+  educacion: { label: 'Educación', icono: '📚' },
+  servicios: { label: 'Servicios', icono: '💡' },
+  otros: { label: 'Otros', icono: '📦' },
+};
+const CATEGORIAS_INGRESO = {
+  sueldo: { label: 'Sueldo', icono: '💼' },
+  extra: { label: 'Ingreso extra', icono: '➕' },
+  otro: { label: 'Otro ingreso', icono: '💰' },
+};
 let TC_MEP = 1310; // Fallback - se reemplaza con dato real de DolarApi.com
 
 // ═══════════════════════════════════════════════
@@ -1833,6 +1953,178 @@ function goTo(screenId) {
   if (screenId === 'screen-producto') {}
   if (screenId === 'screen-historial') buildHistorial();
     if (screenId === 'screen-perfil') buildPerfil();
+  if (screenId === 'screen-movimientos') buildMovimientos();
+}
+
+// ═══════════════════════════════════════════════
+// MOVIMIENTOS (INGRESOS / EGRESOS)
+// ═══════════════════════════════════════════════
+function getMovimientos() {
+  return state.movimientos || [];
+}
+
+function mesKeyDeFecha(fechaStr) {
+  return (fechaStr || '').slice(0, 7);
+}
+
+function movimientosDelMes(mesKey) {
+  return getMovimientos().filter(m => mesKeyDeFecha(m.fecha) === mesKey);
+}
+
+function calcularBalanceMes(mesKey) {
+  const movs = movimientosDelMes(mesKey);
+  const ingresos = movs.filter(m => m.tipo === 'ingreso').reduce((a, m) => a + m.monto, 0);
+  const egresos = movs.filter(m => m.tipo === 'egreso').reduce((a, m) => a + m.monto, 0);
+  return { ingresos, egresos, balance: ingresos - egresos };
+}
+
+function desglosePorCategoria(mesKey) {
+  const movs = movimientosDelMes(mesKey).filter(m => m.tipo === 'egreso');
+  const total = movs.reduce((a, m) => a + m.monto, 0);
+  const porCat = {};
+  movs.forEach(m => { porCat[m.categoria] = (porCat[m.categoria] || 0) + m.monto; });
+  return Object.entries(porCat)
+    .map(([categoria, monto]) => ({ categoria, monto, pct: total > 0 ? (monto / total * 100) : 0 }))
+    .sort((a, b) => b.monto - a.monto);
+}
+
+let movTipoActivo = 'egreso';
+
+function abrirFormMovimiento(tipo) {
+  movTipoActivo = tipo || 'egreso';
+  document.getElementById('mov-fecha').value = new Date().toISOString().slice(0, 10);
+  document.getElementById('mov-concepto').value = '';
+  document.getElementById('mov-monto').value = '';
+  actualizarTipoMovimientoUI();
+  document.getElementById('modal-movimiento').style.display = 'flex';
+}
+
+function cerrarFormMovimiento() {
+  document.getElementById('modal-movimiento').style.display = 'none';
+}
+
+function elegirTipoMovimiento(tipo) {
+  movTipoActivo = tipo;
+  actualizarTipoMovimientoUI();
+}
+
+function actualizarTipoMovimientoUI() {
+  const btnEgreso = document.getElementById('mov-tipo-egreso');
+  const btnIngreso = document.getElementById('mov-tipo-ingreso');
+  const catsEgreso = CATEGORIAS_EGRESO;
+  const catsIngreso = CATEGORIAS_INGRESO;
+  const sel = document.getElementById('mov-categoria');
+
+  if (movTipoActivo === 'egreso') {
+    btnEgreso.style.background = 'var(--red-bg)';
+    btnEgreso.style.color = 'var(--red)';
+    btnEgreso.style.borderColor = 'rgba(255,90,90,0.3)';
+    btnIngreso.style.background = 'transparent';
+    btnIngreso.style.color = 'var(--text2)';
+    btnIngreso.style.borderColor = 'var(--border)';
+    sel.innerHTML = Object.entries(catsEgreso).map(([k, v]) => `<option value="${k}">${v.icono} ${v.label}</option>`).join('');
+  } else {
+    btnIngreso.style.background = 'var(--green-bg)';
+    btnIngreso.style.color = 'var(--green)';
+    btnIngreso.style.borderColor = 'rgba(74,222,128,0.3)';
+    btnEgreso.style.background = 'transparent';
+    btnEgreso.style.color = 'var(--text2)';
+    btnEgreso.style.borderColor = 'var(--border)';
+    sel.innerHTML = Object.entries(catsIngreso).map(([k, v]) => `<option value="${k}">${v.icono} ${v.label}</option>`).join('');
+  }
+}
+
+function guardarMovimiento() {
+  const concepto = document.getElementById('mov-concepto').value.trim();
+  const monto = parseMonto(document.getElementById('mov-monto').value);
+  const fecha = document.getElementById('mov-fecha').value;
+  const categoria = document.getElementById('mov-categoria').value;
+
+  if (!monto || monto <= 0) {
+    document.getElementById('mov-monto').focus();
+    return;
+  }
+  if (!fecha) {
+    document.getElementById('mov-fecha').focus();
+    return;
+  }
+
+  if (!state.movimientos) state.movimientos = [];
+  state.movimientos.push({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    tipo: movTipoActivo,
+    categoria,
+    concepto: concepto || (movTipoActivo === 'egreso' ? CATEGORIAS_EGRESO[categoria].label : CATEGORIAS_INGRESO[categoria].label),
+    monto,
+    fecha,
+  });
+  saveState();
+  cerrarFormMovimiento();
+  buildMovimientos();
+  buildDashboard();
+}
+
+function eliminarMovimiento(id) {
+  state.movimientos = getMovimientos().filter(m => m.id !== id);
+  saveState();
+  buildMovimientos();
+  buildDashboard();
+}
+
+function buildMovimientos() {
+  const mesHoy = mesActual();
+  const { ingresos, egresos, balance } = calcularBalanceMes(mesHoy);
+
+  document.getElementById('mov-mes-label').textContent = mesLabel(mesHoy);
+  document.getElementById('mov-ingresos').textContent = fARS(ingresos);
+  document.getElementById('mov-egresos').textContent = fARS(egresos);
+  const balEl = document.getElementById('mov-balance');
+  balEl.textContent = fARS(balance);
+  balEl.className = `mov-balance-value ${balance >= 0 ? 'gain' : 'loss'}`;
+
+  // Desglose por categoría
+  const desglose = desglosePorCategoria(mesHoy);
+  const desgloseEl = document.getElementById('mov-desglose');
+  if (desglose.length === 0) {
+    desgloseEl.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:8px 0">Todavía no cargaste egresos este mes.</div>';
+  } else {
+    desgloseEl.innerHTML = desglose.map(d => {
+      const info = CATEGORIAS_EGRESO[d.categoria] || { label: d.categoria, icono: '📦' };
+      return `<div style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px">
+          <span>${info.icono} ${info.label}</span>
+          <span style="color:var(--text2)">${fARS(d.monto)} · ${d.pct.toFixed(0)}%</span>
+        </div>
+        <div style="height:6px;background:var(--bg3);border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:${d.pct}%;background:var(--accent);border-radius:3px"></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Lista de movimientos del mes, más reciente primero
+  const movs = movimientosDelMes(mesHoy).slice().sort((a, b) => b.fecha.localeCompare(a.fecha));
+  const listEl = document.getElementById('mov-lista');
+  if (movs.length === 0) {
+    listEl.innerHTML = '<div style="color:var(--text3);font-size:14px;padding:16px 0;text-align:center">Todavía no registraste movimientos este mes.</div>';
+  } else {
+    listEl.innerHTML = movs.map(m => {
+      const info = m.tipo === 'egreso' ? (CATEGORIAS_EGRESO[m.categoria] || { label: m.categoria, icono: '📦' }) : (CATEGORIAS_INGRESO[m.categoria] || { label: m.categoria, icono: '💰' });
+      const d = new Date(m.fecha + 'T00:00:00');
+      const fechaLabel = `${d.getDate()} ${MESES[d.getMonth()].substring(0, 3)}`;
+      const color = m.tipo === 'egreso' ? 'var(--red)' : 'var(--green)';
+      const signo = m.tipo === 'egreso' ? '-' : '+';
+      return `<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${info.icono}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;color:var(--text)">${m.concepto}</div>
+          <div style="font-size:12px;color:var(--text3)">${info.label} · ${fechaLabel}</div>
+        </div>
+        <div style="color:${color};font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;white-space:nowrap">${signo}${fARS(m.monto)}</div>
+        <button onclick="eliminarMovimiento('${m.id}')" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:4px 2px">&times;</button>
+      </div>`;
+    }).join('');
+  }
 }
 
 // ═══════════════════════════════════════════════
@@ -1842,6 +2134,14 @@ function buildDashboard() {
   const now = new Date();
   document.getElementById('dash-date').innerHTML = `${now.getDate()} ${MESES[now.getMonth()]}<br>${now.getFullYear()}`;
   actualizarDashboardConPerfil();
+
+  // Balance de movimientos del mes
+  const balMes = calcularBalanceMes(mesActual());
+  document.getElementById('dash-mov-ingresos').textContent = fARS(balMes.ingresos);
+  document.getElementById('dash-mov-egresos').textContent = fARS(balMes.egresos);
+  const dashBalEl = document.getElementById('dash-mov-balance');
+  dashBalEl.textContent = fARS(balMes.balance);
+  dashBalEl.className = `mov-balance-value ${balMes.balance >= 0 ? 'gain' : 'loss'}`;
 
   const sueldo = state.sueldo;
   const sueldoRef = state.sueldoRef || sueldo;
@@ -2208,7 +2508,7 @@ function renderQuestion(idx) {
     <div class="question-card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
         <div class="q-num" style="margin-bottom:0">Pregunta ${idx + 1} de ${PREGUNTAS.length}</div>
-        ${idx > 0 ? '<button onclick="volverPregunta(' + idx + ')" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text3);font-size:12px;padding:4px 10px;cursor:pointer;font-family:'DM Sans',sans-serif">← Anterior</button>' : ''}
+        ${idx > 0 ? '<button onclick="volverPregunta(' + idx + ')" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text3);font-size:12px;padding:4px 10px;cursor:pointer;font-family:DM Sans,sans-serif">← Anterior</button>' : ''}
       </div>
       <div class="q-text">${q.texto}</div>
       <div class="q-options">
@@ -3326,6 +3626,29 @@ const AYUDA_CONTENIDO = {
       },
     ]
   },
+  movimientos: {
+    titulo: 'Ingresos y egresos',
+    items: [
+      {
+        q: 'Para que sirve este modulo?',
+        a: 'Te muestra cuanto entra y cuanto sale de tu bolsillo cada mes, y en que categorias se te va la plata. Es la base para armar un presupuesto real.'
+      },
+      {
+        q: 'Como cargo un movimiento?',
+        steps: [
+          'Toca "+ Egreso" o "+ Ingreso" segun corresponda',
+          'Elegis la categoria',
+          'Escribis un concepto (opcional)',
+          'Cargas el monto y la fecha',
+          'Guardas. El balance y el desglose se actualizan al instante'
+        ]
+      },
+      {
+        q: 'El balance se reinicia cada mes?',
+        a: 'Si. El balance y el desglose que ves reflejan solo el mes en curso. Los movimientos anteriores quedan guardados y podes revisarlos cambiando la fecha al cargar uno nuevo.'
+      },
+    ]
+  },
   asistente: {
     titulo: 'Asistente financiero',
     items: [
@@ -4355,6 +4678,10 @@ function construirContextoUsuario() {
     return varProd > (IPC[mesHoy] || 3) * 1.5;
   });
 
+  // Balance de ingresos/egresos del mes
+  const balMes = calcularBalanceMes(mesHoy);
+  const desgloseCategorias = desglosePorCategoria(mesHoy);
+
   return {
     sueldo, sueldoRef, mesRefLabel, inflTotal, varReal, sueldoNecesario,
     presupuesto, ibfScore, ibfHistory, ahorro, ahorroLabels,
@@ -4362,6 +4689,7 @@ function construirContextoUsuario() {
     ipcMesActual: IPC[mesHoy] || 0,
     tcMEP: TC_MEP,
     perfil: s.perfil || {},
+    balMes, desgloseCategorias,
   };
 }
 
@@ -4385,6 +4713,8 @@ PERFIL DEL USUARIO:
 ${ctx.inflRealTexto ? '- ' + ctx.inflRealTexto : ''}
 ${ctx.productosAlerta.length > 0 ? '- Productos que subieron mas que la inflacion: ' + ctx.productosAlerta.map(p => p.nombre).join(', ') : ''}
 ${ctx.productos.length > 0 ? '- Cantidad de productos en su canasta personal: ' + ctx.productos.length : ''}
+${ctx.balMes && (ctx.balMes.ingresos > 0 || ctx.balMes.egresos > 0) ? `- Balance del mes: ingresos $${ctx.balMes.ingresos.toLocaleString('es-AR')}, egresos $${ctx.balMes.egresos.toLocaleString('es-AR')}, balance ${ctx.balMes.balance >= 0 ? '+' : ''}$${ctx.balMes.balance.toLocaleString('es-AR')}` : ''}
+${ctx.desgloseCategorias && ctx.desgloseCategorias.length > 0 ? '- Categorias con mas gasto este mes: ' + ctx.desgloseCategorias.slice(0,3).map(d => d.categoria + ' (' + d.pct.toFixed(0) + '%)').join(', ') : ''}
 
 CONTEXTO ECONOMICO ARGENTINA (${new Date().getFullYear()}):
 - Inflacion mensual actual: ~${ctx.ipcMesActual.toFixed(1)}%
@@ -4937,6 +5267,7 @@ function init() {
   bindMontoInput('inp-sueldo');
   bindMontoInput('inp-sueldo-ref');
   bindMontoInput('inp-presupuesto');
+  bindMontoInput('mov-monto');
 
   // Firebase _onAuthStateChanged maneja la navegacion automaticamente
   // No hacer auto-login desde localStorage
