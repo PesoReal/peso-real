@@ -1509,7 +1509,11 @@ select option{background:var(--bg3)}
   <div class="scroll" style="padding:20px">
 
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px">
-      <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px" id="mov-mes-label">-</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <button onclick="movMesAnterior()" style="background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:2px 8px">‹</button>
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em" id="mov-mes-label">-</div>
+        <button id="mov-mes-siguiente" onclick="movMesSiguiente()" style="background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:2px 8px">›</button>
+      </div>
       <div class="mov-balance-value gain" id="mov-balance" style="font-family:'DM Sans',sans-serif;font-size:34px;margin-bottom:2px">-</div>
       <div style="font-size:11px;color:var(--text3);margin-bottom:12px">tu presupuesto disponible este mes</div>
       <div style="display:flex;gap:24px">
@@ -2026,7 +2030,7 @@ function goTo(screenId) {
   if (screenId === 'screen-producto') {}
   if (screenId === 'screen-historial') buildHistorial();
     if (screenId === 'screen-perfil') buildPerfil();
-  if (screenId === 'screen-movimientos') buildMovimientos();
+  if (screenId === 'screen-movimientos') { movMesViendo = null; buildMovimientos(); }
 }
 
 // ═══════════════════════════════════════════════
@@ -2062,6 +2066,25 @@ function desglosePorCategoria(mesKey) {
 }
 
 let movTipoActivo = 'egreso';
+let movMesViendo = null; // null = mes real actual; se resetea cada vez que se entra a la pantalla
+
+function mesSumar(mesKey, delta) {
+  const [y, m] = mesKey.split('-').map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function movMesAnterior() {
+  const actual = movMesViendo || mesRealActual();
+  buildMovimientos(mesSumar(actual, -1));
+}
+
+function movMesSiguiente() {
+  const actual = movMesViendo || mesRealActual();
+  const siguiente = mesSumar(actual, 1);
+  if (siguiente > mesRealActual()) return; // no se puede ir al futuro
+  buildMovimientos(siguiente);
+}
 
 function abrirFormMovimiento(tipo) {
   movTipoActivo = tipo || 'egreso';
@@ -2144,11 +2167,14 @@ function eliminarMovimiento(id) {
   buildDashboard();
 }
 
-function buildMovimientos() {
-  const mesHoy = mesRealActual();
+function buildMovimientos(mesKey) {
+  const mesHoy = mesKey || movMesViendo || mesRealActual();
+  movMesViendo = mesHoy;
   const { ingresos, egresos, balance } = calcularBalanceMes(mesHoy);
 
   document.getElementById('mov-mes-label').textContent = mesLabel(mesHoy);
+  const btnSig = document.getElementById('mov-mes-siguiente');
+  if (btnSig) btnSig.style.visibility = mesHoy >= mesRealActual() ? 'hidden' : 'visible';
   document.getElementById('mov-ingresos').textContent = fARS(ingresos);
   document.getElementById('mov-egresos').textContent = fARS(egresos);
   const balEl = document.getElementById('mov-balance');
@@ -2184,10 +2210,11 @@ function buildMovimientos() {
   }
 
   // Desglose por categoría
+  const esMesActual = mesHoy === mesRealActual();
   const desglose = desglosePorCategoria(mesHoy);
   const desgloseEl = document.getElementById('mov-desglose');
   if (desglose.length === 0) {
-    desgloseEl.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:8px 0">Todavía no cargaste egresos este mes.</div>';
+    desgloseEl.innerHTML = `<div style="color:var(--text3);font-size:13px;padding:8px 0">Todavía no cargaste egresos ${esMesActual ? 'este mes' : 'en ese mes'}.</div>`;
   } else {
     desgloseEl.innerHTML = desglose.map(d => {
       const info = CATEGORIAS_EGRESO[d.categoria] || { label: d.categoria, icono: '📦' };
@@ -2207,7 +2234,7 @@ function buildMovimientos() {
   const movs = movimientosDelMes(mesHoy).slice().sort((a, b) => b.fecha.localeCompare(a.fecha));
   const listEl = document.getElementById('mov-lista');
   if (movs.length === 0) {
-    listEl.innerHTML = '<div style="color:var(--text3);font-size:14px;padding:16px 0;text-align:center">Todavía no registraste movimientos este mes.</div>';
+    listEl.innerHTML = `<div style="color:var(--text3);font-size:14px;padding:16px 0;text-align:center">Todavía no registraste movimientos ${esMesActual ? 'este mes' : 'en ese mes'}.</div>`;
   } else {
     listEl.innerHTML = movs.map(m => {
       const info = m.tipo === 'egreso' ? (CATEGORIAS_EGRESO[m.categoria] || { label: m.categoria, icono: '📦' }) : (CATEGORIAS_INGRESO[m.categoria] || { label: m.categoria, icono: '💰' });
@@ -3803,7 +3830,7 @@ const AYUDA_CONTENIDO = {
       },
       {
         q: 'El balance se reinicia cada mes?',
-        a: 'Si. El balance y el desglose que ves reflejan solo el mes en curso. Los movimientos anteriores quedan guardados y podes revisarlos cambiando la fecha al cargar uno nuevo.'
+        a: 'El balance y el desglose que ves son siempre de un mes puntual. Por defecto arranca en el mes actual, pero podes navegar a meses anteriores con las flechitas de arriba para revisar tu historial.'
       },
       {
         q: 'Por que no puedo cargar mi sueldo como ingreso aca?',
@@ -4241,8 +4268,9 @@ function renderComparacionIBF(miScore) {
 
     <div style="display:flex;gap:8px;margin-bottom:14px">
       <div style="flex:1;background:var(--bg3);border-radius:var(--radius-sm);padding:12px;text-align:center">
-        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Promedio general</div>
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Promedio</div>
         <div style="font-family:'DM Sans',sans-serif;font-size:22px;color:var(--text)">${promedio}</div>
+        <div style="font-size:9px;color:var(--text3);margin-top:2px">general</div>
       </div>
       <div style="flex:1;background:var(--bg3);border-radius:var(--radius-sm);padding:12px;text-align:center">
         <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Tu grupo</div>
