@@ -1,5 +1,5 @@
 # Peso Real — Construcción
-*Última actualización: Junio 2026*
+*Última actualización: Julio 2026*
 
 ## Contexto de este chat
 Este chat es exclusivamente para construcción técnica: vibecoding, archivos, deploys, bugs, nuevas features. No se discute estrategia ni marketing acá.
@@ -15,109 +15,83 @@ Este chat es exclusivamente para construcción técnica: vibecoding, archivos, d
 - Firebase Auth + Firestore (sync multi-dispositivo, southamerica-east1)
 - Vercel Functions: `api/chat.js` + `api/ipc.js` + `api/mp-create.js` + `api/mp-webhook.js` + `api/duo-invite.js`
 - Anthropic API: modelo `claude-sonnet-4-5`
-- Fuente: DM Sans (pesos 300/400/500/600/700) — Google Fonts
+- Diseño: DM Sans (pesos 300–700), verde lima `#d4f060` sobre negro `#0a0b0d`
 - Vercel env vars: `ANTHROPIC_API_KEY`, `MP_ACCESS_TOKEN`, `APP_BASE_URL`, `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, `BREVO_API_KEY`
-- Google Analytics: G-JTF9Q7FY5K
 
 ## Protocolo de trabajo
 - Claude genera archivos → Adrián copia en GitHub (lápiz → Ctrl+A → pegar → Commit) → Vercel autodeploy
 - Carpeta `api/` en GitHub para Vercel Functions
-- Nunca usar caracteres especiales en JS: — " " ' ' (rompen el parser)
+- Nunca usar caracteres especiales sin escapar en JS: comillas simples/dobles anidadas rompen el parser (ver Lecciones aprendidas)
 
 ## Lo que está construido
 
 ### Auth
 - Firebase Auth: email/contraseña + Google
-- Firestore: colección `usuarios/{uid}` con todos los datos
-- Sync en tiempo real multi-dispositivo
+- Firestore: colección `usuarios/{uid}` con todos los datos del usuario, incluyendo movimientos (ver más abajo)
+- Sync en tiempo real multi-dispositivo vía `saveState()`
 - Migración automática desde localStorage al crear cuenta
 - Pantalla de confirmación de sesión activa ("Continuar como [nombre]" / "Usar otra cuenta")
+- Reset de contraseña: no hay flujo "olvidé mi contraseña" dentro de la app todavía — se hace manualmente desde Firebase Console (Authentication → Users → ⋮ → Restablecer contraseña)
 - Reglas Firestore: cada usuario solo lee/escribe sus propios datos; `beta_users` lectura pública; `duo_invites` lectura/escritura por email autenticado
 
 ### Mercado Pago
 - `api/mp-create.js` — crea preferencia de pago en MP Checkout Pro (Premium + Duo)
 - `api/mp-webhook.js` — recibe notificación de pago aprobado → activa premium en Firestore; para Duo guarda invitación en `duo_invites`
-- Planes: Premium ARS 7.000/mes · Duo ARS 12.000/mes (2 personas)
-- En sandbox (`sandbox_init_point`). Para producción: cambiar a `init_point` + token `APP_USR-`
+- Planes: Premium $7.000 ARS/mes · Duo $12.000 ARS/mes
+- En sandbox (`sandbox_init_point`). Para producción: cambiar a `init_point` + token `APP_USR-` (bloqueado hasta inscripción en monotributo)
 - `esPremium()` lee `state.premium.activo` desde Firestore en tiempo real
-- Badge de plan en pantalla de perfil + toast de bienvenida al activar
 
 ### Plan Duo
-- Máximo 2 personas (parejas, hermanos, amigos — no plan familiar)
 - Modal en teaser: ingreso de email del segundo usuario + elección de canasta (compartida/separada)
 - `api/duo-invite.js` — envía email de invitación via Brevo al segundo usuario
 - Segundo usuario activa su acceso entrando a `app.html?duo_invite={uidInvitador}`
-- `activarInvitadoDuo()` lee colección `duo_invites`, activa premium y marca invitación como aceptada
-- Toast "Plan Duo activado" para el invitado
 
 ### Beta privada
 - `beta.html` — landing de registro/login para betatesters
 - Colección `beta_users` en Firestore — colección raíz, ID = email en minúsculas
-- Al registrarse chequea `beta_users` → activa `premium.activo: true` + `beta: true`
-- Desactivación: borrar colección `beta_users` desde Firestore
 - **Lección aprendida:** `beta_users` debe ser colección raíz, no anidada dentro de `usuarios`
 
 ### PWA
-- `manifest.json` — sin cambios
-- `sw.js` — nunca cachea `.html` (garantiza actualizaciones inmediatas en todos los dispositivos); cachea solo iconos y manifest
-- Instalable desde Safari en iPhone y Chrome en Android
-- Chrome en iOS no soporta PWA (limitación de Apple)
-
-### Open Graph / Twitter Cards
-- Meta tags OG y Twitter en `index.html` y `app.html`
-- `og-image.png` (1200x630) en raíz del repo
-- Verificado con Twitter Card Validator
+- `sw.js` — nunca cachea `.html` (garantiza actualizaciones inmediatas en todos los dispositivos)
+- Instalable desde Safari en iPhone y Chrome en Android. Chrome en iOS no soporta PWA (limitación de Apple)
 
 ### Pilar 1 — Verdad financiera
-- Dashboard: sueldo ARS + USD al TC MEP (dolarapi.com, caché 1h)
-- Poder adquisitivo real vs IPC INDEC (proxy /api/ipc)
-- Línea de tiempo (6 puntos cada 2 meses) con equivalente real
-- Métricas: inflación total, variación real, peor momento / máximo
-- Presupuesto ajustado mensual con delta IPC
-- Mensajes emocionales (24 variantes)
+- **Sueldo real (pantalla propia, ya no en el dashboard principal):** sueldo ARS + USD al TC MEP, poder adquisitivo real vs IPC INDEC, línea de tiempo (6 puntos), métricas y mensaje emocional por IA
+- **Sueldo editable mes a mes:** botón "Actualizar sueldo de este mes" en la pantalla Sueldo. Antes solo se cargaba una vez en el onboarding y no había forma de actualizarlo — ahora sí, y cada actualización recalcula la variación real automáticamente
+- El dashboard principal ya **no** muestra la card grande de poder adquisitivo — quedó solo un indicador chico ("+X% poder adquisitivo") bajo el mini-card de Sueldo ARS, que lleva a la pantalla de Sueldo para el detalle completo
+- Presupuesto ajustado por IPC (el campo manual del onboarding) fue **eliminado** — ver módulo de Ingresos y egresos
+
+### Ingresos y egresos (módulo nuevo)
+- Pantalla propia (`screen-movimientos`), accesible desde el nav inferior y desde la card "Balance del mes" del dashboard
+- Carga de movimientos: tipo (ingreso/egreso), categoría, concepto, monto, fecha
+- Categorías egreso: comida, transporte, entretenimiento, salud, educación, servicios, otros
+- Categorías ingreso: extra, otro (la categoría "sueldo" fue sacada del alta manual — ver siguiente punto)
+- **Sueldo sincronizado automáticamente:** cada vez que se actualiza el sueldo en la pantalla Sueldo (o al abrir el dashboard por primera vez con el sueldo del onboarding), se refleja como un ingreso automático del mes en curso en Movimientos, sin duplicarse. En la lista aparece marcado "sincronizado desde Sueldo" y no tiene botón de eliminar ahí
+- Balance del mes = ingresos − egresos = se muestra explícitamente como "tu presupuesto disponible este mes" (reemplaza al viejo presupuesto ajustado manual)
+- Desglose por categoría de egresos con barras de porcentaje
+- **Presupuesto de gasto (meta opcional):** el usuario puede definir un límite de gasto para el mes (ej: cobra $1.000.000, quiere ahorrar $250.000 → pone $750.000 de presupuesto). Se muestra barra de progreso, % usado, y cuánto resta o cuánto se excedió. Es un valor único persistente (no se resetea solo cada mes, el usuario lo ajusta cuando quiere)
+- **Decisión de arquitectura:** los movimientos se guardan como array `state.movimientos[]` dentro del mismo doc `usuarios/{uid}` (mismo mecanismo de sync que el resto del state), no como subcolección Firestore separada. Se eligió así por simplicidad; si el volumen de movimientos crece mucho, evaluar migrar a subcolección `usuarios/{uid}/movimientos/{id}`
 
 ### Pilar 2 — Bienestar financiero
-- IBF semanal (5 preguntas, score 0-100)
-- Landing con lógica de días + emergentes inline
-- Acción semanal generada por IA (via /api/chat)
-- Comparación anónima con pares (743 usuarios simulados)
-- Historial IBF + tab historial emocional
-- Editor de registros IBF
+- IBF semanal (5 preguntas, score 0-100), sin cambios esta sesión
+- Historial IBF + tab historial emocional, sin cambios
 
 ### Pilar 3 — Memoria de compras
-- Catálogo 258 productos en 15 categorías
-- Modal 2 pasos con productos propios "MIO" primero
-- Detalle por producto: sparkline, métricas, historial editable
-- Alertas cuando producto sube >150% del IPC del rubro
-- Canasta personalizada: "Tu inflación real" vs IPC oficial
+- Sin cambios esta sesión. Pendiente a futuro: carga masiva de compra que combine el registro de productos con el egreso de dinero en un solo paso (ver Próximas construcciones)
 
 ### Asistente financiero (Premium)
-- Chat con system prompt completo
-- Backend: /api/chat → Anthropic API (claude-sonnet-4-5)
-- `enterkeyhint="send"` → teclado mobile muestra botón Enviar
-- Input se limpia y mantiene foco después de enviar
-- Acceso controlado por `esPremium()`
-- Flag `asistenteInicializado` evita doble mensaje de bienvenida
+- Reencuadrado como **asistente de economía familiar**, no solo calculadora de sueldo vs inflación
+- Contexto ampliado: ahora recibe también el balance de ingresos/egresos del mes, las categorías con más gasto, y el presupuesto de gasto definido (si existe)
 
-### Perfil
-- Nombre, edad, ocupación, provincia, situación familiar
-- Avatar con inicial en dashboard
-- Saludo personalizado según hora
-- Badge de plan (Premium / Duo / Beta / gratuito)
+### UX / Responsive
+- Bottom nav: 7 ítems (Inicio, Sueldo, Bienestar, Movimientos, Compras, Asistente, Historial)
+- **Desktop:** el layout mobile ahora se centra en pantallas grandes (max-width 500px, con borde y sombra tipo "frame de app") en vez de estirarse a todo el ancho. Aplica a `#app`, `#bottom-nav` y los modales de fondo completo
 
-### UX
-- Bottom nav `position: fixed` — siempre visible por encima de las pantallas
-- Pantallas con `padding-bottom: 70px` para no quedar tapadas por el nav
-- Botón `?` contextual en todas las pantallas
-- Logo completo + isotipo integrados
-- Favicon + PWA icons
+## Lecciones aprendidas esta sesión (importante para no repetir)
 
-### Calculadora pública (index.html)
-- IPC hardcodeado 2021-2026
-- Input tipo `text` con formato argentino (punto miles, coma decimal, max 8 dígitos)
-- En mobile: input y botón en columna
-- Brevo: fetch directo con `mode: no-cors` (sin script externo)
-- OG tags configurados
+1. **Bug crítico de sintaxis ya corregido:** había un `font-family:'DM Sans'` con comillas simples sin escapar dentro de un string JS ya delimitado por comillas simples (botón "Anterior" del cuestionario IBF). Esto rompía **todo el script de la app**, no solo esa pantalla — un error de sintaxis tira abajo el `<script>` completo. Cuidado con anidar comillas del mismo tipo en strings armados a mano.
+2. **Cascada CSS y media queries:** un media query nuevo agregado *antes* en el archivo puede perder contra una regla vieja sin media query que aparece *después*, aunque el media query matchee — con igual especificidad gana la última en orden de aparición. Los overrides de escritorio ahora están al final del `<style>` a propósito.
+3. **`mesActual()` vs `mesRealActual()`:** `mesActual()` existe para cálculos de inflación y hace *fallback* al último mes del IPC cargado si el mes real todavía no tiene dato — esto es correcto para inflación, pero causaba que Movimientos mostrara un mes viejo y que los egresos/ingresos cargados con fecha de hoy no aparecieran en el balance (no matcheaban el mes filtrado). Se creó `mesRealActual()`, que siempre devuelve el mes calendario real sin depender del IPC, y se usa en todo lo relacionado a Movimientos. **Regla general: todo lo que no dependa de inflación debe usar `mesRealActual()`, no `mesActual()`.**
 
 ## Reglas Firestore actuales
 ```
@@ -138,23 +112,27 @@ service cloud.firestore {
 ```
 
 ## Versión actual
-**v0.2.0** — beta cerrada
+**v0.3.0** — beta cerrada, con módulo de Ingresos y egresos
 
 ## Deuda técnica
-- IPC hardcodeado hasta 2026-03 — actualizar con datos recientes de INDEC
+- **IPC hardcodeado y desactualizado** (por eso apareció el bug de "mes fijo" documentado arriba) — actualizar con datos recientes de INDEC es urgente, no solo por precisión sino porque ahora sabemos que afecta funcionalidad de otras secciones
 - Comparación con pares simulada — conectar Firebase cuando haya 50+ usuarios
 - Nombre de app en pantalla de redirección de MP no aparece (cosmético)
+- Presupuesto de gasto es un valor único persistente, no por mes — si el usuario quiere una meta distinta cada mes tiene que cambiarlo a mano
 
 ## Próximas construcciones
-- **Notas de parche** — badge en nav + modal de novedades (pendiente texto del chat de Estrategia)
-- Pasar MP a producción cuando llegue setup fiscal (contador + monotributo + PV AFIP)
+- Carga masiva de compra: combinar el registro de producto (Pilar 3) con el egreso de dinero (Ingresos y egresos) en un solo flujo
+- Notas de parche — badge en nav + modal de novedades (pendiente texto del chat de Estrategia)
+- Pasar MP a producción cuando se resuelva el bloqueo fiscal (monotributo)
 - PWA Google Play / TWA (V3)
 - IPC dinámico automático (V3)
 
 ## Estado actual
-Todo en producción. Beta cerrada activa. PWA funcionando. SW actualizado para garantizar deploys inmediatos en todos los dispositivos. Fuente migrada a DM Sans en app.html e index.html.
+M�dulo de Ingresos y egresos completo y funcional (pendiente de que Adrián confirme el flujo end-to-end tras el fix del bug de fecha/mes). Bug crítico de sintaxis corregido. Responsive de escritorio corregido. Sueldo ahora editable mes a mes y sincronizado con Movimientos. Presupuesto manual del onboarding eliminado, reemplazado por balance derivado + meta de gasto opcional.
 
 ## Tareas pendientes
-1. Recibir texto de notas de parche del chat de Estrategia → implementar badge + modal
-2. Actualizar IPC con datos recientes de INDEC
-3. Cuando llegue setup fiscal: pasar MP a producción + activar monotributo
+1. Adrián: probar en producción que los movimientos cargados con fecha de hoy aparecen correctamente en el balance (bug recién corregido)
+2. Actualizar IPC con datos recientes de INDEC — ahora es más urgente porque afecta más que solo el cálculo de inflación
+3. Recibir texto de notas de parche del chat de Estrategia → implementar badge + modal
+4. Cuando haya ingresos: pasar MP a producción + activar monotributo
+5. Evaluar con Adrián si el presupuesto de gasto debería ser por mes en vez de un valor único persistente
