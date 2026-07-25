@@ -106,41 +106,6 @@ html,body{
   height:100%;
 }
 
-/* ── Desktop: centrar el layout mobile en vez de estirarlo ── */
-@media (min-width:640px){
-  html,body{ overflow:auto; }
-  body{
-    background:var(--bg2);
-    display:flex;
-    justify-content:center;
-  }
-  #app{
-    max-width:480px;
-    width:100%;
-    height:100vh;
-    height:100dvh;
-    border-left:1px solid var(--border);
-    border-right:1px solid var(--border);
-    box-shadow:0 0 60px rgba(0,0,0,0.4);
-  }
-  #bottom-nav{
-    left:50%;
-    right:auto;
-    width:100%;
-    max-width:480px;
-    transform:translateX(-50%);
-  }
-  #modal-compra, #modal-editar-prod, #modal-editar-ibf, #modal-movimiento, #modal-editar-sueldo{
-    justify-content:center;
-  }
-  #modal-compra > div, #modal-editar-prod > div, #modal-editar-ibf > div, #modal-movimiento > div, #modal-editar-sueldo > div{
-    max-width:480px;
-  }
-  #modal-duo{
-    justify-content:center;
-  }
-}
-
 /* ── Screens ── */
 .screen{
   position:absolute;
@@ -850,6 +815,42 @@ select option{background:var(--bg3)}
 .hist-mood{font-size:14px;color:var(--text)}
 .hist-trend{font-size:12px;font-weight:500}
 
+/* ── Desktop: centrar el layout mobile en vez de estirarlo ── */
+/* Va al final del stylesheet a proposito: con igual especificidad, la ultima regla gana */
+@media (min-width:640px){
+  html,body{ overflow:auto; }
+  body{
+    background:var(--bg2);
+    display:flex;
+    justify-content:center;
+  }
+  #app{
+    max-width:480px;
+    width:100%;
+    height:100vh;
+    height:100dvh;
+    border-left:1px solid var(--border);
+    border-right:1px solid var(--border);
+    box-shadow:0 0 60px rgba(0,0,0,0.4);
+  }
+  #bottom-nav{
+    left:50%;
+    right:auto;
+    width:100%;
+    max-width:480px;
+    transform:translateX(-50%);
+  }
+  #modal-compra, #modal-editar-prod, #modal-editar-ibf, #modal-movimiento, #modal-editar-sueldo{
+    justify-content:center;
+  }
+  #modal-compra > div, #modal-editar-prod > div, #modal-editar-ibf > div, #modal-movimiento > div, #modal-editar-sueldo > div{
+    max-width:480px;
+  }
+  #modal-duo{
+    justify-content:center;
+  }
+}
+
 </style>
   <meta property="og:title" content="Peso Real - Finanzas para argentinos">
   <meta property="og:description" content="Dashboard en pesos reales, IBF semanal y memoria de precios. La verdad de tu situacion financiera.">
@@ -998,20 +999,9 @@ select option{background:var(--bg3)}
 
       <!-- Step 2 -->
       <div class="onb-step" id="step-2">
-        <div class="onb-kicker">Tu presupuesto</div>
-        <div class="onb-title">¿Cuánto gastás por mes?</div>
-        <div class="onb-sub">Ingresá tu gasto mensual actual - lo que gastás en total entre alquiler, comida, servicios y todo lo demás.</div>
-
-        <div class="field">
-          <label>Gasto mensual total (aproximado)</label>
-          <div class="input-wrap">
-            <span class="prefix">$</span>
-            <input type="text" id="inp-presupuesto" placeholder="0" inputmode="decimal" autocomplete="off">
-          </div>
-          <div style="font-size:12px;color:var(--text3);margin-top:8px;line-height:1.5">
-            Este número es tu punto de partida. Peso Real lo va a ajustar automáticamente cada mes con el IPC del INDEC - así siempre sabés cuánto deberías estar gastando para mantener el mismo nivel de vida. Más adelante también vas a poder compararlo contra tus gastos reales.
-          </div>
-        </div>
+        <div class="onb-kicker">Último paso</div>
+        <div class="onb-title">¿Ahorrás algo por mes?</div>
+        <div class="onb-sub">Tu presupuesto disponible cada mes lo calculamos solo, a partir de lo que vayas cargando en Ingresos y egresos.</div>
 
         <div class="field">
           <label>¿Ahorrás algo por mes?</label>
@@ -1061,7 +1051,8 @@ select option{background:var(--bg3)}
         <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em">Balance del mes</div>
         <div style="font-size:12px;color:var(--accent)">Ver detalle →</div>
       </div>
-      <div class="mov-balance-value gain" id="dash-mov-balance" style="font-family:'DM Sans',sans-serif;font-size:32px;margin-bottom:14px">-</div>
+      <div class="mov-balance-value gain" id="dash-mov-balance" style="font-family:'DM Sans',sans-serif;font-size:32px;margin-bottom:2px">-</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:12px">tu presupuesto disponible este mes</div>
       <div style="display:flex;gap:24px">
         <div>
           <div style="font-size:11px;color:var(--text3)">Ingresos</div>
@@ -1086,16 +1077,6 @@ select option{background:var(--bg3)}
         <div class="mini-card-label">Sueldo USD</div>
         <div class="mini-card-value" id="dash-usd">-</div>
         <div class="mini-card-sub">TC MEP: <span id="dash-tc-mep">-</span></div>
-      </div>
-    </div>
-
-    <!-- Presupuesto ajustado -->
-    <div class="mini-card" style="margin-bottom:16px;display:block">
-      <div class="mini-card-label">Presupuesto ajustado este mes</div>
-      <div class="mini-card-value" id="dash-presup">-</div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">
-        <div class="mini-card-sub">tu gasto de referencia actualizado por inflación</div>
-        <div id="dash-presup-delta" style="font-size:12px;font-weight:500"></div>
       </div>
     </div>
 
@@ -1529,7 +1510,8 @@ select option{background:var(--bg3)}
 
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px">
       <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px" id="mov-mes-label">-</div>
-      <div class="mov-balance-value gain" id="mov-balance" style="font-family:'DM Sans',sans-serif;font-size:34px;margin-bottom:14px">-</div>
+      <div class="mov-balance-value gain" id="mov-balance" style="font-family:'DM Sans',sans-serif;font-size:34px;margin-bottom:2px">-</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:12px">tu presupuesto disponible este mes</div>
       <div style="display:flex;gap:24px">
         <div>
           <div style="font-size:11px;color:var(--text3)">Ingresos</div>
@@ -1933,12 +1915,6 @@ function nextStep() {
 }
 
 function finishOnboarding() {
-  const presup = parseMonto(document.getElementById('inp-presupuesto').value);
-  if (!presup || presup <= 0) {
-    document.getElementById('inp-presupuesto').focus();
-    return;
-  }
-  state.presupuesto = presup;
   state.ahorro = document.getElementById('inp-ahorro').value;
   state.mesOnboarding = mesActual();
   state.onboardingDone = true;
@@ -2213,30 +2189,6 @@ function buildDashboard() {
   const sueldoUSD = sueldo / TC_MEP;
   document.getElementById('dash-usd').textContent = fUSD(sueldoUSD);
   document.getElementById('dash-tc-mep').textContent = '$ ' + Math.round(TC_MEP).toLocaleString('es-AR');
-
-  // Presupuesto ajustado
-  const mesOnboarding = state.mesOnboarding || mesHoy;
-  const keys = Object.keys(IPC).sort();
-  const idxOnb = keys.indexOf(mesOnboarding);
-  const idxHoy = keys.indexOf(mesHoy);
-  const inflTotal = idxOnb >= 0 && idxHoy > idxOnb ? ipcAcumulado(mesOnboarding, mesHoy) : 0;
-  const presupAjustado = state.presupuesto * (1 + inflTotal / 100);
-  document.getElementById('dash-presup').textContent = fARS(presupAjustado);
-
-  // Delta del último mes - cuánto subió respecto al mes anterior
-  const mesAnterior = keys[Math.max(0, idxHoy - 1)];
-  const inflMesAnterior = mesAnterior && idxOnb >= 0 && keys.indexOf(mesAnterior) > idxOnb
-    ? ipcAcumulado(mesOnboarding, mesAnterior) : 0;
-  const presupMesAnterior = state.presupuesto * (1 + inflMesAnterior / 100);
-  const deltaPresup = presupAjustado - presupMesAnterior;
-  const deltaEl = document.getElementById('dash-presup-delta');
-  if (deltaPresup > 0 && inflTotal > 0) {
-    const ipcMes = IPC[mesHoy] || 0;
-    deltaEl.textContent = `+${fARS(deltaPresup)} este mes (IPC ${ipcMes}%)`;
-    deltaEl.style.color = 'var(--red)';
-  } else {
-    deltaEl.textContent = '';
-  }
 
   // IBF
   const ibfScore = state.ibfScore || null;
@@ -3723,7 +3675,7 @@ const AYUDA_CONTENIDO = {
     items: [
       {
         q: 'Que sabe el asistente sobre mi?',
-        a: 'El asistente conoce tu sueldo actual y el de referencia, tu variacion real de poder adquisitivo, tu presupuesto, tu IBF y tendencia emocional, los productos de tu canasta y tu inflacion real personal. Usa todo ese contexto para darte respuestas especificas, no genericas.'
+        a: 'El asistente conoce tu sueldo actual y el de referencia, tu variacion real de poder adquisitivo, tu balance de ingresos y egresos del mes, tu IBF y tendencia emocional, los productos de tu canasta y tu inflacion real personal. Usa todo ese contexto para darte respuestas especificas, no genericas.'
       },
       {
         q: 'Que tipo de preguntas puedo hacerle?',
@@ -4711,7 +4663,6 @@ function construirContextoUsuario() {
   const inflTotal = ipcAcumulado(mesRef, mesHoy);
   const sueldoNecesario = sueldoRef * (1 + inflTotal / 100);
   const varReal = sueldoNecesario > 0 ? ((sueldo / sueldoNecesario) - 1) * 100 : 0;
-  const presupuesto = s.presupuesto || 0;
   const ibfScore = s.ibfScore || null;
   const ibfHistory = s.ibfHistory || [];
   const ahorro = s.ahorro || 'no';
@@ -4753,7 +4704,7 @@ function construirContextoUsuario() {
 
   return {
     sueldo, sueldoRef, mesRefLabel, inflTotal, varReal, sueldoNecesario,
-    presupuesto, ibfScore, ibfHistory, ahorro, ahorroLabels,
+    ibfScore, ibfHistory, ahorro, ahorroLabels,
     tendenciaIBF, inflRealTexto, productosAlerta, productos,
     ipcMesActual: IPC[mesHoy] || 0,
     tcMEP: TC_MEP,
@@ -4775,7 +4726,6 @@ PERFIL DEL USUARIO:
 - Sueldo en ${ctx.mesRefLabel}: $${ctx.sueldoRef.toLocaleString('es-AR')} ARS
 - Inflacion acumulada desde ${ctx.mesRefLabel}: ${ctx.inflTotal.toFixed(1)}%
 - Variacion real del poder adquisitivo: ${ctx.varReal >= 0 ? '+' : ''}${ctx.varReal.toFixed(1)}% (${ctx.varReal >= 0 ? 'GANO contra la inflacion' : 'PERDIO contra la inflacion'})
-- Presupuesto mensual base: $${ctx.presupuesto.toLocaleString('es-AR')} ARS
 - Habito de ahorro: ${ctx.ahorroLabels[ctx.ahorro]}
 - Indice de Bienestar Financiero (IBF): ${ctx.ibfScore !== null ? ctx.ibfScore + '/100' : 'sin registro aun'} ${ctx.tendenciaIBF ? '(tendencia: ' + ctx.tendenciaIBF + ')' : ''}
 - IPC del mes actual: ${ctx.ipcMesActual.toFixed(1)}%
@@ -5335,7 +5285,6 @@ function init() {
   poblarMeses();
   bindMontoInput('inp-sueldo');
   bindMontoInput('inp-sueldo-ref');
-  bindMontoInput('inp-presupuesto');
   bindMontoInput('mov-monto');
   bindMontoInput('edit-sueldo-monto');
 
