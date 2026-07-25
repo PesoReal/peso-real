@@ -825,7 +825,7 @@ select option{background:var(--bg3)}
     justify-content:center;
   }
   #app{
-    max-width:480px;
+    max-width:500px;
     width:100%;
     height:100vh;
     height:100dvh;
@@ -837,14 +837,14 @@ select option{background:var(--bg3)}
     left:50%;
     right:auto;
     width:100%;
-    max-width:480px;
+    max-width:500px;
     transform:translateX(-50%);
   }
-  #modal-compra, #modal-editar-prod, #modal-editar-ibf, #modal-movimiento, #modal-editar-sueldo{
+  #modal-compra, #modal-editar-prod, #modal-editar-ibf, #modal-movimiento, #modal-editar-sueldo, #modal-editar-presupuesto{
     justify-content:center;
   }
-  #modal-compra > div, #modal-editar-prod > div, #modal-editar-ibf > div, #modal-movimiento > div, #modal-editar-sueldo > div{
-    max-width:480px;
+  #modal-compra > div, #modal-editar-prod > div, #modal-editar-ibf > div, #modal-movimiento > div, #modal-editar-sueldo > div, #modal-editar-presupuesto > div{
+    max-width:500px;
   }
   #modal-duo{
     justify-content:center;
@@ -1524,6 +1524,27 @@ select option{background:var(--bg3)}
       </div>
     </div>
 
+    <div id="mov-presupuesto-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px 18px;margin-bottom:20px">
+      <div id="mov-presupuesto-vacio">
+        <div style="font-size:13px;color:var(--text2);margin-bottom:10px">¿Querés ponerte un límite de gasto para este mes?</div>
+        <button onclick="abrirEditarPresupuesto()" style="background:transparent;border:1px solid var(--border);border-radius:20px;color:var(--accent);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:8px 16px;cursor:pointer">Definir presupuesto de gasto</button>
+      </div>
+      <div id="mov-presupuesto-lleno" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+          <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em">Presupuesto de gasto</div>
+          <button onclick="abrirEditarPresupuesto()" style="background:none;border:none;color:var(--accent);font-size:12px;cursor:pointer">Editar</button>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+          <span id="mov-presupuesto-usado-label">-</span>
+          <span id="mov-presupuesto-pct">-</span>
+        </div>
+        <div style="height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;margin-bottom:8px">
+          <div id="mov-presupuesto-bar" style="height:100%;width:0%;background:var(--accent);border-radius:4px;transition:width 0.3s"></div>
+        </div>
+        <div id="mov-presupuesto-resto" style="font-size:12px;color:var(--text3)"></div>
+      </div>
+    </div>
+
     <div style="display:flex;gap:10px;margin-bottom:20px">
       <button onclick="abrirFormMovimiento('egreso')" style="flex:1;background:var(--red-bg);border:1px solid rgba(255,90,90,0.3);border-radius:var(--radius-sm);color:var(--red);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;padding:14px;cursor:pointer">+ Egreso</button>
       <button onclick="abrirFormMovimiento('ingreso')" style="flex:1;background:var(--green-bg);border:1px solid rgba(74,222,128,0.3);border-radius:var(--radius-sm);color:var(--green);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;padding:14px;cursor:pointer">+ Ingreso</button>
@@ -1638,6 +1659,26 @@ select option{background:var(--bg3)}
       </div>
     </div>
     <button onclick="guardarSueldoActualizado()" class="btn-primary" style="width:100%;margin-top:18px">Guardar</button>
+  </div>
+</div>
+
+<!-- ── Modal presupuesto de gasto ── -->
+<div id="modal-editar-presupuesto" style="display:none;position:fixed;inset:0;z-index:150;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:flex-end">
+  <div style="background:var(--bg2);border-radius:20px 20px 0 0;padding:28px 24px calc(28px + var(--safe-bottom));width:100%;border-top:1px solid var(--border)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="font-family:'DM Sans',sans-serif;font-size:20px">Presupuesto de gasto</div>
+      <button onclick="cerrarEditarPresupuesto()" style="background:var(--bg3);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;color:var(--text2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">&times;</button>
+    </div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:16px">Definí cuánto querés gastar como máximo este mes. Lo vamos a comparar contra tus egresos cargados. Podés cambiarlo cuando quieras.</div>
+    <div class="field">
+      <label>Presupuesto de gasto para este mes</label>
+      <div class="input-wrap">
+        <span class="prefix">$</span>
+        <input type="text" id="edit-presupuesto-monto" inputmode="decimal" autocomplete="off">
+      </div>
+    </div>
+    <button onclick="guardarPresupuestoObjetivo()" class="btn-primary" style="width:100%;margin-top:18px">Guardar</button>
+    <button id="btn-quitar-presupuesto" onclick="quitarPresupuestoObjetivo()" style="width:100%;background:none;border:none;color:var(--text3);font-size:13px;padding:12px;cursor:pointer;display:none">Quitar presupuesto</button>
   </div>
 </div>
 
@@ -1852,6 +1893,13 @@ function mesActual() {
   return keys.includes(key) ? key : keys[keys.length - 1];
 }
 
+// Mes calendario real, sin depender de si el IPC ya tiene dato cargado.
+// Usar esta para todo lo que sea movimientos/ingresos/egresos (no depende del IPC).
+function mesRealActual() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+}
+
 function mesLabel(key) {
   const [y, m] = key.split('-');
   return `${MESES[parseInt(m)-1].substring(0,3)} ${y}`;
@@ -2055,7 +2103,7 @@ function actualizarTipoMovimientoUI() {
     btnEgreso.style.background = 'transparent';
     btnEgreso.style.color = 'var(--text2)';
     btnEgreso.style.borderColor = 'var(--border)';
-    sel.innerHTML = Object.entries(catsIngreso).map(([k, v]) => `<option value="${k}">${v.icono} ${v.label}</option>`).join('');
+    sel.innerHTML = Object.entries(catsIngreso).filter(([k]) => k !== 'sueldo').map(([k, v]) => `<option value="${k}">${v.icono} ${v.label}</option>`).join('');
   }
 }
 
@@ -2097,7 +2145,7 @@ function eliminarMovimiento(id) {
 }
 
 function buildMovimientos() {
-  const mesHoy = mesActual();
+  const mesHoy = mesRealActual();
   const { ingresos, egresos, balance } = calcularBalanceMes(mesHoy);
 
   document.getElementById('mov-mes-label').textContent = mesLabel(mesHoy);
@@ -2106,6 +2154,34 @@ function buildMovimientos() {
   const balEl = document.getElementById('mov-balance');
   balEl.textContent = fARS(balance);
   balEl.className = `mov-balance-value ${balance >= 0 ? 'gain' : 'loss'}`;
+
+  // Presupuesto de gasto (meta que el usuario se puso, opcional)
+  const objetivo = state.presupuestoObjetivo || 0;
+  const vacioEl = document.getElementById('mov-presupuesto-vacio');
+  const llenoEl = document.getElementById('mov-presupuesto-lleno');
+  if (objetivo > 0) {
+    vacioEl.style.display = 'none';
+    llenoEl.style.display = 'block';
+    const pct = Math.min(100, (egresos / objetivo) * 100);
+    const resto = objetivo - egresos;
+    const color = pct >= 100 ? 'var(--red)' : pct >= 80 ? 'var(--amber)' : 'var(--accent)';
+    document.getElementById('mov-presupuesto-usado-label').textContent = `${fARS(egresos)} de ${fARS(objetivo)}`;
+    document.getElementById('mov-presupuesto-pct').textContent = `${pct.toFixed(0)}%`;
+    const barEl = document.getElementById('mov-presupuesto-bar');
+    barEl.style.width = pct + '%';
+    barEl.style.background = color;
+    const restoEl = document.getElementById('mov-presupuesto-resto');
+    if (resto >= 0) {
+      restoEl.textContent = `Te quedan ${fARS(resto)} disponibles este mes.`;
+      restoEl.style.color = 'var(--text3)';
+    } else {
+      restoEl.textContent = `Te pasaste por ${fARS(Math.abs(resto))} del presupuesto que te pusiste.`;
+      restoEl.style.color = 'var(--red)';
+    }
+  } else {
+    vacioEl.style.display = 'block';
+    llenoEl.style.display = 'none';
+  }
 
   // Desglose por categoría
   const desglose = desglosePorCategoria(mesHoy);
@@ -2143,10 +2219,10 @@ function buildMovimientos() {
         <div style="width:36px;height:36px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${info.icono}</div>
         <div style="flex:1;min-width:0">
           <div style="font-size:14px;color:var(--text)">${m.concepto}</div>
-          <div style="font-size:12px;color:var(--text3)">${info.label} · ${fechaLabel}</div>
+          <div style="font-size:12px;color:var(--text3)">${info.label} · ${fechaLabel}${m.origen === 'sueldo' ? ' · sincronizado desde Sueldo' : ''}</div>
         </div>
         <div style="color:${color};font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;white-space:nowrap">${signo}${fARS(m.monto)}</div>
-        <button onclick="eliminarMovimiento('${m.id}')" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:4px 2px">&times;</button>
+        ${m.origen === 'sueldo' ? '' : `<button onclick="eliminarMovimiento('${m.id}')" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:4px 2px">&times;</button>`}
       </div>`;
     }).join('');
   }
@@ -2160,8 +2236,11 @@ function buildDashboard() {
   document.getElementById('dash-date').innerHTML = `${now.getDate()} ${MESES[now.getMonth()]}<br>${now.getFullYear()}`;
   actualizarDashboardConPerfil();
 
+  // Asegura que el sueldo cargado (onboarding o edición) esté reflejado como ingreso este mes
+  if (sincronizarSueldoComoMovimiento(state.sueldo)) saveState();
+
   // Balance de movimientos del mes
-  const balMes = calcularBalanceMes(mesActual());
+  const balMes = calcularBalanceMes(mesRealActual());
   document.getElementById('dash-mov-ingresos').textContent = fARS(balMes.ingresos);
   document.getElementById('dash-mov-egresos').textContent = fARS(balMes.egresos);
   const dashBalEl = document.getElementById('dash-mov-balance');
@@ -2259,6 +2338,63 @@ function cerrarEditarSueldo() {
   document.getElementById('modal-editar-sueldo').style.display = 'none';
 }
 
+// Refleja el sueldo cargado en la sección Sueldo como un ingreso automático
+// en Movimientos, del mes en curso. Si ya existe uno para este mes, lo actualiza
+// en vez de duplicarlo.
+function sincronizarSueldoComoMovimiento(monto) {
+  if (!monto || monto <= 0) return false;
+  if (!state.movimientos) state.movimientos = [];
+  const mesHoy = mesRealActual();
+  const fecha = new Date().toISOString().slice(0, 10);
+  const idx = state.movimientos.findIndex(m => m.origen === 'sueldo' && mesKeyDeFecha(m.fecha) === mesHoy);
+  if (idx >= 0) {
+    if (state.movimientos[idx].monto === monto) return false;
+    state.movimientos[idx].monto = monto;
+    state.movimientos[idx].fecha = fecha;
+    return true;
+  }
+  state.movimientos.push({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    tipo: 'ingreso',
+    categoria: 'sueldo',
+    concepto: 'Sueldo',
+    monto,
+    fecha,
+    origen: 'sueldo',
+  });
+  return true;
+}
+
+function abrirEditarPresupuesto() {
+  document.getElementById('edit-presupuesto-monto').value = state.presupuestoObjetivo ? String(state.presupuestoObjetivo) : '';
+  document.getElementById('btn-quitar-presupuesto').style.display = state.presupuestoObjetivo ? 'block' : 'none';
+  document.getElementById('modal-editar-presupuesto').style.display = 'flex';
+  setTimeout(() => document.getElementById('edit-presupuesto-monto').focus(), 100);
+}
+
+function cerrarEditarPresupuesto() {
+  document.getElementById('modal-editar-presupuesto').style.display = 'none';
+}
+
+function guardarPresupuestoObjetivo() {
+  const monto = parseMonto(document.getElementById('edit-presupuesto-monto').value);
+  if (!monto || monto <= 0) {
+    document.getElementById('edit-presupuesto-monto').focus();
+    return;
+  }
+  state.presupuestoObjetivo = monto;
+  saveState();
+  cerrarEditarPresupuesto();
+  buildMovimientos();
+}
+
+function quitarPresupuestoObjetivo() {
+  state.presupuestoObjetivo = null;
+  saveState();
+  cerrarEditarPresupuesto();
+  buildMovimientos();
+}
+
 function guardarSueldoActualizado() {
   const monto = parseMonto(document.getElementById('edit-sueldo-monto').value);
   if (!monto || monto <= 0) {
@@ -2266,6 +2402,7 @@ function guardarSueldoActualizado() {
     return;
   }
   state.sueldo = monto;
+  sincronizarSueldoComoMovimiento(monto);
   saveState();
   cerrarEditarSueldo();
   buildSueldo();
@@ -3668,6 +3805,14 @@ const AYUDA_CONTENIDO = {
         q: 'El balance se reinicia cada mes?',
         a: 'Si. El balance y el desglose que ves reflejan solo el mes en curso. Los movimientos anteriores quedan guardados y podes revisarlos cambiando la fecha al cargar uno nuevo.'
       },
+      {
+        q: 'Por que no puedo cargar mi sueldo como ingreso aca?',
+        a: 'El sueldo se carga desde la seccion Sueldo (boton "Actualizar sueldo de este mes") y se refleja automaticamente aca como ingreso, para no cargarlo dos veces.'
+      },
+      {
+        q: 'Que es el presupuesto de gasto?',
+        a: 'Es un limite que vos elegis para tus egresos del mes (por ejemplo, si cobras $1.000.000 y queres ahorrar $250.000, ponelo en $750.000). La app te muestra cuanto llevas gastado contra ese limite y cuanto te queda. Es opcional y lo podes cambiar cuando quieras.'
+      },
     ]
   },
   asistente: {
@@ -4698,9 +4843,10 @@ function construirContextoUsuario() {
     return varProd > (IPC[mesHoy] || 3) * 1.5;
   });
 
-  // Balance de ingresos/egresos del mes
-  const balMes = calcularBalanceMes(mesHoy);
-  const desgloseCategorias = desglosePorCategoria(mesHoy);
+  // Balance de ingresos/egresos del mes (mes calendario real, no el del IPC)
+  const mesRealHoy = mesRealActual();
+  const balMes = calcularBalanceMes(mesRealHoy);
+  const desgloseCategorias = desglosePorCategoria(mesRealHoy);
 
   return {
     sueldo, sueldoRef, mesRefLabel, inflTotal, varReal, sueldoNecesario,
@@ -4710,6 +4856,7 @@ function construirContextoUsuario() {
     tcMEP: TC_MEP,
     perfil: s.perfil || {},
     balMes, desgloseCategorias,
+    presupuestoObjetivo: s.presupuestoObjetivo || null,
   };
 }
 
@@ -4734,6 +4881,7 @@ ${ctx.productosAlerta.length > 0 ? '- Productos que subieron mas que la inflacio
 ${ctx.productos.length > 0 ? '- Cantidad de productos en su canasta personal: ' + ctx.productos.length : ''}
 ${ctx.balMes && (ctx.balMes.ingresos > 0 || ctx.balMes.egresos > 0) ? `- Balance del mes: ingresos $${ctx.balMes.ingresos.toLocaleString('es-AR')}, egresos $${ctx.balMes.egresos.toLocaleString('es-AR')}, balance ${ctx.balMes.balance >= 0 ? '+' : ''}$${ctx.balMes.balance.toLocaleString('es-AR')}` : ''}
 ${ctx.desgloseCategorias && ctx.desgloseCategorias.length > 0 ? '- Categorias con mas gasto este mes: ' + ctx.desgloseCategorias.slice(0,3).map(d => d.categoria + ' (' + d.pct.toFixed(0) + '%)').join(', ') : ''}
+${ctx.presupuestoObjetivo ? '- Se puso un presupuesto de gasto de $' + ctx.presupuestoObjetivo.toLocaleString('es-AR') + ' para este mes' + (ctx.balMes.egresos > ctx.presupuestoObjetivo ? ' y ya lo supero' : '') : ''}
 
 CONTEXTO ECONOMICO ARGENTINA (${new Date().getFullYear()}):
 - Inflacion mensual actual: ~${ctx.ipcMesActual.toFixed(1)}%
@@ -5287,6 +5435,7 @@ function init() {
   bindMontoInput('inp-sueldo-ref');
   bindMontoInput('mov-monto');
   bindMontoInput('edit-sueldo-monto');
+  bindMontoInput('edit-presupuesto-monto');
 
   // Firebase _onAuthStateChanged maneja la navegacion automaticamente
   // No hacer auto-login desde localStorage
