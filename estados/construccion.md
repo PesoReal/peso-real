@@ -132,7 +132,7 @@ service cloud.firestore {
 - IPC dinámico automático (V3)
 
 ## Estado actual
-M�dulo de Ingresos y egresos con navegación entre meses y desglose colapsable. Sueldo con selector de mes (permite corregir meses anteriores sin afectar el sueldo vigente). Ajuste de UI en la comparación de Bienestar (3 recuadros alineados). Esta sesión fue de ajustes de UX/UI y una feature nueva (selector de mes en sueldo), sin bugs críticos de los que veníamos arrastrando.
+Módulo de Ingresos y egresos con navegación entre meses y desglose colapsable. Sueldo con selector de mes (permite corregir meses anteriores sin afectar el sueldo vigente). Ajuste de UI en la comparación de Bienestar (3 recuadros alineados). Esta sesión fue de ajustes de UX/UI y una feature nueva (selector de mes en sueldo), sin bugs críticos de los que veníamos arrastrando.
 
 ## Tareas pendientes
 1. Adrián: probar el selector de mes en el modal de sueldo, en especial corregir un mes pasado (confirmar que no toca el sueldo vigente de hoy)
