@@ -8,122 +8,117 @@
 
 | Área | Estado |
 |------|--------|
-| Producto | 🟡 V2 activa — módulo ingresos/egresos construido, beta cerrada en curso |
+| Producto | ✅ V2 completa y en producción — beta cerrada activa |
 | Fiscal | 🔴 Bloqueado — monotributo no iniciado, contador no consultado |
-| Marketing | 🟢 Twitter activo, julio preparado, Reddit parcialmente activo |
-| Ingresos | 🔴 MRR $0 — Mercado Pago en sandbox, producción bloqueada por fiscal |
+| Marketing | 🟡 Twitter activo (junio live), julio pendiente cargar en Typefully |
+| Ingresos | 🔴 $0 MRR — MP en sandbox, producción bloqueada por fiscal |
 
 ---
 
 ## 🔴 Bloqueadores activos
 
-1. **Contador no consultado** — desbloquea toda la cadena fiscal; sin esto no se puede cobrar
-2. **Monotributo no inscripto** — obligatorio antes de cobrar el primer peso (AFIP)
+1. **Contador no consultado** — desbloquea toda la cadena fiscal y el cobro
+2. **Monotributo no inscripto** — sin esto no se puede cobrar legalmente ni activar MP producción
 3. **Punto de venta AFIP no tramitado** — necesario para facturación electrónica tipo C
-4. **Mercado Pago en sandbox** — no se puede activar producción sin monotributo + PV
-5. **Reddit age-gated** — cuenta sin antigüedad suficiente para publicar en r/argentina Clasificados
+4. **Mercado Pago en sandbox** — solo pasa a producción post-monotributo y PV
+5. **IPC hardcodeado y desactualizado** — afecta cálculos centrales del producto (sueldo real, poder adquisitivo)
 
 ---
 
 ## 📌 Últimas decisiones tomadas
 
-- **Reenfoque de producto aprobado** (jul 2026): Peso Real evoluciona de app de poder adquisitivo a gestor financiero personal contextualizado para Argentina
-- **Dashboard de poder adquisitivo** pasa a sección secundaria; ya no es el protagonista del producto
-- **Módulo de ingresos/egresos construido** (jul 2026): navegación entre meses, sueldo sincronizado automáticamente, presupuesto de gasto opcional, desglose colapsable por categoría
-- **Sueldo con selector de mes** (jul 2026): permite corregir meses anteriores sin afectar el sueldo vigente
-- **Integración bancaria descartada para V2**: se valida primero la carga manual
-- **Plan Familiar descartado**: reemplazado por Plan Duo (máx. 2 personas, ARS 12.000/mes)
+- **Lema oficial definido** *(julio 2026):* *"Empezás sin anotar nada. Avanzás tanto como querás."*
+- **Plan Duo congelado en marketing** *(julio 2026):* código funcional pero no se comunica ni vende hasta validar producto para 1 persona
+- **Canasta compartida removida del copy** — no existe en el código, va a V3
+- **Dashboard reorganizado** *(julio 2026):* Movimientos como protagonista, poder adquisitivo como sección secundaria con indicador chico
+- **Sueldo editable mes a mes** *(julio 2026):* selector de mes en modal; corregir mes pasado no toca el sueldo vigente
+- **Posicionamiento resuelto:** IBF = piso sin fricción / Movimientos = techo opcional — funnel de engagement, no contradicción
 
 ---
 
 ## 🔨 Construcción
 
-**Estado:** v0.3.1 — beta cerrada activa. Módulo de ingresos/egresos completo con navegación mensual y desglose colapsable. Sueldo editable por mes. UI de Bienestar alineada.
+**Estado:** v0.3.1 — beta cerrada. Módulo de Movimientos con navegación entre meses y desglose colapsable. Sueldo con selector de mes editable. Ajustes de UI en Bienestar (3 recuadros alineados).
 
-**Próxima tarea:** Filtros de Movimientos por tipo (ingreso/egreso) + rango de fechas custom con memoria permanente de la selección (pedido explícito de Adrián, no construido aún)
+**Próxima tarea:** Filtros de Movimientos por tipo (ingreso/egreso) + rango de fechas custom con memoria permanente — pedido explícito pendiente de construcción.
 
 **Deuda técnica (máx 3):**
-1. **IPC hardcodeado y desactualizado** — urgente, afecta cálculos centrales de inflación
-2. Presupuesto de gasto es valor único persistente, no por mes — evaluar cambio con Adrián
-3. Comparación con pares simulada — conectar Firebase real cuando haya 50+ usuarios
+1. IPC hardcodeado y desactualizado — urgente, afecta features centrales
+2. Filtros de Movimientos (tipo + fechas custom con memoria) — no construidos todavía
+3. Presupuesto de gasto es un valor único persistente, no por mes — evaluar con Adrián
 
-**Pendiente bloqueado:** Pasar Mercado Pago a producción — bloqueado por cadena fiscal
+**Pendiente bloqueado:** Pasar Mercado Pago a producción — bloqueado hasta resolución fiscal. Una vez desbloqueado: cambiar `sandbox_init_point` → `init_point` + token `APP_USR-` en código.
 
 ---
 
 ## 🎯 Estrategia
 
-**Estado:** Reenfoque de producto aprobado. Beta cerrada activa con 5-15 contactos conocidos con acceso premium gratuito. Invitaciones pendientes de envío.
+**Estado:** Beta cerrada activa. Invitaciones a primeros betatesters pendientes de envío. Onboarding desactualizado (no comunica los dos niveles de uso).
 
-**Señales de beta a observar:**
-- Retorno semanal sin empuje externo
-- Completitud del IBF semanal
-- Carga real de productos en la canasta
-- Momento de fricción / abandono
+**Señales a observar en beta:**
+- Retención semanal (¿vuelven a hacer el IBF?)
+- Completitud del IBF (¿terminan las 5 preguntas?)
+- Carga de Movimientos (¿adoptan la capa opcional?)
+- Momentos de fricción (¿dónde abandonan?)
 
 **Pendientes estratégicos:**
-1. Definir criterio de cierre de beta (¿cuánto feedback es suficiente?)
-2. Actualizar pitch y discurso de venta — el diferencial "sin cargar gastos" cambia con el módulo de egresos
-3. Notas de parche: definir texto → pasar a Construcción para badge + modal
-4. Definir contenido de agosto en Twitter basado en métricas de julio
+1. Actualizar onboarding: IBF primero, Movimientos disponible cuando el usuario quiera más
+2. Definir criterio formal de lanzamiento público (implícito: retención beta satisfactoria + cobro habilitado)
+3. Términos y condiciones formales antes de cobrar
+4. Lanzamiento público post-beta: Reddit + Twitter con lema actualizado
 
 ---
 
 ## 📣 Marketing
 
-**Twitter (@PesoRealAR):** 🟢 Activo — junio completo publicado, julio en PDF listo para cargar en Typefully (pendiente scheduling 6-31 julio, lunes a viernes)
+**Twitter (@PesoRealAR):** Activo. Junio completo cargado y publicando (posts #1–#20, hilos #1–#4). Julio (40 posts + 4 hilos, 6–31 jul lunes a viernes) listo en PDF — **pendiente cargar en Typefully antes de que termine junio.**
 
-**Reddit:** 🟡 Post activo en r/AskArgentina. Sábado de Clasificados de r/argentina pendiente (bloqueado por antigüedad de cuenta)
+**Reddit:** Post activo en r/AskArgentina. Sábado de Clasificados de r/argentina pendiente cuando se abra el thread. Canal age-gated — requiere antigüedad de cuenta.
 
-**Email (Brevo):** 🟢 Captura activa desde calculadora pública, funcional
+**Email (Brevo):** Captura desde calculadora pública funcional. Google Analytics G-JTF9Q7FY5K activo.
 
-**Próxima acción urgente:** Cargar posts/hilos de julio en Typefully antes de que termine junio — sin esto el canal queda sin contenido
+**Próxima acción urgente:** Cargar posts de julio en Typefully (schedulear 6–31 julio, lunes a viernes) antes de que finalice junio.
 
 ---
 
 ## 💰 Finanzas
 
-**MRR actual:** $0 (pre-revenue, beta gratuita)
+**MRR actual:** $0 (pre-revenue, beta sin cobro)
 
-**Costos actuales:**
-- Operacionales: ~$0/mes (todos en planes gratuitos)
-- Anthropic API: ~USD 0.50/mes (solo pruebas)
-- Break-even: 1 usuario premium ya cubre meses de costos de API
+**Costos actuales:** ~$0/mes (todos en planes gratuitos — Vercel, Firebase, Brevo, Analytics). Anthropic API ~USD 0.50/mes solo pruebas.
 
-**Precios:**
-- Premium: ARS 7.000/mes
-- Duo: ARS 12.000/mes (2 personas)
-- Ajuste anual en enero según IPC acumulado
+**Proyección:** 1 usuario Premium (ARS 7.000/mes) ya cubre meses de costos de API. Break-even operacional es inmediato al cobrar.
 
 **Cadena fiscal pendiente (en orden):**
-1. Consultar contador (lleva: descripción del producto, proyecto paralelo SaaS, situación de dependencia)
+1. Consultar contador — llevar descripción de ambos proyectos + situación de dependencia laboral
 2. Completar perfil de Mercado Pago con CUIT y datos bancarios reales
-3. Inscripción en monotributo — alta online en AFIP (~30 min)
-4. Tramitar punto de venta AFIP para facturas tipo C
-5. Activar Mercado Pago en producción (cambio en código — chat Construcción)
-6. Test transaccional con usuario beta real antes de promocionar
+3. Inscribirse en monotributo online (AFIP) — actividad: servicios de tecnología de la información
+4. Tramitar punto de venta AFIP (facturación electrónica tipo C)
+5. Activar Mercado Pago en producción (una vez MP detecte monotributo)
+6. Test transaccional con usuario beta real antes de lanzamiento público
+
+⚠️ **Crítico:** no cobrar un peso sin estar inscripto en monotributo.
 
 ---
 
 ## 🗂️ Archivos de referencia
 
 | Archivo | Contenido |
-|--------|-----------|
-| `estado_actual.md` | Estado operativo general del proyecto |
-| `construccion.md` | Stack, features construidas, deuda técnica, lecciones |
-| `estrategia.md` | Producto, roadmap, modelo de negocio, decisiones |
-| `marketing.md` | Canales, copies, calendarios, PDFs de contenido |
-| `finanzas.md` | Costos, proyecciones, cadena fiscal, monotributo |
+|---------|-----------|
+| `estado_actual.md` | Documento operativo general — fuente de verdad |
+| `construccion.md` | Stack, features construidas, deuda técnica, lecciones aprendidas |
+| `estrategia.md` | Producto, roadmap, modelo de negocio, beta |
+| `marketing.md` | Canales, copies, calendario de contenido |
+| `finanzas.md` | Costos, proyecciones, guía fiscal |
 | `master_contexto.md` | Este archivo — sincronización entre chats |
 
 ---
 
 ## 👤 Instrucción por chat
 
-| Chat | Instrucción al iniciar |
-|------|----------------------|
-| **Construcción** | "Leé construccion.md. Somos v0.3.1, beta cerrada. La próxima tarea es filtros de Movimientos por tipo + rango de fechas custom con memoria permanente." |
-| **Estrategia** | "Leé estrategia.md y master_contexto.md. Estamos en beta cerrada activa, reenfoque de producto aprobado. Bloqueador principal: fiscal." |
-| **Marketing** | "Leé marketing.md. Twitter activo, julio en PDF pendiente de cargar en Typefully. Reddit bloqueado por antigüedad." |
-| **Finanzas** | "Leé finanzas.md. MRR $0, toda la cadena fiscal bloqueada. Primer paso: consultar contador." |
-| **CEO / Contexto** | "Leé master_contexto.md completo. Resumir estado y proponer próxima decisión." |
+| Chat | Instrucción |
+|------|-------------|
+| **Construcción** | Solo código, bugs, features, deploys. No estrategia ni marketing. Archivos fuente: `construccion.md` + `master_contexto.md` |
+| **Estrategia** | Solo decisiones de producto, roadmap, pricing, pivots. No código ni campañas. Archivos fuente: `estrategia.md` + `master_contexto.md` |
+| **Marketing** | Solo canales, copies, contenido, comunidades. No código ni decisiones de producto. Archivos fuente: `marketing.md` + `master_contexto.md` |
+| **Finanzas** | Solo costos, MRR, fiscal, monotributo. No código ni producto. Archivos fuente: `finanzas.md` + `master_contexto.md` |
