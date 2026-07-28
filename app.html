@@ -15,7 +15,7 @@
 <!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js';
-  import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js';
+  import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js';
   import { getFirestore, doc, setDoc, getDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js';
 
   const firebaseConfig = {
@@ -39,6 +39,7 @@
   window._firebaseCreateUser = (email, pass) => createUserWithEmailAndPassword(auth, email, pass);
   window._firebaseSignInGoogle = () => signInWithPopup(auth, googleProvider);
   window._firebaseSignOut = () => signOut(auth);
+  window._firebaseSendPasswordReset = (email) => sendPasswordResetEmail(auth, email);
   window._firebaseDoc = (path) => doc(db, path);
   window._firebaseSetDoc = (ref, data) => setDoc(ref, data, { merge: true });
   window._firebaseGetDoc = (ref) => getDoc(ref);
@@ -840,10 +841,10 @@ select option{background:var(--bg3)}
     max-width:500px;
     transform:translateX(-50%);
   }
-  #modal-compra, #modal-editar-prod, #modal-editar-ibf, #modal-movimiento, #modal-editar-sueldo, #modal-editar-presupuesto{
+  #modal-compra, #modal-editar-prod, #modal-editar-ibf, #modal-movimiento, #modal-editar-sueldo, #modal-editar-presupuesto, #modal-recuperar-pass{
     justify-content:center;
   }
-  #modal-compra > div, #modal-editar-prod > div, #modal-editar-ibf > div, #modal-movimiento > div, #modal-editar-sueldo > div, #modal-editar-presupuesto > div{
+  #modal-compra > div, #modal-editar-prod > div, #modal-editar-ibf > div, #modal-movimiento > div, #modal-editar-sueldo > div, #modal-editar-presupuesto > div, #modal-recuperar-pass > div{
     max-width:500px;
   }
   #modal-duo{
@@ -903,6 +904,9 @@ select option{background:var(--bg3)}
     <div class="field" style="margin-top:12px">
       <label>Contrasena</label>
       <input type="password" id="auth-pass" placeholder="Minimo 6 caracteres" autocomplete="current-password" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;padding:14px 16px;outline:none">
+    </div>
+    <div id="auth-forgot-link" style="text-align:right;margin-top:8px">
+      <button onclick="abrirRecuperarPass()" style="background:none;border:none;color:var(--text3);font-size:12px;cursor:pointer;text-decoration:underline;padding:2px">¿Olvidaste tu contraseña?</button>
     </div>
     <div id="auth-error" style="display:none;font-size:13px;color:var(--red);margin-top:8px;text-align:center"></div>
     <button class="btn-primary" onclick="authConEmail()" style="margin-top:16px" id="auth-btn-email">Iniciar sesion</button>
@@ -1669,6 +1673,12 @@ select option{background:var(--bg3)}
         <input type="text" id="edit-sueldo-monto" inputmode="decimal" autocomplete="off">
       </div>
     </div>
+    <div class="field" id="sueldo-excluir-balance-row" style="margin-top:12px;display:none">
+      <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
+        <input type="checkbox" id="edit-sueldo-excluir-balance" style="margin-top:3px">
+        <span style="font-size:13px;color:var(--text2);line-height:1.4">No sumar este sueldo al balance de Ingresos y egresos (solo para referencia histórica, no afecta lo disponible de ese mes)</span>
+      </label>
+    </div>
     <button onclick="guardarSueldoActualizado()" class="btn-primary" style="width:100%;margin-top:18px">Guardar</button>
   </div>
 </div>
@@ -1690,6 +1700,23 @@ select option{background:var(--bg3)}
     </div>
     <button onclick="guardarPresupuestoObjetivo()" class="btn-primary" style="width:100%;margin-top:18px">Guardar</button>
     <button id="btn-quitar-presupuesto" onclick="quitarPresupuestoObjetivo()" style="width:100%;background:none;border:none;color:var(--text3);font-size:13px;padding:12px;cursor:pointer;display:none">Quitar presupuesto</button>
+  </div>
+</div>
+
+<!-- ── Modal recuperar contraseña ── -->
+<div id="modal-recuperar-pass" style="display:none;position:fixed;inset:0;z-index:150;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:flex-end">
+  <div style="background:var(--bg2);border-radius:20px 20px 0 0;padding:28px 24px calc(28px + var(--safe-bottom));width:100%;border-top:1px solid var(--border)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="font-family:'DM Sans',sans-serif;font-size:20px">Recuperar contraseña</div>
+      <button onclick="cerrarRecuperarPass()" style="background:var(--bg3);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;color:var(--text2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">&times;</button>
+    </div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:16px">Ingresá tu email y te mandamos un link para poner una contraseña nueva.</div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="recuperar-pass-email" placeholder="tu@email.com" autocomplete="email" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;padding:14px 16px;outline:none">
+    </div>
+    <div id="recuperar-pass-msg" style="display:none;font-size:13px;margin-top:10px;text-align:center"></div>
+    <button onclick="enviarRecuperarPass()" class="btn-primary" style="width:100%;margin-top:18px" id="btn-enviar-recuperar">Enviar link</button>
   </div>
 </div>
 
@@ -2056,14 +2083,14 @@ function movimientosDelMes(mesKey) {
 }
 
 function calcularBalanceMes(mesKey) {
-  const movs = movimientosDelMes(mesKey);
+  const movs = movimientosDelMes(mesKey).filter(m => !m.excluidoBalance);
   const ingresos = movs.filter(m => m.tipo === 'ingreso').reduce((a, m) => a + m.monto, 0);
   const egresos = movs.filter(m => m.tipo === 'egreso').reduce((a, m) => a + m.monto, 0);
   return { ingresos, egresos, balance: ingresos - egresos };
 }
 
 function desglosePorCategoria(mesKey) {
-  const movs = movimientosDelMes(mesKey).filter(m => m.tipo === 'egreso');
+  const movs = movimientosDelMes(mesKey).filter(m => m.tipo === 'egreso' && !m.excluidoBalance);
   const total = movs.reduce((a, m) => a + m.monto, 0);
   const porCat = {};
   movs.forEach(m => { porCat[m.categoria] = (porCat[m.categoria] || 0) + m.monto; });
@@ -2269,7 +2296,7 @@ function buildMovimientos(mesKey) {
         <div style="width:36px;height:36px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${info.icono}</div>
         <div style="flex:1;min-width:0">
           <div style="font-size:14px;color:var(--text)">${m.concepto}</div>
-          <div style="font-size:12px;color:var(--text3)">${info.label} · ${fechaLabel}${m.origen === 'sueldo' ? ' · sincronizado desde Sueldo' : ''}</div>
+          <div style="font-size:12px;color:var(--text3)">${info.label} · ${fechaLabel}${m.origen === 'sueldo' ? ' · sincronizado desde Sueldo' : ''}${m.excluidoBalance ? ' · no cuenta en el balance' : ''}</div>
         </div>
         <div style="color:${color};font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;white-space:nowrap">${signo}${fARS(m.monto)}</div>
         ${m.origen === 'sueldo' ? '' : `<button onclick="eliminarMovimiento('${m.id}')" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:4px 2px">&times;</button>`}
@@ -2405,6 +2432,13 @@ function precargarMontoSueldoDelMes() {
   const mesElegido = document.getElementById('edit-sueldo-mes').value;
   const existente = getMovimientos().find(m => m.origen === 'sueldo' && mesKeyDeFecha(m.fecha) === mesElegido);
   document.getElementById('edit-sueldo-monto').value = existente ? String(existente.monto) : '';
+
+  // El checkbox de "no sumar al balance" solo tiene sentido para meses pasados
+  const esMesActual = mesElegido === mesRealActual();
+  const filaCheckbox = document.getElementById('sueldo-excluir-balance-row');
+  const checkbox = document.getElementById('edit-sueldo-excluir-balance');
+  filaCheckbox.style.display = esMesActual ? 'none' : 'block';
+  checkbox.checked = existente ? !!existente.excluidoBalance : false;
 }
 
 function cerrarEditarSueldo() {
@@ -2413,16 +2447,17 @@ function cerrarEditarSueldo() {
 
 // Crea o actualiza el ingreso "sueldo" de un mes puntual en Movimientos,
 // sin duplicarlo si ya existe uno para ese mes.
-function upsertSueldoMovimiento(monto, mesKey) {
+function upsertSueldoMovimiento(monto, mesKey, excluidoBalance = false) {
   if (!monto || monto <= 0) return false;
   if (!state.movimientos) state.movimientos = [];
   const esMesActual = mesKey === mesRealActual();
   const fecha = esMesActual ? new Date().toISOString().slice(0, 10) : `${mesKey}-01`;
   const idx = state.movimientos.findIndex(m => m.origen === 'sueldo' && mesKeyDeFecha(m.fecha) === mesKey);
   if (idx >= 0) {
-    if (state.movimientos[idx].monto === monto) return false;
+    if (state.movimientos[idx].monto === monto && !!state.movimientos[idx].excluidoBalance === !!excluidoBalance) return false;
     state.movimientos[idx].monto = monto;
     state.movimientos[idx].fecha = fecha;
+    state.movimientos[idx].excluidoBalance = !!excluidoBalance;
     return true;
   }
   state.movimientos.push({
@@ -2433,6 +2468,7 @@ function upsertSueldoMovimiento(monto, mesKey) {
     monto,
     fecha,
     origen: 'sueldo',
+    excluidoBalance: !!excluidoBalance,
   });
   return true;
 }
@@ -2475,6 +2511,8 @@ function quitarPresupuestoObjetivo() {
 function guardarSueldoActualizado() {
   const monto = parseMonto(document.getElementById('edit-sueldo-monto').value);
   const mesElegido = document.getElementById('edit-sueldo-mes').value;
+  const esMesActual = mesElegido === mesRealActual();
+  const excluirBalance = !esMesActual && document.getElementById('edit-sueldo-excluir-balance').checked;
   if (!monto || monto <= 0) {
     document.getElementById('edit-sueldo-monto').focus();
     return;
@@ -2482,10 +2520,10 @@ function guardarSueldoActualizado() {
   // Solo actualizamos "el sueldo actual" (el que se usa para poder adquisitivo)
   // si estamos cargando el mes real en curso. Si se está corrigiendo un mes
   // pasado, solo se actualiza ese movimiento puntual, sin tocar el sueldo vigente.
-  if (mesElegido === mesRealActual()) {
+  if (esMesActual) {
     state.sueldo = monto;
   }
-  upsertSueldoMovimiento(monto, mesElegido);
+  upsertSueldoMovimiento(monto, mesElegido, excluirBalance);
   saveState();
   cerrarEditarSueldo();
   buildSueldo();
@@ -3788,6 +3826,10 @@ const AYUDA_CONTENIDO = {
       {
         q: 'Como actualizo mi sueldo cada mes?',
         a: 'Toca "Actualizar sueldo de este mes" arriba, elegis el mes en el desplegable y cargas el neto que cobraste. Si te equivocaste en un mes anterior, elegilo en el mismo desplegable: si ya tiene un valor cargado te lo muestra para que lo corrijas.'
+      },
+      {
+        q: 'Que pasa si cargo un sueldo de un mes viejo?',
+        a: 'Cuando elegis un mes que no es el actual, aparece la opcion de no sumarlo al balance de Ingresos y egresos. Marcala si ese sueldo es solo para tener el dato historico (por ejemplo para la variacion real) y no queres que altere cuanto tenias disponible ese mes.'
       },
       {
         q: 'Como se calcula mi variacion real?',
@@ -5134,23 +5176,66 @@ async function enviarMensaje() {
 let authTabActivo = 'login';
 let firestoreUnsub = null;
 
+function abrirRecuperarPass() {
+  const emailActual = document.getElementById('auth-email').value.trim();
+  document.getElementById('recuperar-pass-email').value = emailActual;
+  const msgEl = document.getElementById('recuperar-pass-msg');
+  msgEl.style.display = 'none';
+  document.getElementById('btn-enviar-recuperar').disabled = false;
+  document.getElementById('modal-recuperar-pass').style.display = 'flex';
+}
+
+function cerrarRecuperarPass() {
+  document.getElementById('modal-recuperar-pass').style.display = 'none';
+}
+
+async function enviarRecuperarPass() {
+  const email = document.getElementById('recuperar-pass-email').value.trim();
+  const msgEl = document.getElementById('recuperar-pass-msg');
+  if (!email) {
+    msgEl.style.display = 'block';
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = 'Ingresá tu email primero.';
+    return;
+  }
+  const btn = document.getElementById('btn-enviar-recuperar');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+  try {
+    await window._firebaseSendPasswordReset(email);
+    msgEl.style.display = 'block';
+    msgEl.style.color = 'var(--green)';
+    msgEl.textContent = 'Listo, revisá tu email (y la carpeta de spam) para el link de recuperación.';
+    btn.textContent = 'Enviado';
+  } catch (err) {
+    msgEl.style.display = 'block';
+    msgEl.style.color = 'var(--red)';
+    msgEl.textContent = traducirErrorFirebase(err.code) || 'No pudimos enviar el email. Revisá que esté bien escrito.';
+    btn.disabled = false;
+    btn.textContent = 'Enviar link';
+  }
+}
+
 function switchAuthTab(tab) {
   authTabActivo = tab;
   const btnLogin = document.getElementById('auth-tab-login');
   const btnReg = document.getElementById('auth-tab-registro');
   const btnEmail = document.getElementById('auth-btn-email');
+  const forgotLink = document.getElementById('auth-forgot-link');
   if (tab === 'login') {
     btnLogin.style.background = 'var(--accent)';
     btnLogin.style.color = '#0a0b0d';
     btnReg.style.background = 'transparent';
     btnReg.style.color = 'var(--text2)';
     btnEmail.textContent = 'Iniciar sesion';
+    forgotLink.style.display = 'block';
   } else {
     btnReg.style.background = 'var(--accent)';
     btnReg.style.color = '#0a0b0d';
     btnLogin.style.background = 'transparent';
     btnLogin.style.color = 'var(--text2)';
     btnEmail.textContent = 'Crear cuenta';
+    forgotLink.style.display = 'none';
   }
   document.getElementById('auth-error').style.display = 'none';
 }
