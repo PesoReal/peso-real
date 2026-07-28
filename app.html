@@ -841,10 +841,10 @@ select option{background:var(--bg3)}
     max-width:500px;
     transform:translateX(-50%);
   }
-  #modal-compra, #modal-editar-prod, #modal-editar-ibf, #modal-movimiento, #modal-editar-sueldo, #modal-editar-presupuesto, #modal-recuperar-pass{
+  #modal-compra, #modal-editar-prod, #modal-editar-ibf, #modal-movimiento, #modal-editar-sueldo, #modal-editar-presupuesto, #modal-recuperar-pass, #modal-gastos-fijos, #modal-editar-fijo{
     justify-content:center;
   }
-  #modal-compra > div, #modal-editar-prod > div, #modal-editar-ibf > div, #modal-movimiento > div, #modal-editar-sueldo > div, #modal-editar-presupuesto > div, #modal-recuperar-pass > div{
+  #modal-compra > div, #modal-editar-prod > div, #modal-editar-ibf > div, #modal-movimiento > div, #modal-editar-sueldo > div, #modal-editar-presupuesto > div, #modal-recuperar-pass > div, #modal-gastos-fijos > div, #modal-editar-fijo > div{
     max-width:500px;
   }
   #modal-duo{
@@ -1532,6 +1532,11 @@ select option{background:var(--bg3)}
       </div>
     </div>
 
+    <div id="fijos-banner" style="display:none;background:var(--amber-bg);border:1px solid rgba(245,166,35,0.3);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:16px;cursor:pointer" onclick="abrirGastosFijos()">
+      <div style="font-size:13px;color:var(--amber);font-weight:500" id="fijos-banner-texto">-</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:2px">Tocá para revisarlos y cargarlos</div>
+    </div>
+
     <div id="mov-presupuesto-card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px 18px;margin-bottom:20px">
       <div id="mov-presupuesto-vacio">
         <div style="font-size:13px;color:var(--text2);margin-bottom:10px">¿Querés ponerte un límite de gasto para este mes?</div>
@@ -1553,9 +1558,13 @@ select option{background:var(--bg3)}
       </div>
     </div>
 
-    <div style="display:flex;gap:10px;margin-bottom:20px">
+    <div style="display:flex;gap:10px;margin-bottom:12px">
       <button onclick="abrirFormMovimiento('egreso')" style="flex:1;background:var(--red-bg);border:1px solid rgba(255,90,90,0.3);border-radius:var(--radius-sm);color:var(--red);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;padding:14px;cursor:pointer">+ Egreso</button>
       <button onclick="abrirFormMovimiento('ingreso')" style="flex:1;background:var(--green-bg);border:1px solid rgba(74,222,128,0.3);border-radius:var(--radius-sm);color:var(--green);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;padding:14px;cursor:pointer">+ Ingreso</button>
+    </div>
+
+    <div style="text-align:center;margin-bottom:20px">
+      <button onclick="abrirGastosFijos()" style="background:none;border:none;color:var(--text3);font-size:13px;cursor:pointer;text-decoration:underline">Gestionar gastos fijos</button>
     </div>
 
     <button onclick="toggleDesgloseCategoria()" style="width:100%;display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:16px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text)">
@@ -1717,6 +1726,55 @@ select option{background:var(--bg3)}
     </div>
     <div id="recuperar-pass-msg" style="display:none;font-size:13px;margin-top:10px;text-align:center"></div>
     <button onclick="enviarRecuperarPass()" class="btn-primary" style="width:100%;margin-top:18px" id="btn-enviar-recuperar">Enviar link</button>
+  </div>
+</div>
+
+<!-- ── Modal gastos fijos (lista + pendientes del mes) ── -->
+<div id="modal-gastos-fijos" style="display:none;position:fixed;inset:0;z-index:150;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:flex-end">
+  <div style="background:var(--bg2);border-radius:20px 20px 0 0;padding:28px 24px calc(28px + var(--safe-bottom));width:100%;border-top:1px solid var(--border);max-height:85vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="font-family:'DM Sans',sans-serif;font-size:20px">Gastos fijos</div>
+      <button onclick="cerrarGastosFijos()" style="background:var(--bg3);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;color:var(--text2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">&times;</button>
+    </div>
+
+    <div id="fijos-pendientes-section" style="display:none;margin-bottom:24px">
+      <div style="font-size:13px;color:var(--text2);margin-bottom:10px">Pendientes de cargar este mes. Revisá los montos por si cambiaron y tocá "Cargar seleccionados".</div>
+      <div id="fijos-pendientes-lista"></div>
+      <button onclick="cargarFijosSeleccionados()" class="btn-primary" style="width:100%;margin-top:12px">Cargar seleccionados</button>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-size:16px;font-family:'DM Sans',sans-serif">Tus gastos fijos</div>
+      <button onclick="abrirEditarFijo()" style="background:transparent;border:1px solid var(--border);border-radius:20px;color:var(--accent);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:6px 14px;cursor:pointer">+ Agregar</button>
+    </div>
+    <div id="fijos-lista"></div>
+  </div>
+</div>
+
+<!-- ── Modal alta/edición de un gasto fijo ── -->
+<div id="modal-editar-fijo" style="display:none;position:fixed;inset:0;z-index:160;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:flex-end">
+  <div style="background:var(--bg2);border-radius:20px 20px 0 0;padding:28px 24px calc(28px + var(--safe-bottom));width:100%;border-top:1px solid var(--border)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="font-family:'DM Sans',sans-serif;font-size:20px" id="editar-fijo-titulo">Nuevo gasto fijo</div>
+      <button onclick="cerrarEditarFijo()" style="background:var(--bg3);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;color:var(--text2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">&times;</button>
+    </div>
+    <div class="field">
+      <label>Concepto</label>
+      <input type="text" id="fijo-concepto" placeholder="Ej: Alquiler, Luz, Internet" autocomplete="off" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;padding:14px 16px;outline:none">
+    </div>
+    <div class="field" style="margin-top:12px">
+      <label>Categoría</label>
+      <select id="fijo-categoria" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;padding:14px 16px;outline:none"></select>
+    </div>
+    <div class="field" style="margin-top:12px">
+      <label>Monto habitual</label>
+      <div class="input-wrap">
+        <span class="prefix">$</span>
+        <input type="text" id="fijo-monto" inputmode="decimal" autocomplete="off">
+      </div>
+    </div>
+    <button onclick="guardarFijo()" class="btn-primary" style="width:100%;margin-top:18px">Guardar</button>
+    <button id="btn-eliminar-fijo" onclick="eliminarFijoActual()" style="width:100%;background:none;border:none;color:var(--red);font-size:13px;padding:12px;cursor:pointer;display:none">Eliminar gasto fijo</button>
   </div>
 </div>
 
@@ -2201,6 +2259,181 @@ function eliminarMovimiento(id) {
   buildDashboard();
 }
 
+// ═══════════════════════════════════════════════
+// GASTOS FIJOS
+// ═══════════════════════════════════════════════
+function getGastosFijos() {
+  return state.gastosFijos || [];
+}
+
+// Gastos fijos que todavía no tienen un egreso cargado en el mes indicado
+function pendientesFijosDelMes(mesKey) {
+  const cargados = new Set(
+    getMovimientos()
+      .filter(m => m.origen === 'fijo' && mesKeyDeFecha(m.fecha) === mesKey)
+      .map(m => m.fijoId)
+  );
+  return getGastosFijos().filter(f => !cargados.has(f.id));
+}
+
+// Actualiza el banner de pendientes en la pantalla de Movimientos (solo mes actual)
+function actualizarBannerFijos(mesHoy, esMesActual) {
+  const banner = document.getElementById('fijos-banner');
+  if (!esMesActual) { banner.style.display = 'none'; return; }
+  const pendientes = pendientesFijosDelMes(mesHoy);
+  if (pendientes.length === 0) { banner.style.display = 'none'; return; }
+  banner.style.display = 'block';
+  document.getElementById('fijos-banner-texto').textContent =
+    pendientes.length === 1
+      ? `Tenés 1 gasto fijo sin cargar este mes: ${pendientes[0].concepto}`
+      : `Tenés ${pendientes.length} gastos fijos sin cargar este mes`;
+}
+
+function abrirGastosFijos() {
+  renderPendientesFijos();
+  renderListaFijos();
+  document.getElementById('modal-gastos-fijos').style.display = 'flex';
+}
+
+function cerrarGastosFijos() {
+  document.getElementById('modal-gastos-fijos').style.display = 'none';
+}
+
+function renderPendientesFijos() {
+  const pendientes = pendientesFijosDelMes(mesRealActual());
+  const seccion = document.getElementById('fijos-pendientes-section');
+  const lista = document.getElementById('fijos-pendientes-lista');
+  if (pendientes.length === 0) {
+    seccion.style.display = 'none';
+    return;
+  }
+  seccion.style.display = 'block';
+  lista.innerHTML = pendientes.map(f => {
+    const info = CATEGORIAS_EGRESO[f.categoria] || { label: f.categoria, icono: '📦' };
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)" data-fijo-id="${f.id}">
+      <input type="checkbox" class="fijo-pendiente-check" checked style="width:18px;height:18px;flex-shrink:0">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px">${info.icono} ${f.concepto}</div>
+      </div>
+      <div class="input-wrap" style="width:130px">
+        <span class="prefix">$</span>
+        <input type="text" class="fijo-pendiente-monto" value="${f.monto}" inputmode="decimal">
+      </div>
+    </div>`;
+  }).join('');
+  // Formatear los montos como el resto de la app
+  lista.querySelectorAll('.fijo-pendiente-monto').forEach(inp => {
+    inp.value = fARS(parseMonto(inp.value)).replace('$', '').trim();
+    inp.addEventListener('input', () => formatInput(inp));
+  });
+}
+
+function cargarFijosSeleccionados() {
+  const filas = document.querySelectorAll('#fijos-pendientes-lista [data-fijo-id]');
+  let cargados = 0;
+  filas.forEach(fila => {
+    const check = fila.querySelector('.fijo-pendiente-check');
+    if (!check.checked) return;
+    const fijoId = fila.getAttribute('data-fijo-id');
+    const fijo = getGastosFijos().find(f => f.id === fijoId);
+    if (!fijo) return;
+    const monto = parseMonto(fila.querySelector('.fijo-pendiente-monto').value);
+    if (!monto || monto <= 0) return;
+    if (!state.movimientos) state.movimientos = [];
+    state.movimientos.push({
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      tipo: 'egreso',
+      categoria: fijo.categoria,
+      concepto: fijo.concepto,
+      monto,
+      fecha: new Date().toISOString().slice(0, 10),
+      origen: 'fijo',
+      fijoId: fijo.id,
+    });
+    cargados++;
+  });
+  if (cargados > 0) saveState();
+  cerrarGastosFijos();
+  buildMovimientos();
+  buildDashboard();
+}
+
+function renderListaFijos() {
+  const fijos = getGastosFijos();
+  const el = document.getElementById('fijos-lista');
+  if (fijos.length === 0) {
+    el.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:12px 0">Todavía no cargaste gastos fijos.</div>';
+    return;
+  }
+  el.innerHTML = fijos.map(f => {
+    const info = CATEGORIAS_EGRESO[f.categoria] || { label: f.categoria, icono: '📦' };
+    return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="abrirEditarFijo('${f.id}')">
+      <div style="width:32px;height:32px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0">${info.icono}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:14px">${f.concepto}</div>
+        <div style="font-size:12px;color:var(--text3)">${info.label}</div>
+      </div>
+      <div style="font-family:'DM Sans',sans-serif;font-size:14px">${fARS(f.monto)}</div>
+    </div>`;
+  }).join('');
+}
+
+let fijoEditandoId = null;
+
+function abrirEditarFijo(id) {
+  fijoEditandoId = id || null;
+  const sel = document.getElementById('fijo-categoria');
+  sel.innerHTML = Object.entries(CATEGORIAS_EGRESO).map(([k, v]) => `<option value="${k}">${v.icono} ${v.label}</option>`).join('');
+
+  if (fijoEditandoId) {
+    const fijo = getGastosFijos().find(f => f.id === fijoEditandoId);
+    document.getElementById('editar-fijo-titulo').textContent = 'Editar gasto fijo';
+    document.getElementById('fijo-concepto').value = fijo.concepto;
+    sel.value = fijo.categoria;
+    document.getElementById('fijo-monto').value = fijo.monto;
+    document.getElementById('btn-eliminar-fijo').style.display = 'block';
+  } else {
+    document.getElementById('editar-fijo-titulo').textContent = 'Nuevo gasto fijo';
+    document.getElementById('fijo-concepto').value = '';
+    document.getElementById('fijo-monto').value = '';
+    document.getElementById('btn-eliminar-fijo').style.display = 'none';
+  }
+  document.getElementById('modal-editar-fijo').style.display = 'flex';
+}
+
+function cerrarEditarFijo() {
+  document.getElementById('modal-editar-fijo').style.display = 'none';
+}
+
+function guardarFijo() {
+  const concepto = document.getElementById('fijo-concepto').value.trim();
+  const categoria = document.getElementById('fijo-categoria').value;
+  const monto = parseMonto(document.getElementById('fijo-monto').value);
+  if (!concepto) { document.getElementById('fijo-concepto').focus(); return; }
+  if (!monto || monto <= 0) { document.getElementById('fijo-monto').focus(); return; }
+
+  if (!state.gastosFijos) state.gastosFijos = [];
+  if (fijoEditandoId) {
+    const idx = state.gastosFijos.findIndex(f => f.id === fijoEditandoId);
+    if (idx >= 0) state.gastosFijos[idx] = { ...state.gastosFijos[idx], concepto, categoria, monto };
+  } else {
+    state.gastosFijos.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), concepto, categoria, monto });
+  }
+  saveState();
+  cerrarEditarFijo();
+  renderPendientesFijos();
+  renderListaFijos();
+}
+
+function eliminarFijoActual() {
+  if (!fijoEditandoId) return;
+  state.gastosFijos = getGastosFijos().filter(f => f.id !== fijoEditandoId);
+  saveState();
+  cerrarEditarFijo();
+  renderPendientesFijos();
+  renderListaFijos();
+}
+
 let movDesgloseAbierto = false;
 
 function toggleDesgloseCategoria() {
@@ -2229,6 +2462,8 @@ function buildMovimientos(mesKey) {
   const balEl = document.getElementById('mov-balance');
   balEl.textContent = fARS(balance);
   balEl.className = `mov-balance-value ${balance >= 0 ? 'gain' : 'loss'}`;
+
+  actualizarBannerFijos(mesHoy, mesHoy === mesRealActual());
 
   // Presupuesto de gasto (meta que el usuario se puso, opcional)
   const objetivo = state.presupuestoObjetivo || 0;
@@ -2296,7 +2531,7 @@ function buildMovimientos(mesKey) {
         <div style="width:36px;height:36px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${info.icono}</div>
         <div style="flex:1;min-width:0">
           <div style="font-size:14px;color:var(--text)">${m.concepto}</div>
-          <div style="font-size:12px;color:var(--text3)">${info.label} · ${fechaLabel}${m.origen === 'sueldo' ? ' · sincronizado desde Sueldo' : ''}${m.excluidoBalance ? ' · no cuenta en el balance' : ''}</div>
+          <div style="font-size:12px;color:var(--text3)">${info.label} · ${fechaLabel}${m.origen === 'sueldo' ? ' · sincronizado desde Sueldo' : ''}${m.origen === 'fijo' ? ' · gasto fijo' : ''}${m.excluidoBalance ? ' · no cuenta en el balance' : ''}</div>
         </div>
         <div style="color:${color};font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;white-space:nowrap">${signo}${fARS(m.monto)}</div>
         ${m.origen === 'sueldo' ? '' : `<button onclick="eliminarMovimiento('${m.id}')" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:4px 2px">&times;</button>`}
@@ -3937,6 +4172,10 @@ const AYUDA_CONTENIDO = {
       {
         q: 'Que es el presupuesto de gasto?',
         a: 'Es un limite que vos elegis para tus egresos del mes (por ejemplo, si cobras $1.000.000 y queres ahorrar $250.000, ponelo en $750.000). La app te muestra cuanto llevas gastado contra ese limite y cuanto te queda. Es opcional y lo podes cambiar cuando quieras.'
+      },
+      {
+        q: 'Que son los gastos fijos?',
+        a: 'Son los egresos que se repiten todos los meses (alquiler, luz, internet, etc). Los cargas una vez en "Gestionar gastos fijos" y despues, cada mes, la app te avisa con un cartel si todavia no los cargaste, para que los revises (el monto puede variar) y los sumes a Movimientos con un toque.'
       },
     ]
   },
@@ -5605,6 +5844,7 @@ function init() {
   bindMontoInput('mov-monto');
   bindMontoInput('edit-sueldo-monto');
   bindMontoInput('edit-presupuesto-monto');
+  bindMontoInput('fijo-monto');
 
   // Firebase _onAuthStateChanged maneja la navegacion automaticamente
   // No hacer auto-login desde localStorage
