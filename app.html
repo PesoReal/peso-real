@@ -941,6 +941,8 @@ select option{background:var(--bg3)}
         <div class="onb-step-dot active" id="dot-0"></div>
         <div class="onb-step-dot" id="dot-1"></div>
         <div class="onb-step-dot" id="dot-2"></div>
+        <div class="onb-step-dot" id="dot-3"></div>
+        <div class="onb-step-dot" id="dot-4"></div>
       </div>
 
       <!-- Step 0 -->
@@ -1005,7 +1007,7 @@ select option{background:var(--bg3)}
       <div class="onb-step" id="step-2">
         <div class="onb-kicker">Último paso</div>
         <div class="onb-title">¿Ahorrás algo por mes?</div>
-        <div class="onb-sub">Tu presupuesto disponible cada mes lo calculamos solo, a partir de lo que vayas cargando en Ingresos y egresos.</div>
+        <div class="onb-sub">Esto nos ayuda a entender tus hábitos. Ya casi terminamos.</div>
 
         <div class="field">
           <label>¿Ahorrás algo por mes?</label>
@@ -1017,6 +1019,28 @@ select option{background:var(--bg3)}
           </select>
         </div>
 
+        <button class="btn-primary" onclick="nextStep()">
+          Continuar
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="onb-step" id="step-3">
+        <div class="onb-kicker">Tu bienestar financiero</div>
+        <div class="onb-title">Un chequeo semanal, sin cargar nada</div>
+        <div class="onb-sub">Todas las semanas te vamos a hacer 5 preguntas rápidas sobre cómo venís con la plata. Nada de anotar cada gasto: es un termómetro de bienestar (tu IBF), no una planilla. Vas a ver tu tendencia y cómo te comparás con gente en tu misma situación.</div>
+        <button class="btn-primary" onclick="nextStep()">
+          Continuar
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <!-- Step 4 -->
+      <div class="onb-step" id="step-4">
+        <div class="onb-kicker">Si querés ir más a fondo</div>
+        <div class="onb-title">Ingresos y egresos, cuando quieras más control</div>
+        <div class="onb-sub">Aparte del chequeo semanal, tenés disponible una sección de Ingresos y egresos para anotar cada movimiento si te sirve tener el detalle. Es totalmente opcional — podés usar solo el IBF si preferís algo más simple, y sumar Movimientos el día que quieras más precisión.</div>
         <button class="btn-primary" onclick="finishOnboarding()">
           Ver mi situación real
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -1324,7 +1348,7 @@ select option{background:var(--bg3)}
           <div style="font-size:16px;font-weight:600;color:var(--text)">Duo</div>
           <div style="font-family:'DM Sans',sans-serif;font-size:20px;color:var(--text2)">$12.000<span style="font-size:13px;font-weight:400">/mes</span></div>
         </div>
-        <div style="font-size:13px;color:var(--text3)">Todo lo de Premium para 2 personas · canasta compartida opcional</div>
+        <div style="font-size:13px;color:var(--text3)">Todo lo de Premium para 2 personas</div>
       </div>
     </div>
 
@@ -2053,7 +2077,7 @@ function nextStep() {
   currentStep++;
   const next = document.getElementById(`step-${currentStep}`);
   next.classList.add('active');
-  if (currentStep < 3) {
+  if (currentStep < 5) {
     document.getElementById(`dot-${currentStep}`).classList.add('active');
   }
 }
@@ -4918,39 +4942,15 @@ function esPremium() {
   return !!(state.premium && state.premium.activo === true);
 }
 
-let duoCanasta = 'compartir';
-
 function mostrarModalDuo() {
   const modal = document.getElementById('modal-duo');
   modal.style.display = 'flex';
   document.getElementById('duo-email-input').value = '';
   document.getElementById('duo-error').style.display = 'none';
-  seleccionarCanasta('compartir');
 }
 
 function cerrarModalDuo() {
   document.getElementById('modal-duo').style.display = 'none';
-}
-
-function seleccionarCanasta(opcion) {
-  duoCanasta = opcion;
-  const compartir = document.getElementById('opt-compartir');
-  const separada = document.getElementById('opt-separada');
-  if (opcion === 'compartir') {
-    compartir.style.background = 'var(--accent)';
-    compartir.querySelector('div').style.color = '#0a0b0d';
-    compartir.querySelectorAll('div')[1].style.color = 'rgba(10,11,13,0.65)';
-    separada.style.background = 'var(--bg3)';
-    separada.querySelector('div').style.color = 'var(--text)';
-    separada.querySelectorAll('div')[1].style.color = 'var(--text3)';
-  } else {
-    separada.style.background = 'var(--accent)';
-    separada.querySelector('div').style.color = '#0a0b0d';
-    separada.querySelectorAll('div')[1].style.color = 'rgba(10,11,13,0.65)';
-    compartir.style.background = 'var(--bg3)';
-    compartir.querySelector('div').style.color = 'var(--text)';
-    compartir.querySelectorAll('div')[1].style.color = 'var(--text3)';
-  }
 }
 
 async function confirmarDuo() {
@@ -5883,19 +5883,7 @@ if ('serviceWorker' in navigator) {
       <label style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:8px">Email del segundo usuario</label>
       <input type="email" id="duo-email-input" placeholder="su@email.com" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;padding:13px 14px;outline:none;box-sizing:border-box">
     </div>
-    <div style="margin-bottom:20px">
-      <label style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;display:block;margin-bottom:10px">Canasta de compras</label>
-      <div style="display:flex;gap:8px">
-        <div id="opt-compartir" onclick="seleccionarCanasta('compartir')" style="flex:1;background:var(--accent);border-radius:var(--radius-sm);padding:12px;text-align:center;cursor:pointer;transition:opacity 0.15s">
-          <div style="font-size:13px;font-weight:600;color:#0a0b0d">Compartir</div>
-          <div style="font-size:11px;color:rgba(10,11,13,0.65);margin-top:2px">Ven y editan la misma</div>
-        </div>
-        <div id="opt-separada" onclick="seleccionarCanasta('separada')" style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;text-align:center;cursor:pointer;transition:opacity 0.15s">
-          <div style="font-size:13px;font-weight:600;color:var(--text)">Separada</div>
-          <div style="font-size:11px;color:var(--text3);margin-top:2px">Cada uno la suya</div>
-        </div>
-      </div>
-    </div>
+    <div style="margin-bottom:12px"></div>
     <div id="duo-error" style="display:none;font-size:13px;color:var(--red);margin-bottom:12px"></div>
     <button id="btn-confirmar-duo" onclick="confirmarDuo()" style="width:100%;background:var(--accent);border:none;border-radius:var(--radius-sm);color:#0a0b0d;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;padding:14px;cursor:pointer;margin-bottom:10px">Continuar al pago</button>
     <button onclick="cerrarModalDuo()" style="width:100%;background:none;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;padding:8px">Cancelar</button>
