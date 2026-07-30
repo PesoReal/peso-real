@@ -2415,7 +2415,7 @@ function abrirEditarFijo(id) {
     document.getElementById('editar-fijo-titulo').textContent = 'Editar gasto fijo';
     document.getElementById('fijo-concepto').value = fijo.concepto;
     sel.value = fijo.categoria;
-    document.getElementById('fijo-monto').value = fijo.monto;
+    document.getElementById('fijo-monto').value = formatMontoParaInput(fijo.monto);
     document.getElementById('btn-eliminar-fijo').style.display = 'block';
   } else {
     document.getElementById('editar-fijo-titulo').textContent = 'Nuevo gasto fijo';
@@ -2691,7 +2691,7 @@ function abrirEditarSueldo() {
 function precargarMontoSueldoDelMes() {
   const mesElegido = document.getElementById('edit-sueldo-mes').value;
   const existente = getMovimientos().find(m => m.origen === 'sueldo' && mesKeyDeFecha(m.fecha) === mesElegido);
-  document.getElementById('edit-sueldo-monto').value = existente ? String(existente.monto) : '';
+  document.getElementById('edit-sueldo-monto').value = existente ? formatMontoParaInput(existente.monto) : '';
 
   // El checkbox de "no sumar al balance" solo tiene sentido para meses pasados
   const esMesActual = mesElegido === mesRealActual();
@@ -2739,7 +2739,7 @@ function sincronizarSueldoComoMovimiento(monto) {
 }
 
 function abrirEditarPresupuesto() {
-  document.getElementById('edit-presupuesto-monto').value = state.presupuestoObjetivo ? String(state.presupuestoObjetivo) : '';
+  document.getElementById('edit-presupuesto-monto').value = state.presupuestoObjetivo ? formatMontoParaInput(state.presupuestoObjetivo) : '';
   document.getElementById('btn-quitar-presupuesto').style.display = state.presupuestoObjetivo ? 'block' : 'none';
   document.getElementById('modal-editar-presupuesto').style.display = 'flex';
   setTimeout(() => document.getElementById('edit-presupuesto-monto').focus(), 100);
@@ -3294,6 +3294,28 @@ function formatInput(input) {
   // Mantener cursor en posición correcta
   const diff = input.value.length - prevLen;
   input.setSelectionRange(cursor + diff, cursor + diff);
+}
+
+// Formatea un número (ej: 500000 o 500000.5) al formato visual del input
+// de monto: separador de miles con punto, hasta 2 decimales con coma.
+// Usar SIEMPRE que se precargue un input de monto con un valor existente,
+// para que quede igual que cuando el usuario lo tipea desde cero.
+function formatMontoParaInput(monto) {
+  if (monto === null || monto === undefined || monto === '' || isNaN(monto)) return '';
+  const negativo = monto < 0;
+  const abs = Math.abs(monto);
+  const esEntero = Number.isInteger(abs);
+  let entero, decimal;
+  if (esEntero) {
+    entero = String(abs);
+  } else {
+    const partes = abs.toFixed(2).split('.');
+    entero = partes[0];
+    decimal = partes[1];
+  }
+  entero = entero.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const resultado = decimal ? `${entero},${decimal}` : entero;
+  return negativo ? `-${resultado}` : resultado;
 }
 
 function bindMontoInput(id) {
