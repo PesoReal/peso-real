@@ -1608,9 +1608,51 @@ select option{background:var(--bg3)}
     </button>
     <div id="mov-desglose" style="display:none;margin-bottom:24px"></div>
 
-    <div style="margin-bottom:8px;font-family:'DM Sans',sans-serif;font-size:16px">Movimientos del mes</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div style="font-family:'DM Sans',sans-serif;font-size:16px" id="mov-lista-titulo">Movimientos del mes</div>
+      <button onclick="abrirFiltroMovimientos()" style="background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;padding:4px">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+        Filtrar
+        <span id="mov-filtro-badge" style="display:none;width:7px;height:7px;border-radius:50%;background:var(--accent)"></span>
+      </button>
+    </div>
+    <div id="mov-filtro-subtitulo" style="display:none;font-size:12px;color:var(--text3);margin-bottom:8px"></div>
     <div id="mov-lista"></div>
 
+  </div>
+</div>
+
+<!-- ── Modal filtrar movimientos ── -->
+<div id="modal-filtro-mov" style="display:none;position:fixed;inset:0;z-index:150;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:flex-end">
+  <div style="background:var(--bg2);border-radius:20px 20px 0 0;padding:28px 24px calc(28px + var(--safe-bottom));width:100%;border-top:1px solid var(--border)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="font-family:'DM Sans',sans-serif;font-size:20px">Filtrar movimientos</div>
+      <button onclick="cerrarFiltroMovimientos()" style="background:var(--bg3);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;color:var(--text2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">&times;</button>
+    </div>
+
+    <div class="field">
+      <label>Tipo</label>
+      <div style="display:flex;gap:10px">
+        <button id="filtro-tipo-todos" onclick="elegirFiltroTipo('todos')" style="flex:1;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:12px 4px;cursor:pointer">Todos</button>
+        <button id="filtro-tipo-ingreso" onclick="elegirFiltroTipo('ingreso')" style="flex:1;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:12px 4px;cursor:pointer">Ingresos</button>
+        <button id="filtro-tipo-egreso" onclick="elegirFiltroTipo('egreso')" style="flex:1;border:1px solid var(--border);border-radius:var(--radius-sm);background:transparent;color:var(--text2);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:12px 4px;cursor:pointer">Egresos</button>
+      </div>
+    </div>
+
+    <div class="field" style="margin-top:14px">
+      <label>Desde (opcional)</label>
+      <input type="date" id="filtro-desde"
+        style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;padding:14px 16px;outline:none">
+    </div>
+    <div class="field" style="margin-top:12px">
+      <label>Hasta (opcional)</label>
+      <input type="date" id="filtro-hasta"
+        style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:16px;padding:14px 16px;outline:none">
+    </div>
+    <div style="font-size:12px;color:var(--text3);margin-top:10px;line-height:1.4">Si definís un rango de fechas, la lista de abajo va a mostrar resultados de todo tu historial que coincidan, sin importar el mes que estés navegando arriba. Tu selección queda guardada para la próxima vez.</div>
+
+    <button onclick="aplicarFiltroMovimientos()" class="btn-primary" style="width:100%;margin-top:18px">Aplicar filtro</button>
+    <button onclick="limpiarFiltroMovimientos()" style="width:100%;background:none;border:none;color:var(--text3);font-size:13px;padding:12px;cursor:pointer">Quitar filtro</button>
   </div>
 </div>
 
@@ -2257,6 +2299,7 @@ function desglosePorCategoria(mesKey) {
 
 let movTipoActivo = 'egreso';
 let editandoMovimientoId = null; // null = alta nueva; id = editando uno existente
+let filtroTipoUI = 'todos'; // estado de trabajo del modal de filtro, antes de aplicar
 let movMesViendo = null; // null = mes real actual; se resetea cada vez que se entra a la pantalla
 
 function mesSumar(mesKey, delta) {
@@ -2600,6 +2643,67 @@ function eliminarMovimiento(id) {
 }
 
 // ═══════════════════════════════════════════════
+// FILTROS DE MOVIMIENTOS (tipo + rango de fechas, con memoria permanente)
+// ═══════════════════════════════════════════════
+function getFiltrosMovimientos() {
+  return state.filtrosMovimientos || { tipo: 'todos', desde: '', hasta: '' };
+}
+
+function filtroMovimientosActivo() {
+  const f = getFiltrosMovimientos();
+  return f.tipo !== 'todos' || !!f.desde || !!f.hasta;
+}
+
+function abrirFiltroMovimientos() {
+  const f = getFiltrosMovimientos();
+  filtroTipoUI = f.tipo || 'todos';
+  actualizarFiltroTipoUI();
+  document.getElementById('filtro-desde').value = f.desde || '';
+  document.getElementById('filtro-hasta').value = f.hasta || '';
+  document.getElementById('modal-filtro-mov').style.display = 'flex';
+}
+
+function cerrarFiltroMovimientos() {
+  document.getElementById('modal-filtro-mov').style.display = 'none';
+}
+
+function elegirFiltroTipo(tipo) {
+  filtroTipoUI = tipo;
+  actualizarFiltroTipoUI();
+}
+
+function actualizarFiltroTipoUI() {
+  ['todos', 'ingreso', 'egreso'].forEach(t => {
+    const btn = document.getElementById('filtro-tipo-' + t);
+    if (!btn) return;
+    const activo = filtroTipoUI === t;
+    btn.style.background = activo ? 'var(--accent)' : 'transparent';
+    btn.style.color = activo ? '#0a0b0d' : 'var(--text2)';
+    btn.style.borderColor = activo ? 'var(--accent)' : 'var(--border)';
+  });
+}
+
+function aplicarFiltroMovimientos() {
+  const desde = document.getElementById('filtro-desde').value;
+  const hasta = document.getElementById('filtro-hasta').value;
+  if (desde && hasta && desde > hasta) {
+    alert('La fecha "Desde" no puede ser posterior a "Hasta".');
+    return;
+  }
+  state.filtrosMovimientos = { tipo: filtroTipoUI, desde, hasta };
+  saveState();
+  cerrarFiltroMovimientos();
+  buildMovimientos(movMesViendo);
+}
+
+function limpiarFiltroMovimientos() {
+  state.filtrosMovimientos = { tipo: 'todos', desde: '', hasta: '' };
+  saveState();
+  cerrarFiltroMovimientos();
+  buildMovimientos(movMesViendo);
+}
+
+// ═══════════════════════════════════════════════
 // GASTOS FIJOS
 // ═══════════════════════════════════════════════
 function getGastosFijos() {
@@ -2855,16 +2959,47 @@ function buildMovimientos(mesKey) {
     }).join('');
   }
 
-  // Lista de movimientos del mes, más reciente primero
-  const movs = movimientosDelMes(mesHoy).slice().sort((a, b) => b.fecha.localeCompare(a.fecha));
+  // Lista de movimientos: por mes (default) o filtrada por tipo/rango de fechas
+  const filtros = getFiltrosMovimientos();
+  const rangoActivo = !!(filtros.desde || filtros.hasta);
+  let movs = rangoActivo
+    ? getMovimientos().filter(m => (!filtros.desde || m.fecha >= filtros.desde) && (!filtros.hasta || m.fecha <= filtros.hasta))
+    : movimientosDelMes(mesHoy);
+  if (filtros.tipo && filtros.tipo !== 'todos') movs = movs.filter(m => m.tipo === filtros.tipo);
+  movs = movs.slice().sort((a, b) => b.fecha.localeCompare(a.fecha));
+
+  const tituloEl = document.getElementById('mov-lista-titulo');
+  const subtituloEl = document.getElementById('mov-filtro-subtitulo');
+  const badgeEl = document.getElementById('mov-filtro-badge');
+  badgeEl.style.display = filtroMovimientosActivo() ? 'inline-block' : 'none';
+  if (rangoActivo) {
+    tituloEl.textContent = 'Resultados filtrados';
+    const fLabel = (f) => { const [y, m, d] = f.split('-'); return `${d}/${m}/${y}`; };
+    const desdeTxt = filtros.desde ? fLabel(filtros.desde) : 'siempre';
+    const hastaTxt = filtros.hasta ? fLabel(filtros.hasta) : 'hoy';
+    subtituloEl.textContent = `${desdeTxt} – ${hastaTxt}${filtros.tipo !== 'todos' ? ' · ' + (filtros.tipo === 'ingreso' ? 'ingresos' : 'egresos') : ''} · no depende del mes que ves arriba`;
+    subtituloEl.style.display = 'block';
+  } else if (filtros.tipo !== 'todos') {
+    tituloEl.textContent = 'Movimientos del mes (filtrado)';
+    subtituloEl.style.display = 'none';
+  } else {
+    tituloEl.textContent = 'Movimientos del mes';
+    subtituloEl.style.display = 'none';
+  }
+
   const listEl = document.getElementById('mov-lista');
   if (movs.length === 0) {
-    listEl.innerHTML = `<div style="color:var(--text3);font-size:14px;padding:16px 0;text-align:center">Todavía no registraste movimientos ${esMesActual ? 'este mes' : 'en ese mes'}.</div>`;
+    const msgVacio = rangoActivo || filtros.tipo !== 'todos'
+      ? 'No hay movimientos que coincidan con el filtro.'
+      : `Todavía no registraste movimientos ${esMesActual ? 'este mes' : 'en ese mes'}.`;
+    listEl.innerHTML = `<div style="color:var(--text3);font-size:14px;padding:16px 0;text-align:center">${msgVacio}</div>`;
   } else {
     listEl.innerHTML = movs.map(m => {
       const info = m.tipo === 'egreso' ? (CATEGORIAS_EGRESO[m.categoria] || { label: m.categoria, icono: '📦' }) : (CATEGORIAS_INGRESO[m.categoria] || { label: m.categoria, icono: '💰' });
       const d = new Date(m.fecha + 'T00:00:00');
-      const fechaLabel = `${d.getDate()} ${MESES[d.getMonth()].substring(0, 3)}`;
+      const fechaLabel = rangoActivo
+        ? `${d.getDate()} ${MESES[d.getMonth()].substring(0, 3)} ${d.getFullYear()}`
+        : `${d.getDate()} ${MESES[d.getMonth()].substring(0, 3)}`;
       const color = m.tipo === 'egreso' ? 'var(--red)' : 'var(--green)';
       const signo = m.tipo === 'egreso' ? '-' : '+';
       const esEditable = m.origen !== 'sueldo';
