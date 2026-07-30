@@ -15,8 +15,8 @@
 <!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js';
-  import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, sendPasswordResetEmail } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js';
-  import { getFirestore, doc, setDoc, getDoc, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js';
+  import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, sendPasswordResetEmail, deleteUser, EmailAuthProvider, reauthenticateWithCredential, reauthenticateWithPopup } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js';
+  import { getFirestore, doc, setDoc, getDoc, onSnapshot, deleteDoc } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js';
 
   const firebaseConfig = {
     apiKey: "AIzaSyDpjpXBsLI99Vbpoijft7LviUX8PqhI1zY",
@@ -44,6 +44,13 @@
   window._firebaseSetDoc = (ref, data) => setDoc(ref, data, { merge: true });
   window._firebaseGetDoc = (ref) => getDoc(ref);
   window._firebaseOnSnapshot = (ref, cb) => onSnapshot(ref, cb);
+  window._firebaseDeleteDoc = (path) => deleteDoc(doc(db, path));
+  window._firebaseReauthPassword = (password) => {
+    const cred = EmailAuthProvider.credential(auth.currentUser.email, password);
+    return reauthenticateWithCredential(auth.currentUser, cred);
+  };
+  window._firebaseReauthGoogle = () => reauthenticateWithPopup(auth.currentUser, googleProvider);
+  window._firebaseDeleteUser = () => deleteUser(auth.currentUser);
 
   // Escuchar cambios de auth state
   onAuthStateChanged(auth, (user) => {
@@ -1476,6 +1483,9 @@ select option{background:var(--bg3)}
       <button onclick="cerrarSesion()" style="width:100%;background:var(--red-bg);border:1px solid rgba(255,90,90,0.2);border-radius:var(--radius-sm);color:var(--red);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;padding:14px;cursor:pointer">
         Cerrar sesion
       </button>
+      <button onclick="abrirBorrarCuenta()" style="width:100%;background:none;border:none;color:var(--text3);font-size:13px;padding:16px 4px 0;cursor:pointer;text-decoration:underline">
+        Borrar mi cuenta y todos mis datos
+      </button>
     </div>
 
   </div>
@@ -1650,7 +1660,7 @@ select option{background:var(--bg3)}
 <div id="modal-movimiento" style="display:none;position:fixed;inset:0;z-index:150;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:flex-end">
   <div style="background:var(--bg2);border-radius:20px 20px 0 0;padding:28px 24px calc(28px + var(--safe-bottom));width:100%;border-top:1px solid var(--border);max-height:85vh;overflow-y:auto">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-      <div style="font-family:'DM Sans',sans-serif;font-size:20px">Nuevo movimiento</div>
+      <div style="font-family:'DM Sans',sans-serif;font-size:20px" id="mov-modal-titulo">Nuevo movimiento</div>
       <button onclick="cerrarFormMovimiento()" style="background:var(--bg3);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;color:var(--text2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">&times;</button>
     </div>
 
@@ -1685,6 +1695,7 @@ select option{background:var(--bg3)}
     </div>
 
     <button onclick="guardarMovimiento()" class="btn-primary" style="width:100%;margin-top:18px">Guardar movimiento</button>
+    <button id="btn-eliminar-movimiento" onclick="eliminarMovimientoActual()" style="width:100%;background:none;border:none;color:var(--red);font-size:13px;padding:12px;cursor:pointer;display:none">Eliminar movimiento</button>
   </div>
 </div>
 
@@ -1737,6 +1748,44 @@ select option{background:var(--bg3)}
       <button onclick="descargarCSVMovimientos()" style="flex:1;background:transparent;border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;padding:14px;cursor:pointer">Descargar CSV</button>
       <button onclick="descargarPDFMovimientos()" class="btn-primary" style="flex:1">Descargar PDF</button>
     </div>
+  </div>
+</div>
+
+<!-- ── Modal borrar cuenta ── -->
+<div id="modal-borrar-cuenta" style="display:none;position:fixed;inset:0;z-index:150;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:flex-end">
+  <div style="background:var(--bg2);border-radius:20px 20px 0 0;padding:28px 24px calc(28px + var(--safe-bottom));width:100%;border-top:1px solid var(--border);max-height:88vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-family:'DM Sans',sans-serif;font-size:20px;color:var(--red)">Borrar cuenta</div>
+      <button onclick="cerrarBorrarCuenta()" style="background:var(--bg3);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;color:var(--text2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">&times;</button>
+    </div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.5;margin-bottom:14px">
+      Esta acción es <strong style="color:var(--text)">permanente e irreversible</strong>. Se borra todo lo asociado a tu cuenta:
+    </div>
+    <ul style="font-size:13px;color:var(--text2);line-height:1.8;margin:0 0 16px 18px;padding:0">
+      <li>Sueldo y movimientos (ingresos/egresos)</li>
+      <li>Historial de bienestar financiero (IBF)</li>
+      <li>Historial de compras y precios registrados</li>
+      <li>Perfil y acceso a la cuenta</li>
+    </ul>
+    <div id="borrar-cuenta-mp-aviso" style="display:none;font-size:12px;color:var(--amber);background:var(--amber-bg);border:1px solid rgba(245,166,35,0.3);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px;line-height:1.5">
+      Tenés Premium activo. Si lo pagás por suscripción en Mercado Pago, cancelala también ahí — borrar la cuenta acá no cancela el cobro automático.
+    </div>
+
+    <div id="borrar-cuenta-pass-field" class="field" style="display:none">
+      <label>Confirmá tu contraseña</label>
+      <input type="password" id="borrar-cuenta-pass" autocomplete="current-password" placeholder="Tu contraseña">
+    </div>
+
+    <div class="field" style="margin-top:14px">
+      <label>Escribí BORRAR para confirmar</label>
+      <input type="text" id="borrar-cuenta-confirm-texto" autocomplete="off" placeholder="BORRAR" oninput="actualizarBotonBorrarCuenta()">
+    </div>
+
+    <div id="borrar-cuenta-error" style="display:none;font-size:12px;color:var(--red);margin-top:10px"></div>
+
+    <button id="btn-confirmar-borrar-cuenta" onclick="confirmarBorrarCuenta()" disabled style="width:100%;margin-top:18px;background:var(--red);border:none;border-radius:var(--radius-sm);color:#1a0505;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;padding:14px;cursor:pointer;opacity:0.4">
+      Borrar cuenta definitivamente
+    </button>
   </div>
 </div>
 
@@ -2207,6 +2256,7 @@ function desglosePorCategoria(mesKey) {
 }
 
 let movTipoActivo = 'egreso';
+let editandoMovimientoId = null; // null = alta nueva; id = editando uno existente
 let movMesViendo = null; // null = mes real actual; se resetea cada vez que se entra a la pantalla
 
 function mesSumar(mesKey, delta) {
@@ -2423,7 +2473,10 @@ function descargarPDFMovimientos() {
 }
 
 function abrirFormMovimiento(tipo) {
+  editandoMovimientoId = null;
   movTipoActivo = tipo || 'egreso';
+  document.getElementById('mov-modal-titulo').textContent = 'Nuevo movimiento';
+  document.getElementById('btn-eliminar-movimiento').style.display = 'none';
   document.getElementById('mov-fecha').value = new Date().toISOString().slice(0, 10);
   document.getElementById('mov-concepto').value = '';
   document.getElementById('mov-monto').value = '';
@@ -2431,7 +2484,26 @@ function abrirFormMovimiento(tipo) {
   document.getElementById('modal-movimiento').style.display = 'flex';
 }
 
+// Los movimientos de sueldo se editan desde la pantalla Sueldo (tienen su propia
+// lógica de mes vigente / excluidoBalance) — no se tocan desde este form genérico.
+function abrirEditarMovimiento(id) {
+  const m = getMovimientos().find(mv => mv.id === id);
+  if (!m || m.origen === 'sueldo') return;
+
+  editandoMovimientoId = id;
+  movTipoActivo = m.tipo;
+  document.getElementById('mov-modal-titulo').textContent = 'Editar movimiento';
+  document.getElementById('btn-eliminar-movimiento').style.display = 'block';
+  document.getElementById('mov-fecha').value = m.fecha;
+  document.getElementById('mov-concepto').value = m.concepto || '';
+  actualizarTipoMovimientoUI();
+  document.getElementById('mov-categoria').value = m.categoria;
+  document.getElementById('mov-monto').value = formatMontoParaInput(m.monto);
+  document.getElementById('modal-movimiento').style.display = 'flex';
+}
+
 function cerrarFormMovimiento() {
+  editandoMovimientoId = null;
   document.getElementById('modal-movimiento').style.display = 'none';
 }
 
@@ -2481,19 +2553,43 @@ function guardarMovimiento() {
     return;
   }
 
-  if (!state.movimientos) state.movimientos = [];
-  state.movimientos.push({
-    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-    tipo: movTipoActivo,
-    categoria,
-    concepto: concepto || (movTipoActivo === 'egreso' ? CATEGORIAS_EGRESO[categoria].label : CATEGORIAS_INGRESO[categoria].label),
-    monto,
-    fecha,
-  });
+  const conceptoFinal = concepto || (movTipoActivo === 'egreso' ? CATEGORIAS_EGRESO[categoria].label : CATEGORIAS_INGRESO[categoria].label);
+
+  if (editandoMovimientoId) {
+    const idx = getMovimientos().findIndex(m => m.id === editandoMovimientoId);
+    if (idx >= 0) {
+      // Se preservan campos como origen/fijoId/excluidoBalance: editar un
+      // movimiento que vino de un gasto fijo no debe desvincularlo de su plantilla.
+      state.movimientos[idx] = {
+        ...state.movimientos[idx],
+        tipo: movTipoActivo,
+        categoria,
+        concepto: conceptoFinal,
+        monto,
+        fecha,
+      };
+    }
+  } else {
+    if (!state.movimientos) state.movimientos = [];
+    state.movimientos.push({
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      tipo: movTipoActivo,
+      categoria,
+      concepto: conceptoFinal,
+      monto,
+      fecha,
+    });
+  }
   saveState();
   cerrarFormMovimiento();
   buildMovimientos();
   buildDashboard();
+}
+
+function eliminarMovimientoActual() {
+  if (!editandoMovimientoId) return;
+  eliminarMovimiento(editandoMovimientoId);
+  cerrarFormMovimiento();
 }
 
 function eliminarMovimiento(id) {
@@ -2771,14 +2867,15 @@ function buildMovimientos(mesKey) {
       const fechaLabel = `${d.getDate()} ${MESES[d.getMonth()].substring(0, 3)}`;
       const color = m.tipo === 'egreso' ? 'var(--red)' : 'var(--green)';
       const signo = m.tipo === 'egreso' ? '-' : '+';
-      return `<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">
+      const esEditable = m.origen !== 'sueldo';
+      return `<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);${esEditable ? 'cursor:pointer' : ''}"${esEditable ? ` onclick="abrirEditarMovimiento('${m.id}')"` : ''}>
         <div style="width:36px;height:36px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${info.icono}</div>
         <div style="flex:1;min-width:0">
           <div style="font-size:14px;color:var(--text)">${m.concepto}</div>
           <div style="font-size:12px;color:var(--text3)">${info.label} · ${fechaLabel}${m.origen === 'sueldo' ? ' · sincronizado desde Sueldo' : ''}${m.origen === 'fijo' ? ' · gasto fijo' : ''}${m.excluidoBalance ? ' · no cuenta en el balance' : ''}</div>
         </div>
         <div style="color:${color};font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;white-space:nowrap">${signo}${fARS(m.monto)}</div>
-        ${m.origen === 'sueldo' ? '' : `<button onclick="eliminarMovimiento('${m.id}')" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:4px 2px">&times;</button>`}
+        ${m.origen === 'sueldo' ? '' : `<button onclick="event.stopPropagation(); eliminarMovimiento('${m.id}')" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:4px 2px">&times;</button>`}
       </div>`;
     }).join('');
   }
@@ -5780,6 +5877,111 @@ async function cerrarSesion() {
   chatHistory = [];
   currentStep = 0;
   goToAuth();
+}
+
+// ═══════════════════════════════════════════════
+// BORRAR CUENTA (derecho al olvido)
+// ═══════════════════════════════════════════════
+function abrirBorrarCuenta() {
+  const user = window._firebaseUser;
+  if (!user) return;
+
+  document.getElementById('borrar-cuenta-confirm-texto').value = '';
+  document.getElementById('borrar-cuenta-pass').value = '';
+  document.getElementById('borrar-cuenta-error').style.display = 'none';
+  document.getElementById('borrar-cuenta-error').textContent = '';
+  actualizarBotonBorrarCuenta();
+
+  // Solo pedimos contraseña si el login es por email/contraseña.
+  // Si es Google, se reautentica con el popup al confirmar.
+  const esPassword = user.providerData.some(p => p.providerId === 'password');
+  document.getElementById('borrar-cuenta-pass-field').style.display = esPassword ? 'block' : 'none';
+
+  document.getElementById('borrar-cuenta-mp-aviso').style.display = esPremium() ? 'block' : 'none';
+
+  document.getElementById('modal-borrar-cuenta').style.display = 'flex';
+}
+
+function cerrarBorrarCuenta() {
+  document.getElementById('modal-borrar-cuenta').style.display = 'none';
+}
+
+function actualizarBotonBorrarCuenta() {
+  const texto = document.getElementById('borrar-cuenta-confirm-texto').value.trim();
+  const btn = document.getElementById('btn-confirmar-borrar-cuenta');
+  const habilitado = texto === 'BORRAR';
+  btn.disabled = !habilitado;
+  btn.style.opacity = habilitado ? '1' : '0.4';
+}
+
+function mostrarErrorBorrarCuenta(msg) {
+  const el = document.getElementById('borrar-cuenta-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+async function confirmarBorrarCuenta() {
+  const texto = document.getElementById('borrar-cuenta-confirm-texto').value.trim();
+  if (texto !== 'BORRAR') return;
+
+  const user = window._firebaseUser;
+  if (!user) return;
+
+  const btn = document.getElementById('btn-confirmar-borrar-cuenta');
+  btn.disabled = true;
+  btn.textContent = 'Borrando...';
+  document.getElementById('borrar-cuenta-error').style.display = 'none';
+
+  const esPassword = user.providerData.some(p => p.providerId === 'password');
+
+  try {
+    // 1. Reautenticar (Firebase lo exige para borrar la cuenta, por seguridad)
+    if (esPassword) {
+      const pass = document.getElementById('borrar-cuenta-pass').value;
+      if (!pass) {
+        mostrarErrorBorrarCuenta('Ingresá tu contraseña para confirmar.');
+        btn.disabled = false;
+        btn.textContent = 'Borrar cuenta definitivamente';
+        return;
+      }
+      await window._firebaseReauthPassword(pass);
+    } else {
+      await window._firebaseReauthGoogle();
+    }
+
+    // 2. Borrar documentos de Firestore asociados a la cuenta
+    const uid = user.uid;
+    const email = (user.email || '').toLowerCase();
+    if (firestoreUnsub) firestoreUnsub();
+    await window._firebaseDeleteDoc('usuarios/' + uid);
+    // Best-effort: si falla por permisos (ver nota en estados/construccion.md
+    // sobre reglas de beta_users), no bloqueamos el borrado del resto.
+    try { await window._firebaseDeleteDoc('beta_users/' + email); } catch (e) {}
+    try { await window._firebaseDeleteDoc('duo_invites/' + email); } catch (e) {}
+
+    // 3. Borrar el usuario de Firebase Auth
+    await window._firebaseDeleteUser();
+
+    // 4. Limpiar estado local y volver a la pantalla de auth
+    state = {};
+    chatHistory = [];
+    currentStep = 0;
+    cerrarBorrarCuenta();
+    goToAuth();
+    alert('Tu cuenta y todos tus datos fueron borrados.');
+  } catch (error) {
+    btn.disabled = false;
+    btn.textContent = 'Borrar cuenta definitivamente';
+    if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+      mostrarErrorBorrarCuenta('Contraseña incorrecta.');
+    } else if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
+      mostrarErrorBorrarCuenta('Cancelaste la confirmación. Intentá de nuevo.');
+    } else if (error.code === 'auth/requires-recent-login') {
+      mostrarErrorBorrarCuenta('Por seguridad, cerrá sesión, volvé a entrar, y probá borrar la cuenta de nuevo enseguida.');
+    } else {
+      mostrarErrorBorrarCuenta('No se pudo borrar la cuenta. Probá de nuevo o escribinos.');
+    }
+  }
 }
 
 function goToAuth() {
