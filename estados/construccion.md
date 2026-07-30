@@ -19,7 +19,7 @@ Este chat es exclusivamente para construcción técnica: vibecoding, archivos, d
 - Vercel env vars: `ANTHROPIC_API_KEY`, `MP_ACCESS_TOKEN`, `APP_BASE_URL`, `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, `BREVO_API_KEY`
 
 ## Protocolo de trabajo
-- Claude genera archivos → Adrián copia en GitHub (lápiz → Ctrl+A → pegar → Commit) → Vercel autodeploy
+- Claude genera el `app.html` completo → Adrián copia en GitHub (lápiz → Ctrl+A → pegar → Commit) → Vercel autodeploy. Nunca diffs parciales.
 - Carpeta `api/` en GitHub para Vercel Functions
 - Nunca usar caracteres especiales sin escapar en JS: comillas simples/dobles anidadas rompen el parser (ver Lecciones aprendidas)
 
@@ -27,11 +27,11 @@ Este chat es exclusivamente para construcción técnica: vibecoding, archivos, d
 
 ### Auth
 - Firebase Auth: email/contraseña + Google
-- Firestore: colección `usuarios/{uid}` con todos los datos del usuario, incluyendo movimientos (ver más abajo)
+- Firestore: colección `usuarios/{uid}` con todos los datos del usuario, incluyendo movimientos y gastos fijos
 - Sync en tiempo real multi-dispositivo vía `saveState()`
 - Migración automática desde localStorage al crear cuenta
 - Pantalla de confirmación de sesión activa ("Continuar como [nombre]" / "Usar otra cuenta")
-- Reset de contraseña: no hay flujo "olvidé mi contraseña" dentro de la app todavía — se hace manualmente desde Firebase Console (Authentication → Users → ⋮ → Restablecer contraseña)
+- **Reset de contraseña:** link "¿Olvidaste tu contraseña?" en el login, abre modal, usa `sendPasswordResetEmail` de Firebase Auth nativo
 - Reglas Firestore: cada usuario solo lee/escribe sus propios datos; `beta_users` lectura pública; `duo_invites` lectura/escritura por email autenticado
 
 ### Mercado Pago
@@ -42,9 +42,11 @@ Este chat es exclusivamente para construcción técnica: vibecoding, archivos, d
 - `esPremium()` lee `state.premium.activo` desde Firestore en tiempo real
 
 ### Plan Duo
-- Modal en teaser: ingreso de email del segundo usuario + elección de canasta (compartida/separada)
+- Modal en teaser: ingreso de email del segundo usuario
 - `api/duo-invite.js` — envía email de invitación via Brevo al segundo usuario
 - Segundo usuario activa su acceso entrando a `app.html?duo_invite={uidInvitador}`
+- **Confirmado por revisión de código:** hoy son dos cuentas 100% independientes (Firestore docs separados). Solo se comparte el acceso Premium — nada de Sueldo, Movimientos o Compras se comparte entre los dos usuarios.
+- **Limpieza de feature falsa:** existía un selector "Compartir / Separada" (canasta de compras) en el modal de invitación que no hacía nada funcional — se guardaba en una variable nunca usada. Se sacó todo (HTML, función, variable), junto con el texto de marketing "canasta compartida opcional". Queda como feature real de V3 cuando se construya.
 
 ### Beta privada
 - `beta.html` — landing de registro/login para betatesters
@@ -55,45 +57,58 @@ Este chat es exclusivamente para construcción técnica: vibecoding, archivos, d
 - `sw.js` — nunca cachea `.html` (garantiza actualizaciones inmediatas en todos los dispositivos)
 - Instalable desde Safari en iPhone y Chrome en Android. Chrome en iOS no soporta PWA (limitación de Apple)
 
-### Pilar 1 — Verdad financiera
-- **Sueldo real (pantalla propia, ya no en el dashboard principal):** sueldo ARS + USD al TC MEP, poder adquisitivo real vs IPC INDEC, línea de tiempo (6 puntos), métricas y mensaje emocional por IA
-- **Sueldo editable mes a mes, con selector de mes:** botón "Actualizar sueldo" en la pantalla Sueldo. El modal tiene un desplegable con los últimos 12 meses (arranca en el actual). Si el mes elegido ya tiene un sueldo cargado, el monto se autocompleta para poder corregirlo (mismo modal sirve para cargar y para editar). Regla importante: si el mes elegido es el **mes real actual**, también actualiza el "sueldo vigente" usado para el cálculo de poder adquisitivo; si es un **mes pasado** (corrección tardía), solo actualiza ese movimiento puntual en Ingresos y egresos, sin tocar el sueldo vigente de hoy
-- El dashboard principal ya **no** muestra la card grande de poder adquisitivo — quedó solo un indicador chico ("+X% poder adquisitivo") bajo el mini-card de Sueldo ARS, que lleva a la pantalla de Sueldo para el detalle completo
-- Presupuesto ajustado por IPC (el campo manual del onboarding) fue **eliminado** — ver módulo de Ingresos y egresos
+### Onboarding — reordenado (5 pasos)
+1. Bienvenida
+2. Sueldo (actual, de referencia, mes de referencia, moneda)
+3. Hábito de ahorro
+4. **Presenta el IBF** — chequeo semanal liviano, sin cargar gastos
+5. **Presenta Movimientos** — explícitamente como capa opcional para quien quiera más control
+- El orden importa: IBF se presenta antes que Movimientos, por pedido explícito de Estrategia.
+- Ya no pregunta presupuesto manual (se eliminó, ver módulo de Movimientos).
 
-### Ingresos y egresos
-- Pantalla propia (`screen-movimientos`), accesible desde el nav inferior y desde la card "Balance del mes" del dashboard
-- Carga de movimientos: tipo (ingreso/egreso), categoría, concepto, monto, fecha
+### Pilar 1 — Verdad financiera
+- **Sueldo real (pantalla propia):** sueldo ARS + USD al TC MEP, poder adquisitivo real vs IPC INDEC, línea de tiempo, métricas y mensaje emocional por IA
+- **Sueldo editable con selector de mes:** modal con desplegable de los últimos 12 meses. Si el mes elegido ya tiene sueldo cargado, se autocompleta para poder corregirlo.
+  - Si el mes elegido es el **mes real actual**, también actualiza el "sueldo vigente" (usado para poder adquisitivo)
+  - Si es un **mes pasado**, solo actualiza ese movimiento puntual, sin tocar el sueldo vigente de hoy
+  - **Checkbox "no sumar al balance"** (solo visible en meses pasados): permite cargar un sueldo histórico como referencia sin inflar el balance de ese mes viejo
+- El dashboard principal **no** muestra la card grande de poder adquisitivo — queda un indicador chico bajo "Sueldo ARS", el detalle completo vive en la pantalla Sueldo
+
+### Ingresos y egresos (Movimientos)
+- Pantalla propia, accesible desde nav inferior y desde la card "Balance del mes" del dashboard
+- Carga de movimientos: tipo, categoría, concepto, monto, fecha
 - Categorías egreso: comida, transporte, entretenimiento, salud, educación, servicios, otros
-- Categorías ingreso: extra, otro (la categoría "sueldo" fue sacada del alta manual, se sincroniza sola desde la sección Sueldo)
-- **Sueldo sincronizado automáticamente:** cada actualización de sueldo se refleja como ingreso automático del mes correspondiente en Movimientos, sin duplicarse. En la lista aparece marcado "sincronizado desde Sueldo" y no tiene botón de eliminar ahí
-- Balance del mes = ingresos − egresos = se muestra como "tu presupuesto disponible este mes"
-- **Presupuesto de gasto (meta opcional):** el usuario puede definir un límite de gasto para el mes. Se muestra barra de progreso, % usado, y cuánto resta o cuánto se excedió. Es un valor único persistente (no por mes)
-- **Navegación entre meses:** flechitas ‹ › junto al mes para revisar meses anteriores (no deja ir al futuro). Al entrar a la pantalla siempre arranca en el mes real actual. Esto es un paso intermedio hacia el filtro más completo que pidió Adrián (por tipo + rango de fechas custom, con memoria permanente) — **pendiente, no construido todavía**
-- **Desglose por categoría colapsable:** botón con flecha que despliega/oculta el detalle visual, para que lo primero que se vea sea la lista de movimientos. Mantiene el estado abierto/cerrado al cambiar de mes, se resetea a cerrado al reentrar a la pantalla
-- **Decisión de arquitectura:** los movimientos se guardan como array `state.movimientos[]` dentro del mismo doc `usuarios/{uid}` (mismo mecanismo de sync que el resto del state), no como subcolección Firestore separada. Si el volumen crece mucho, evaluar migrar a subcolección `usuarios/{uid}/movimientos/{id}`
+- Categorías ingreso: extra, otro (sueldo se sincroniza solo, no se carga a mano)
+- Balance del mes = ingresos − egresos = "tu presupuesto disponible este mes" (reemplaza al presupuesto manual eliminado del onboarding)
+- **Presupuesto de gasto (meta opcional):** límite de gasto mensual definido por el usuario, con barra de progreso. Valor único persistente, no por mes
+- **Navegación entre meses:** flechitas ‹ › para revisar meses anteriores (no deja ir al futuro). Se resetea al mes actual al reentrar a la pantalla
+- **Desglose por categoría colapsable:** botón con flecha, cerrado por defecto
+- **Gastos fijos:** plantillas de gastos recurrentes (alquiler, luz, etc). Banner ámbar avisa pendientes del mes; se cargan en bloque con checkboxes + montos editables
+- **Decisión de arquitectura:** `state.movimientos[]` y `state.gastosFijos[]` dentro del mismo doc `usuarios/{uid}`, no subcolecciones separadas (simplicidad; revisar si el volumen crece mucho)
+- **Gap conocido:** los movimientos manuales (no-sueldo) solo se pueden borrar y recargar, no editar directamente — inconsistente con el sueldo, que sí tiene edición completa
 
 ### Pilar 2 — Bienestar financiero
 - IBF semanal (5 preguntas, score 0-100)
-- Comparación con pares: los 3 recuadros (Promedio / Tu grupo / Percentil) tienen la misma estructura de 3 líneas (etiqueta arriba, valor en el medio, subtexto abajo) — antes "Promedio general" tenía solo 2 líneas y quedaba descuadrado contra los otros dos
+- Comparación con pares: los 3 recuadros (Promedio / Tu grupo / Percentil) tienen la misma estructura de 3 líneas (etiqueta / valor / subtexto) — fix de alineación aplicado
 - Historial IBF + tab historial emocional, sin cambios
 
 ### Pilar 3 — Memoria de compras
 - Sin cambios recientes. Pendiente a futuro: carga masiva de compra que combine el registro de productos con el egreso de dinero en un solo paso
 
 ### Asistente financiero (Premium)
-- Reencuadrado como **asistente de economía familiar**, no solo calculadora de sueldo vs inflación
+- Reencuadrado como **asistente de economía familiar**
 - Contexto: sueldo, poder adquisitivo, balance de ingresos/egresos del mes, categorías con más gasto, presupuesto de gasto definido (si existe), IBF, canasta de compras
 
 ### UX / Responsive
 - Bottom nav: 7 ítems (Inicio, Sueldo, Bienestar, Movimientos, Compras, Asistente, Historial)
-- **Desktop:** el layout mobile se centra en pantallas grandes (max-width 500px, con borde y sombra tipo "frame de app") en vez de estirarse a todo el ancho. Aplica a `#app`, `#bottom-nav` y los modales de fondo completo
+- **Desktop:** el layout mobile se centra en pantallas grandes (max-width 500px, con borde y sombra tipo "frame de app") en vez de estirarse a todo el ancho
 
 ## Lecciones aprendidas (importante para no repetir)
 
 1. **Bug crítico de sintaxis:** un `font-family:'DM Sans'` con comillas simples sin escapar dentro de un string JS ya delimitado por comillas simples rompía **todo el script de la app**, no solo una pantalla. Cuidado con anidar comillas del mismo tipo en strings armados a mano.
 2. **Cascada CSS y media queries:** un media query nuevo agregado *antes* en el archivo puede perder contra una regla vieja sin media query que aparece *después* — con igual especificidad gana la última en orden de aparición. Los overrides de escritorio están al final del `<style>` a propósito.
-3. **`mesActual()` vs `mesRealActual()`:** `mesActual()` existe para cálculos de inflación y hace *fallback* al último mes del IPC cargado si el mes real todavía no tiene dato. Todo lo que no dependa de inflación (Movimientos, sueldo por mes) debe usar `mesRealActual()`, que siempre devuelve el mes calendario real.
+3. **`mesActual()` vs `mesRealActual()`:** `mesActual()` existe para cálculos de inflación y hace *fallback* al último mes del IPC cargado si el mes real todavía no tiene dato. Todo lo que no dependa de inflación (Movimientos, sueldo por mes) debe usar `mesRealActual()`, que siempre devuelve el mes calendario real. Mezclar estas dos funciones causó bugs reales.
+4. **Validación previa a cada entrega:** siempre correr `node --check` sobre el script extraído + verificar que todos los IDs/funciones referenciados existen sin duplicados. Nunca se probó en navegador real — queda pendiente que Adrián lo haga en cada entrega.
 
 ## Reglas Firestore actuales
 ```
@@ -114,31 +129,39 @@ service cloud.firestore {
 ```
 
 ## Versión actual
-**v0.3.1** — beta cerrada. Módulo de Ingresos y egresos con navegación entre meses, sueldo con selector de mes editable, ajustes de UI en Bienestar
+**v0.3.2** — beta cerrada. Movimientos completo (gastos fijos, presupuesto de gasto, navegación de meses), sueldo editable con selector de mes, reset de contraseña, Duo limpio de funcionalidad falsa, onboarding reordenado (IBF antes que Movimientos)
 
 ## Deuda técnica
-- **IPC hardcodeado y desactualizado** — actualizar con datos recientes de INDEC es urgente, afecta más que solo el cálculo de inflación
+- **IPC hardcodeado y desactualizado** — actualizar con datos recientes de INDEC. Máxima prioridad: ya se demostró que afecta funcionalidad, no solo precisión
 - Comparación con pares simulada — conectar Firebase cuando haya 50+ usuarios
 - Nombre de app en pantalla de redirección de MP no aparece (cosmético)
 - Presupuesto de gasto es un valor único persistente, no por mes
-- Filtros de Movimientos por tipo (ingreso/egreso) y rango de fechas custom, con memoria permanente de la selección — pedido explícito de Adrián, todavía no construido. Hoy solo existe navegación mes a mes
+- **Filtros de Movimientos** por tipo + rango de fechas custom, con memoria permanente — pedido explícito de Adrián, no construido. Hoy solo existe navegación mes a mes
+- **Editar movimientos manuales** (no-sueldo): hoy solo se pueden borrar y recargar
+- **Exportar datos** (CSV/PDF): no existe ninguna forma de sacar información de la app
+- **Borrar cuenta / derecho al olvido:** no hay flujo de borrado de cuenta y datos — puede ser requisito de tiendas de apps (Google Play) para apps financieras
+- **Recordatorios push reales:** la app no tiene infraestructura de push (sin VAPID, sin FCM, sin backend). Proyecto de infraestructura aparte, necesita decisión de Adrián
+- **Compartir datos en Plan Duo:** arquitectura actual no comparte nada entre las 2 cuentas. Si se construye la funcionalidad real (V3), es una decisión de arquitectura de datos que merece su propia conversación
 
 ## Próximas construcciones
+- Editar movimientos manuales
+- Exportar datos y borrar cuenta (antes del lanzamiento público)
 - Filtros de Movimientos por tipo + rango de fechas custom, con memoria permanente
-- Carga masiva de compra: combinar el registro de producto (Pilar 3) con el egreso de dinero (Ingresos y egresos) en un solo flujo
+- Carga masiva de compra: combinar el registro de producto (Pilar 3) con el egreso de dinero (Ingresos y egresos)
 - Notas de parche — badge en nav + modal de novedades (pendiente texto del chat de Estrategia)
 - Pasar MP a producción cuando se resuelva el bloqueo fiscal (monotributo)
 - PWA Google Play / TWA (V3)
 - IPC dinámico automático (V3)
+- Compartir datos en Plan Duo (V3, si se decide construir)
 
 ## Estado actual
-Módulo de Ingresos y egresos con navegación entre meses y desglose colapsable. Sueldo con selector de mes (permite corregir meses anteriores sin afectar el sueldo vigente). Ajuste de UI en la comparación de Bienestar (3 recuadros alineados). Esta sesión fue de ajustes de UX/UI y una feature nueva (selector de mes en sueldo), sin bugs críticos de los que veníamos arrastrando.
+Sesión larga con foco en Movimientos (gastos fijos, presupuesto de gasto, navegación de meses, desglose colapsable), sueldo editable con selector de mes, reset de contraseña, limpieza de Plan Duo (copy y feature falsa removidos), y reorden del onboarding (IBF antes que Movimientos, por pedido de Estrategia). Se identificaron 3 gaps nuevos en revisión: editar movimientos manuales, exportar datos, y borrar cuenta. Todo validado solo estáticamente (sintaxis + integridad de IDs/funciones), sin pruebas en navegador real.
 
 ## Tareas pendientes
-1. Adrián: probar el selector de mes en el modal de sueldo, en especial corregir un mes pasado (confirmar que no toca el sueldo vigente de hoy)
-2. Adrián: probar la navegación entre meses en Movimientos y el desglose colapsable
-3. Construir filtros de Movimientos por tipo + rango de fechas custom con memoria permanente
-4. Actualizar IPC con datos recientes de INDEC
-5. Recibir texto de notas de parche del chat de Estrategia → implementar badge + modal
-6. Cuando haya ingresos: pasar MP a producción + activar monotributo
-7. Evaluar con Adrián si el presupuesto de gasto debería ser por mes en vez de un valor único persistente
+1. Adrián: hacer QA completo en navegador real de todo lo acumulado (sueldo, movimientos, onboarding, auth)
+2. Actualizar IPC con datos recientes de INDEC — máxima prioridad técnica
+3. Decidir y construir: editar movimientos manuales, exportar datos, borrar cuenta (los dos últimos especialmente antes del lanzamiento público)
+4. Construir filtros de Movimientos por tipo + rango de fechas custom con memoria permanente
+5. Decidir con Adrián si vale invertir en infraestructura de push para recordatorios reales
+6. Recibir texto de notas de parche del chat de Estrategia → implementar badge + modal
+7. Cuando haya ingresos: pasar MP a producción + activar monotributo
