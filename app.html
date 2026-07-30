@@ -1587,8 +1587,9 @@ select option{background:var(--bg3)}
       <button onclick="abrirFormMovimiento('ingreso')" style="flex:1;background:var(--green-bg);border:1px solid rgba(74,222,128,0.3);border-radius:var(--radius-sm);color:var(--green);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;padding:14px;cursor:pointer">+ Ingreso</button>
     </div>
 
-    <div style="text-align:center;margin-bottom:20px">
+    <div style="text-align:center;margin-bottom:20px;display:flex;justify-content:center;gap:16px">
       <button onclick="abrirGastosFijos()" style="background:none;border:none;color:var(--text3);font-size:13px;cursor:pointer;text-decoration:underline">Gestionar gastos fijos</button>
+      <button onclick="abrirExportar()" style="background:none;border:none;color:var(--text3);font-size:13px;cursor:pointer;text-decoration:underline">Exportar datos</button>
     </div>
 
     <button onclick="toggleDesgloseCategoria()" style="width:100%;display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:16px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text)">
@@ -1713,6 +1714,29 @@ select option{background:var(--bg3)}
       </label>
     </div>
     <button onclick="guardarSueldoActualizado()" class="btn-primary" style="width:100%;margin-top:18px">Guardar</button>
+  </div>
+</div>
+
+<!-- ── Modal exportar datos ── -->
+<div id="modal-exportar" style="display:none;position:fixed;inset:0;z-index:150;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);align-items:flex-end">
+  <div style="background:var(--bg2);border-radius:20px 20px 0 0;padding:28px 24px calc(28px + var(--safe-bottom));width:100%;border-top:1px solid var(--border)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <div style="font-family:'DM Sans',sans-serif;font-size:20px">Exportar movimientos</div>
+      <button onclick="cerrarExportar()" style="background:var(--bg3);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;color:var(--text2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center">&times;</button>
+    </div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:16px">Elegí qué período exportar. Sirve para llevarle los datos a tu contador o declarar el monotributo.</div>
+    <div class="field">
+      <label>Período</label>
+      <select id="exportar-alcance">
+        <option value="mes" id="exportar-opcion-mes">Este mes</option>
+        <option value="todo">Todo el historial</option>
+      </select>
+    </div>
+    <div id="exportar-vacio-aviso" style="display:none;font-size:12px;color:var(--text3);margin-top:10px">No hay movimientos cargados en ese período.</div>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button onclick="descargarCSVMovimientos()" style="flex:1;background:transparent;border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;padding:14px;cursor:pointer">Descargar CSV</button>
+      <button onclick="descargarPDFMovimientos()" class="btn-primary" style="flex:1">Descargar PDF</button>
+    </div>
   </div>
 </div>
 
@@ -2201,6 +2225,201 @@ function movMesSiguiente() {
   const siguiente = mesSumar(actual, 1);
   if (siguiente > mesRealActual()) return; // no se puede ir al futuro
   buildMovimientos(siguiente);
+}
+
+// ═══════════════════════════════════════════════
+// EXPORTAR DATOS (CSV / PDF)
+// ═══════════════════════════════════════════════
+function abrirExportar() {
+  const mesRef = movMesViendo || mesRealActual();
+  document.getElementById('exportar-opcion-mes').textContent = mesLabel(mesRef);
+  document.getElementById('exportar-alcance').value = 'mes';
+  document.getElementById('exportar-vacio-aviso').style.display = 'none';
+  document.getElementById('modal-exportar').style.display = 'flex';
+}
+
+function cerrarExportar() {
+  document.getElementById('modal-exportar').style.display = 'none';
+}
+
+function formatFechaDDMMYYYY(fechaStr) {
+  if (!fechaStr) return '-';
+  const [y, m, d] = fechaStr.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function categoriaLabelExport(m) {
+  const dic = m.tipo === 'egreso' ? CATEGORIAS_EGRESO : CATEGORIAS_INGRESO;
+  return (dic[m.categoria] && dic[m.categoria].label) || m.categoria;
+}
+
+// Junta los movimientos + totales según el período elegido en el modal
+function obtenerRangoExport() {
+  const alcance = document.getElementById('exportar-alcance').value;
+  const mesRef = movMesViendo || mesRealActual();
+  let movs, label, slug;
+  if (alcance === 'todo') {
+    movs = getMovimientos().slice();
+    label = 'Historial completo';
+    slug = 'historial-completo';
+  } else {
+    movs = movimientosDelMes(mesRef);
+    label = mesLabel(mesRef);
+    slug = mesRef;
+  }
+  movs = movs.slice().sort((a, b) => (a.fecha || '').localeCompare(b.fecha || ''));
+  const incluidos = movs.filter(m => !m.excluidoBalance);
+  const ingresos = incluidos.filter(m => m.tipo === 'ingreso').reduce((a, m) => a + m.monto, 0);
+  const egresos = incluidos.filter(m => m.tipo === 'egreso').reduce((a, m) => a + m.monto, 0);
+  return { movs, label, slug, totales: { ingresos, egresos, balance: ingresos - egresos } };
+}
+
+function descargarBlob(blob, nombre) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = nombre;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function csvEscape(valor) {
+  const str = String(valor === undefined || valor === null ? '' : valor);
+  if (/[;"\n]/.test(str)) return '"' + str.replace(/"/g, '""') + '"';
+  return str;
+}
+
+function descargarCSVMovimientos() {
+  const scope = obtenerRangoExport();
+  if (scope.movs.length === 0) {
+    document.getElementById('exportar-vacio-aviso').style.display = 'block';
+    return;
+  }
+  const filas = [['Fecha', 'Tipo', 'Categoría', 'Concepto', 'Monto (ARS)']];
+  scope.movs.forEach(m => {
+    filas.push([
+      formatFechaDDMMYYYY(m.fecha),
+      m.tipo === 'ingreso' ? 'Ingreso' : 'Egreso',
+      categoriaLabelExport(m),
+      m.concepto || '',
+      Math.round(m.monto).toLocaleString('es-AR'),
+    ]);
+  });
+  filas.push([]);
+  filas.push(['Total ingresos', '', '', '', Math.round(scope.totales.ingresos).toLocaleString('es-AR')]);
+  filas.push(['Total egresos', '', '', '', Math.round(scope.totales.egresos).toLocaleString('es-AR')]);
+  filas.push(['Balance', '', '', '', Math.round(scope.totales.balance).toLocaleString('es-AR')]);
+
+  const csv = filas.map(fila => fila.map(csvEscape).join(';')).join('\r\n');
+  // BOM al inicio para que Excel reconozca UTF-8 (tildes, ñ) correctamente
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  descargarBlob(blob, `peso-real-movimientos-${scope.slug}.csv`);
+  cerrarExportar();
+}
+
+// Carga jsPDF una sola vez, bajo demanda (no pesa en el load inicial de la app)
+let _jsPDFPromise = null;
+function cargarJsPDF() {
+  if (window.jspdf) return Promise.resolve();
+  if (_jsPDFPromise) return _jsPDFPromise;
+  _jsPDFPromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    script.onload = resolve;
+    script.onerror = () => { _jsPDFPromise = null; reject(new Error('No se pudo cargar el generador de PDF')); };
+    document.head.appendChild(script);
+  });
+  return _jsPDFPromise;
+}
+
+function descargarPDFMovimientos() {
+  const scope = obtenerRangoExport();
+  if (scope.movs.length === 0) {
+    document.getElementById('exportar-vacio-aviso').style.display = 'block';
+    return;
+  }
+  cargarJsPDF().then(() => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const marginLeft = 14;
+    const marginRight = 196;
+    const pageHeight = doc.internal.pageSize.getHeight();
+    let y = 20;
+
+    const cols = [
+      { label: 'Fecha', x: marginLeft, w: 20 },
+      { label: 'Tipo', x: marginLeft + 22, w: 18 },
+      { label: 'Categoría', x: marginLeft + 42, w: 30 },
+      { label: 'Concepto', x: marginLeft + 74, w: 60 },
+      { label: 'Monto', x: marginLeft + 138, w: 40 },
+    ];
+
+    function encabezadoPagina() {
+      doc.setFontSize(16);
+      doc.setTextColor(20, 20, 20);
+      doc.text('Peso Real', marginLeft, y);
+      y += 8;
+      doc.setFontSize(11);
+      doc.text(`Movimientos — ${scope.label}`, marginLeft, y);
+      y += 6;
+      doc.setFontSize(9);
+      doc.setTextColor(120, 120, 120);
+      doc.text(`Generado el ${new Date().toLocaleDateString('es-AR')}`, marginLeft, y);
+      doc.setTextColor(20, 20, 20);
+      y += 10;
+      dibujarHeaderTabla();
+    }
+
+    function dibujarHeaderTabla() {
+      doc.setFontSize(9);
+      doc.setFont(undefined, 'bold');
+      cols.forEach(c => doc.text(c.label, c.x, y));
+      y += 2;
+      doc.setLineWidth(0.2);
+      doc.line(marginLeft, y, marginRight, y);
+      y += 5;
+      doc.setFont(undefined, 'normal');
+    }
+
+    encabezadoPagina();
+
+    scope.movs.forEach(m => {
+      if (y > pageHeight - 30) {
+        doc.addPage();
+        y = 20;
+        dibujarHeaderTabla();
+      }
+      doc.setFontSize(8.5);
+      doc.text(formatFechaDDMMYYYY(m.fecha), cols[0].x, y);
+      doc.text(m.tipo === 'ingreso' ? 'Ingreso' : 'Egreso', cols[1].x, y);
+      doc.text(String(categoriaLabelExport(m)), cols[2].x, y, { maxWidth: cols[2].w - 2 });
+      doc.text(String(m.concepto || ''), cols[3].x, y, { maxWidth: cols[3].w - 2 });
+      doc.text(fARS(m.monto), cols[4].x, y);
+      y += 6;
+    });
+
+    if (y > pageHeight - 40) { doc.addPage(); y = 20; }
+    y += 6;
+    doc.setLineWidth(0.3);
+    doc.line(marginLeft, y, marginRight, y);
+    y += 8;
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'bold');
+    doc.text('Resumen', marginLeft, y);
+    y += 7;
+    doc.setFont(undefined, 'normal');
+    doc.setFontSize(9);
+    doc.text(`Total ingresos: ${fARS(scope.totales.ingresos)}`, marginLeft, y); y += 6;
+    doc.text(`Total egresos: ${fARS(scope.totales.egresos)}`, marginLeft, y); y += 6;
+    doc.text(`Balance: ${fARS(scope.totales.balance)}`, marginLeft, y);
+
+    doc.save(`peso-real-movimientos-${scope.slug}.pdf`);
+    cerrarExportar();
+  }).catch(() => {
+    alert('No se pudo generar el PDF. Revisá tu conexión a internet e intentá de nuevo.');
+  });
 }
 
 function abrirFormMovimiento(tipo) {
