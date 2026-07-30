@@ -8,76 +8,76 @@
 
 | Área | Estado |
 |------|--------|
-| Producto | ✅ V2 completa y en producción — beta cerrada activa |
-| Fiscal | 🔴 Bloqueado — monotributo no iniciado, contador no consultado |
-| Marketing | 🟡 Twitter activo (junio live), julio pendiente cargar en Typefully |
-| Ingresos | 🔴 $0 MRR — MP en sandbox, producción bloqueada por fiscal |
+| Producto | ✅ V2 completa — beta cerrada activa |
+| Fiscal | 🔴 Bloqueado — contador no consultado |
+| Marketing | 🟡 Twitter activo, julio pendiente de cargar en Typefully |
+| Ingresos | 🔴 $0 — MP en sandbox, producción bloqueada por fiscal |
 
 ---
 
 ## 🔴 Bloqueadores activos
 
-1. **Contador no consultado** — desbloquea toda la cadena fiscal y el cobro
-2. **Monotributo no inscripto** — sin esto no se puede cobrar legalmente ni activar MP producción
+1. **Contador no consultado** — desbloquea toda la cadena fiscal para poder cobrar
+2. **Monotributo no tramitado** — sin esto no se puede activar MP producción
 3. **Punto de venta AFIP no tramitado** — necesario para facturación electrónica tipo C
-4. **Mercado Pago en sandbox** — solo pasa a producción post-monotributo y PV
-5. **IPC hardcodeado y desactualizado** — afecta cálculos centrales del producto (sueldo real, poder adquisitivo)
+4. **Mercado Pago en sandbox** — no se puede cobrar hasta resolver monotributo + PV
+5. **IPC hardcodeado y desactualizado** — afecta funcionalidad core del producto (no solo precisión)
 
 ---
 
 ## 📌 Últimas decisiones tomadas
 
-- **Lema oficial definido** *(julio 2026):* *"Empezás sin anotar nada. Avanzás tanto como querás."*
-- **Plan Duo congelado en marketing** *(julio 2026):* código funcional pero no se comunica ni vende hasta validar producto para 1 persona
-- **Canasta compartida removida del copy** — no existe en el código, va a V3
-- **Dashboard reorganizado** *(julio 2026):* Movimientos como protagonista, poder adquisitivo como sección secundaria con indicador chico
-- **Sueldo editable mes a mes** *(julio 2026):* selector de mes en modal; corregir mes pasado no toca el sueldo vigente
-- **Posicionamiento resuelto:** IBF = piso sin fricción / Movimientos = techo opcional — funnel de engagement, no contradicción
+- **Lema oficial definido** *(jul 2026):* *"Empezás sin anotar nada. Avanzás tanto como querás."*
+- **Plan Duo congelado en marketing** *(jul 2026):* código completo pero no se comunica ni vende hasta validar producto para 1 persona
+- **Canasta compartida removida del código** *(jul 2026):* era funcionalidad falsa — copy y selector eliminados; queda para V3
+- **Posicionamiento resuelto** *(jul 2026):* IBF = piso sin fricción; Movimientos = techo opcional; son un funnel de engagement, no una contradicción
+- **Dashboard reorganizado** *(jul 2026):* Movimientos como protagonista, poder adquisitivo como sección secundaria
+- **Onboarding reordenado** *(jul 2026):* IBF se presenta antes que Movimientos — 5 pasos, presupuesto manual eliminado
 
 ---
 
 ## 🔨 Construcción
 
-**Estado:** v0.3.1 — beta cerrada. Módulo de Movimientos con navegación entre meses y desglose colapsable. Sueldo con selector de mes editable. Ajustes de UI en Bienestar (3 recuadros alineados).
+**Estado:** v0.3.2 — beta cerrada. Sesión larga completada: Movimientos completo (gastos fijos, presupuesto de gasto, navegación de meses), sueldo editable con selector de mes, reset de contraseña, limpieza de Duo, onboarding reordenado. Validado solo estáticamente — **QA en navegador real pendiente.**
 
-**Próxima tarea:** Filtros de Movimientos por tipo (ingreso/egreso) + rango de fechas custom con memoria permanente — pedido explícito pendiente de construcción.
+**Próxima tarea:** Actualizar IPC con datos recientes de INDEC (máxima prioridad técnica — afecta funcionalidad, no solo precisión)
 
-**Deuda técnica (máx 3):**
-1. IPC hardcodeado y desactualizado — urgente, afecta features centrales
-2. Filtros de Movimientos (tipo + fechas custom con memoria) — no construidos todavía
-3. Presupuesto de gasto es un valor único persistente, no por mes — evaluar con Adrián
+**Deuda técnica (máx 3 items):**
+- IPC hardcodeado y desactualizado — INDEC datos nuevos requeridos
+- Editar movimientos manuales (hoy solo se borran y recargan — inconsistente con sueldo)
+- Exportar datos (CSV/PDF) y borrar cuenta — obligatorios antes del lanzamiento público
 
-**Pendiente bloqueado:** Pasar Mercado Pago a producción — bloqueado hasta resolución fiscal. Una vez desbloqueado: cambiar `sandbox_init_point` → `init_point` + token `APP_USR-` en código.
+**Pendiente bloqueado:** Pasar MP a producción — espera resolución fiscal (monotributo + PV AFIP)
 
 ---
 
 ## 🎯 Estrategia
 
-**Estado:** Beta cerrada activa. Invitaciones a primeros betatesters pendientes de envío. Onboarding desactualizado (no comunica los dos niveles de uso).
+**Estado:** Producto validado internamente. Beta cerrada activa. Foco total en 1 persona antes de escalar Plan Duo. Invitaciones a primeros betatesters pendientes de envío.
 
 **Señales a observar en beta:**
-- Retención semanal (¿vuelven a hacer el IBF?)
-- Completitud del IBF (¿terminan las 5 preguntas?)
-- Carga de Movimientos (¿adoptan la capa opcional?)
-- Momentos de fricción (¿dónde abandonan?)
+- Retención semanal (¿vuelven al IBF?)
+- Completitud IBF semana a semana
+- Carga espontánea de Movimientos
+- Momentos de fricción detectados
 
 **Pendientes estratégicos:**
-1. Actualizar onboarding: IBF primero, Movimientos disponible cuando el usuario quiera más
-2. Definir criterio formal de lanzamiento público (implícito: retención beta satisfactoria + cobro habilitado)
-3. Términos y condiciones formales antes de cobrar
-4. Lanzamiento público post-beta: Reddit + Twitter con lema actualizado
+- Enviar invitaciones beta a primeros 5 contactos
+- Esperar 2-3 semanas de uso antes de activar cuestionario de feedback (8 preguntas, Google Forms)
+- Definir criterio formal de lanzamiento público (implícito: retención satisfactoria + cobro habilitado)
+- Términos y condiciones formales antes de cobrar (formato mínimo no definido)
 
 ---
 
 ## 📣 Marketing
 
-**Twitter (@PesoRealAR):** Activo. Junio completo cargado y publicando (posts #1–#20, hilos #1–#4). Julio (40 posts + 4 hilos, 6–31 jul lunes a viernes) listo en PDF — **pendiente cargar en Typefully antes de que termine junio.**
+**Twitter (@PesoRealAR):** Activo. Junio cargado completo (posts #1–#20 + hilos #1–#4). Julio (40 posts + 4 hilos, PDF listo) **pendiente de cargar en Typefully** antes de fin de junio.
 
-**Reddit:** Post activo en r/AskArgentina. Sábado de Clasificados de r/argentina pendiente cuando se abra el thread. Canal age-gated — requiere antigüedad de cuenta.
+**Reddit:** Post activo en r/AskArgentina. Sábado de Clasificados de r/argentina pendiente (age-gated — requiere antigüedad de cuenta; esperando que abra el thread).
 
-**Email (Brevo):** Captura desde calculadora pública funcional. Google Analytics G-JTF9Q7FY5K activo.
+**Email:** Brevo capturando emails desde calculadora pública — funcional.
 
-**Próxima acción urgente:** Cargar posts de julio en Typefully (schedulear 6–31 julio, lunes a viernes) antes de que finalice junio.
+**Próxima acción urgente:** Cargar contenido de julio en Typefully (schedulear 6–31 julio, lunes a viernes) — no dejar días sin contenido.
 
 ---
 
@@ -85,19 +85,17 @@
 
 **MRR actual:** $0 (pre-revenue, beta sin cobro)
 
-**Costos actuales:** ~$0/mes (todos en planes gratuitos — Vercel, Firebase, Brevo, Analytics). Anthropic API ~USD 0.50/mes solo pruebas.
+**Costos actuales:** ~$0/mes (Vercel Free, Firebase Free, Brevo Free, Anthropic ~USD 0.50 solo pruebas). Break-even: 1 usuario premium cubre meses de costos de API.
 
-**Proyección:** 1 usuario Premium (ARS 7.000/mes) ya cubre meses de costos de API. Break-even operacional es inmediato al cobrar.
+**Precios:** Premium ARS 7.000/mes · Duo ARS 12.000/mes (congelado en marketing) · Revisión anual en enero por IPC acumulado.
 
 **Cadena fiscal pendiente (en orden):**
-1. Consultar contador — llevar descripción de ambos proyectos + situación de dependencia laboral
-2. Completar perfil de Mercado Pago con CUIT y datos bancarios reales
-3. Inscribirse en monotributo online (AFIP) — actividad: servicios de tecnología de la información
-4. Tramitar punto de venta AFIP (facturación electrónica tipo C)
-5. Activar Mercado Pago en producción (una vez MP detecte monotributo)
-6. Test transaccional con usuario beta real antes de lanzamiento público
-
-⚠️ **Crítico:** no cobrar un peso sin estar inscripto en monotributo.
+1. Consultar contador — confirmar monotributo, actividad, categoría estimada, dos proyectos o uno
+2. Completar perfil Mercado Pago con CUIT y datos bancarios reales
+3. Inscribirse en monotributo online (AFIP) — actividad: "Servicios de tecnología de la información"
+4. Tramitar punto de venta AFIP (junto con monotributo, ~1-2 semanas)
+5. Activar Mercado Pago en producción (cambiar `sandbox_init_point` → `init_point` + token `APP_USR-`)
+6. Test transaccional con usuario beta real antes de promocionar públicamente
 
 ---
 
@@ -105,8 +103,8 @@
 
 | Archivo | Contenido |
 |---------|-----------|
-| `estado_actual.md` | Documento operativo general — fuente de verdad |
-| `construccion.md` | Stack, features construidas, deuda técnica, lecciones aprendidas |
+| `estado_actual.md` | Resumen operativo general del proyecto |
+| `construccion.md` | Stack, features construidas, deuda técnica, lecciones |
 | `estrategia.md` | Producto, roadmap, modelo de negocio, beta |
 | `marketing.md` | Canales, copies, calendario de contenido |
 | `finanzas.md` | Costos, proyecciones, guía fiscal |
@@ -118,7 +116,8 @@
 
 | Chat | Instrucción |
 |------|-------------|
-| **Construcción** | Solo código, bugs, features, deploys. No estrategia ni marketing. Archivos fuente: `construccion.md` + `master_contexto.md` |
-| **Estrategia** | Solo decisiones de producto, roadmap, pricing, pivots. No código ni campañas. Archivos fuente: `estrategia.md` + `master_contexto.md` |
-| **Marketing** | Solo canales, copies, contenido, comunidades. No código ni decisiones de producto. Archivos fuente: `marketing.md` + `master_contexto.md` |
-| **Finanzas** | Solo costos, MRR, fiscal, monotributo. No código ni producto. Archivos fuente: `finanzas.md` + `master_contexto.md` |
+| **Construcción** | Usá `construccion.md` como contexto principal. Solo código, deploys, bugs, features. No estrategia ni marketing. |
+| **Estrategia** | Usá `estrategia.md` como contexto principal. Solo decisiones de producto, roadmap, pricing, pivots. No código ni campañas. |
+| **Marketing** | Usá `marketing.md` como contexto principal. Solo canales, copies, contenido, comunidades. No código ni decisiones de producto. |
+| **Finanzas** | Usá `finanzas.md` como contexto principal. Solo costos, ingresos, fiscal, monotributo. No código ni producto. |
+| **Sincronización** | Usá los 4 archivos fuente para regenerar `master_contexto.md`. Seguir estructura y reglas estrictas del prompt. |
