@@ -55,6 +55,21 @@ El módulo de Movimientos convive con el IBF sin contradicción porque son capas
 - Movimientos = control financiero opcional (nuevo)
 - El onboarding debe presentarlos en ese orden: IBF primero, Movimientos disponible cuando el usuario quiera más
 
+## Diseño y estética — flujo de trabajo definido
+- **Herramienta:** Claude Design para exploración y decisiones visuales. Construcción para implementación.
+- **Figma:** descartado por ahora — overhead innecesario para proyecto unipersonal sin dev separado.
+- **Flujo:** brief de identidad + capturas de inspiración → Claude Design (iteración pantalla por pantalla) → output aprobado → Construcción lo implementa en app.html
+- **Fuentes de inspiración:** Mobbin, Dribbble, Screenlane + referencias directas (Stripe, Linear, Vercel, Notion dark mode)
+- **Orden de pantallas a rediseñar:** 1) Dashboard principal (Movimientos) · 2) Formulario de carga de movimiento · 3) IBF pantalla de preguntas · 4) Onboarding
+
+**Brief de identidad para Claude Design:**
+- Paleta: `#0a0b0d` fondo · `#d4f060` acento · `#f0f0f0` texto principal
+- Tipografía: DM Sans 300–700. Nunca serif ni monospace
+- Tono: dark mode, minimalista, denso en info pero aireado en espaciado
+- Referencias: Stripe, Linear, Vercel, Notion dark mode
+- Isotipo: P$R en verde lima sobre negro
+- Lo que NO es: no colorido, no friendly/redondeado estilo fintech latam, no bancario/corporativo
+
 ## Decisiones tomadas
 - Firebase para auth y sync
 - Asistente IA solo Premium (~USD 0.002/conversación)
@@ -73,6 +88,7 @@ El módulo de Movimientos convive con el IBF sin contradicción porque son capas
 
 ## Pendiente estratégico
 - Actualizar onboarding para comunicar los dos niveles de uso
+- Iniciar proceso de rediseño estético con Claude Design (empezar por dashboard de Movimientos)
 - Activar Mercado Pago cuando haya usuarios dispuestos a pagar
 - Formalización: monotributo → punto de venta → MP producción
 - Lanzamiento público post-beta con copy y lema actualizados
@@ -81,5 +97,5 @@ El módulo de Movimientos convive con el IBF sin contradicción porque son capas
 
 ## Roadmap
 - **V2 (actual):** Movimientos + balance + desglose + asistente actualizado ✓
-- **Post-beta:** lanzamiento público, MP producción, onboarding actualizado
+- **Próximo:** rediseño estético + onboarding actualizado + lanzamiento público
 - **V3:** canasta compartida Duo, TWA Google Play, integración resúmenes de tarjeta, agente de reporte mensual, cross-venta SaaS monotributistas
